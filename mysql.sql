@@ -9,10 +9,17 @@ CREATE TABLE `bankareas` (
   `id` INT( 255 ) NOT NULL AUTO_INCREMENT PRIMARY KEY ,
   `world` VARCHAR( 255 ) NOT NULL,
   `areaname` VARCHAR( 255 ) NOT NULL ,
-  `x1` VARCHAR( 255 ) NOT NULL ,
-  `y1` VARCHAR( 255 ) NOT NULL ,
-  `z1` VARCHAR( 255 ) NOT NULL ,
-  `x2` VARCHAR( 255 ) NOT NULL ,
-  `y2` VARCHAR( 255 ) NOT NULL ,
-  `z2` VARCHAR( 255 ) NOT NULL
+  `x1` INT( 255 ) NOT NULL ,
+  `y1` INT( 255 ) NOT NULL ,
+  `z1` INT( 255 ) NOT NULL ,
+  `x2` INT( 255 ) NOT NULL ,
+  `y2` INT( 255 ) NOT NULL ,
+  `z2` INT( 255 ) NOT NULL
+)
+CREATE TABLE `bankloans` (
+  `id` INT( 255 ) NOT NULL AUTO_INCREMENT PRIMARY KEY ,
+  `player` VARCHAR( 255 ) NOT NULL,
+  `amount` DOUBLE NOT NULL ,
+  `totaltime` INT( 255 ) NOT NULL,
+  `timeleft` INT( 255 ) NOT NULL
 )
