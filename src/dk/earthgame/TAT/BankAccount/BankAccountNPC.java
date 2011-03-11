@@ -13,6 +13,7 @@ import redecouverte.npcspawner.NpcEntityTargetEvent.NpcTargetReason;
 import redecouverte.npcspawner.NpcSpawner;
 
 public class BankAccountNPC extends EntityListener {
+	@SuppressWarnings("unused")
 	private BankAccount plugin;
 	public BasicHumanNpcList HumanNPCList;
 	

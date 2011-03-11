@@ -198,6 +198,7 @@ public class BankAccount extends JavaPlugin {
 		MySQL_database = config.getString("MySQL-info.Database");
 		SQL_account_table = config.getString("SQL-account-table");
 		SQL_area_table = config.getString("SQL-area-table");
+		Global = config.getBoolean("Global",true);
 		UseOP = config.getBoolean("UseOP",true);
 		UsePermissions = config.getBoolean("UsePermissions",false);
 		if (UsePermissions && Permissions == null) {
