@@ -1,0 +1,60 @@
+##
+#Plugin: BankAccount
+#Author: TAT
+#CONFIGURATION
+##
+
+##
+#Config: UseMySQL
+#Example: true = MySQL // false = SQLite (flatfile)
+##
+UseMySQL: false
+
+##
+#Informations to your MySQL connection
+#Only if you're using MySQL (Set in UseMySQL)
+##
+MySQL-info:
+    Host: localhost
+    Port: 3306
+    User: root
+    Pass: password
+    Database: minecraft
+
+##
+#Config: SQL-account-table / SQL-area-table
+#Doing: Names of account and area table
+##
+SQL-account-table: bankaccounts
+SQL-area-table: bankareas
+
+##
+#Config: UseOP / UsePermissions
+#Doing: Use OP and/or Permissions to get admins
+#Example: true = activate // false = deactivate
+##
+UseOP: true
+UsePermissions: true
+
+##
+#Config: Global
+#Doing: Is it possible to use commands global or in specific areas?
+#Example: true = global // false = specific areas
+##
+Global: true
+
+##
+#Config: AreaWandId
+#Doing: Item ID to selection of areas
+#Example: 339 = Paper
+##
+AreaWandId: 339
+
+##
+#Interest settings
+#Time is in minutes
+#Amount is % of account balance added to every account
+##
+Interest:
+    Time: 5
+    Amount: 0.1

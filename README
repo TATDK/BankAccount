@@ -1,0 +1,51 @@
+*****************************
+       DEV VERSIONS
+*****************************
+All files after a release is in dev mode.
+There is therefore no warrenty about the code is working and is therefore provided "as is".
+It is because I can commit new changes and not testing it before later in the progress. 
+
+*****************************
+       Requirements
+*****************************
+iConomy (minimum v. 4.1)
+mysql-connector-java-bin (included)
+sqlitejdbc-v056 (included)
+
+*****************************
+       How to install
+*****************************
+FIRST TIME INSTALLMENT:
+    Copy BankAccount.jar to your plugin folder in the root folder of your MineCraft server.
+    Copy mysql-connector-java-bin.jar and sqlitejdbc-v056.jar into your Java ext folder.
+    Windows default folder: C:\Program Files\Java\jre6\lib\ext (If not found, try this: C:\Program Files (x86)\Java\jre6\lib\ext)
+    I think for Linux, it is default folder: \lib\ext
+    Run the server, BankAccount will then create an new folder "BankAccount" in your plugin folder with a configuration file.
+    Change the informations in the configuration file to match your needs.
+
+UPDATE:
+    Copy BankAccount.jar to your plugin folder in the root folder of your MineCraft server.
+    Run the server and enjoy.
+
+*****************************
+     UPGRADE 0.2 => 0.3
+*****************************
+- Config.yml will be used instead of BankAccount.properties
+
+*****************************
+           Features
+*****************************
+- Open a shared bank account between each other
+- Deposit/withdraw money between iConomy account and shared bank account
+- Transfer money between shared bank accounts
+- Password protect shared bank accounts (Case-sensitive)
+
+*****************************
+        MySQL Table
+*****************************
+- See mysql.sql
+
+*****************************
+         Changelog
+*****************************
+- See changelog.txt in the readme folder
