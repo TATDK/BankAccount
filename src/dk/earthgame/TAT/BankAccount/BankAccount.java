@@ -212,7 +212,6 @@ public class BankAccount extends JavaPlugin {
 				this.getServer().getScheduler().cancelTask(interestJobId);
 			}
 			interestJobId = this.getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
-				@Override
 				public void run() {
 					try {
 						ResultSet accounts = stmt.executeQuery("SELECT `accountname`, `amount` FROM `" + SQL_account_table + "`");
