@@ -1,0 +1,4 @@
+*****************************
+     UPGRADE 0.2 => 0.3
+*****************************
+- Config.yml will be used instead of BankAccount.properties

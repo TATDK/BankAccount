@@ -170,6 +170,9 @@ public class BankAccount extends JavaPlugin {
 	}
 
 	public void onDisable() {
+		if (interestJobId > 0) {
+			this.getServer().getScheduler().cancelTask(interestJobId);
+		}
 		getCommand("account").setExecutor(new BankAccountDisabled(this));
 		getCommand("account").setUsage(ChatColor.RED + "BankAccount is disabled");
 		log.info(pdfFile.getName() + " is disabled!" );
@@ -214,20 +217,26 @@ public class BankAccount extends JavaPlugin {
 			}
 			interestJobId = this.getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
 				public void run() {
+					consoleLog("Running interest system");
+					Double totalGiven = 0.00;
 					try {
 						ResultSet accounts = stmt.executeQuery("SELECT `accountname`, `amount` FROM `" + SQL_account_table + "`");
 						while (accounts.next()) {
-							String accountname = accounts.getString("accountname");
 							Double accountbalance = accounts.getDouble("amount");
-							accountbalance *= 1+interestAmount;
-							stmt.executeUpdate("UPDATE `" + SQL_account_table + "` SET `amount` = '" + accountbalance + "' WHERE `accountname` = '" + accountname + "'");
+							totalGiven += accountbalance*(interestAmount/100);
+							accountbalance *= 1+(interestAmount/100);
+							accounts.updateDouble("amount", accountbalance);
+							accounts.updateRow();
 						}
+						accounts.close();
 					} catch (SQLException e) {
 						consoleWarning("Couldn't execute interest");
 						consoleLog(e.toString());
 					}
+					consoleLog("Total given " + totalGiven + " " + com.nijiko.coelho.iConomy.iConomy.getBank().getCurrency() + " in interest");
 				}
 			}, interestTime*20*60, interestTime*20*60);
+			consoleLog("Running interest every " + interestTime + " minutes by " + interestAmount + "%");
 		}
 		consoleLog("Properties Loaded");
 		try {
@@ -247,7 +256,7 @@ public class BankAccount extends JavaPlugin {
 				con = DriverManager.getConnection("jdbc:sqlite:" + myFolder.getAbsolutePath() + "/BankAccount.db");
 			}
 			try {
-				stmt = con.createStatement();
+				stmt = con.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE,ResultSet.CONCUR_UPDATABLE);
 				if (UseMySQL) {
 					consoleLog("Connected to MySQL");
 				} else {
@@ -263,19 +272,37 @@ public class BankAccount extends JavaPlugin {
 					}
 					if (!check || !UseMySQL) {
 						//ACCOUNT TABLE
-						String query = "CREATE TABLE IF NOT EXISTS `" + SQL_account_table + "` (`accountname` VARCHAR( 255 ) NOT NULL , `players` LONGTEXT NOT NULL, `password` VARCHAR( 255 ) NULL DEFAULT '', `amount` DOUBLE NOT NULL DEFAULT '0')";
+						String query = "CREATE TABLE IF NOT EXISTS `" + SQL_account_table + "` (`accountname` VARCHAR( 255 ) NOT NULL , `players` LONGTEXT NOT NULL, `password` VARCHAR( 255 ) NULL DEFAULT '', `amount` DOUBLE( 255,2 ) NOT NULL DEFAULT '0')";
 						if (UseMySQL) {
 							consoleWarning("Created table " + SQL_account_table);
-							query = "CREATE TABLE IF NOT EXISTS `" + SQL_account_table + "` (`id` INT( 255 ) NOT NULL AUTO_INCREMENT PRIMARY KEY , `accountname` VARCHAR( 255 ) NOT NULL , `players` LONGTEXT NOT NULL, `password` VARCHAR( 255 ) NULL DEFAULT '', `amount` DOUBLE NOT NULL DEFAULT '0')";
+							query = "CREATE TABLE IF NOT EXISTS `" + SQL_account_table + "` (`id` INT( 255 ) NOT NULL AUTO_INCREMENT PRIMARY KEY , `accountname` VARCHAR( 255 ) NOT NULL , `players` LONGTEXT NOT NULL, `password` VARCHAR( 255 ) NULL DEFAULT '', `amount` DOUBLE( 255,2 ) NOT NULL DEFAULT '0')";
 						}
 						stmt.execute(query);
 						//AREA TABLE
-						query = "CREATE TABLE IF NOT EXISTS `" + SQL_area_table + "` (`areaname` VARCHAR( 255 ) NOT NULL , `world` VARCHAR( 255 ) NOT NULL , `x1` VARCHAR( 255 ) NOT NULL , `y1` VARCHAR( 255 ) NOT NULL , `z1` VARCHAR( 255 ) NOT NULL , `x2` VARCHAR( 255 ) NOT NULL , `y2` VARCHAR( 255 ) NOT NULL , `z2` VARCHAR( 255 ) NOT NULL)";
+						query = "CREATE TABLE IF NOT EXISTS `" + SQL_area_table + "` (`areaname` VARCHAR( 255 ) NOT NULL , `world` VARCHAR( 255 ) NOT NULL , `x1` INT( 255 ) NOT NULL , `y1` INT( 255 ) NOT NULL , `z1` INT( 255 ) NOT NULL , `x2` INT( 255 ) NOT NULL , `y2` INT( 255 ) NOT NULL , `z2` INT( 255 ) NOT NULL)";
 						if (UseMySQL) {
 							consoleWarning("Created table " + SQL_area_table);
-							query = "CREATE TABLE IF NOT EXISTS `" + SQL_area_table + "` (`id` INT( 255 ) NOT NULL AUTO_INCREMENT PRIMARY KEY , `areaname` VARCHAR( 255 ) NOT NULL , `world` VARCHAR( 255 ) NOT NULL , `x1` VARCHAR( 255 ) NOT NULL , `y1` VARCHAR( 255 ) NOT NULL , `z1` VARCHAR( 255 ) NOT NULL , `x2` VARCHAR( 255 ) NOT NULL , `y2` VARCHAR( 255 ) NOT NULL , `z2` VARCHAR( 255 ) NOT NULL)";
+							query = "CREATE TABLE IF NOT EXISTS `" + SQL_area_table + "` (`id` INT( 255 ) NOT NULL AUTO_INCREMENT PRIMARY KEY , `areaname` VARCHAR( 255 ) NOT NULL , `world` VARCHAR( 255 ) NOT NULL , `x1` INT( 255 ) NOT NULL , `y1` INT( 255 ) NOT NULL , `z1` INT( 255 ) NOT NULL , `x2` INT( 255 ) NOT NULL , `y2` INT( 255 ) NOT NULL , `z2` INT( 255 ) NOT NULL)";
 						}
 						stmt.execute(query);
+					}
+					
+					//Upgrade 0.3c
+					File Upgrade03c = new File(this.getDataFolder(), "SQLUpgrade03c");
+					if (Upgrade03c.exists()) {
+						try {
+							String query = "ALTER TABLE `" + SQL_account_table + "` ALTER COLUMN `amount` DOUBLE( 255,2 ) NOT NULL DEFAULT '0')";
+							stmt.execute(query);
+							consoleLog("Tables upgraded to v.0.3c");
+							if (Upgrade03c.delete()) {
+								consoleLog("SQLUpgrade03c deleted");
+							} else {
+								consoleWarning("SQLUpgrade03c could not be deleted, please remove it yourself");
+							}
+						} catch (SQLException e4) {
+							consoleWarning("Could not upgrade tables to v.0.3c");
+							consoleWarning(e4.toString());
+						}
 					}
 				} catch (SQLException e3) {
 					consoleWarning("Failed to find and create table " + SQL_account_table);
@@ -480,7 +507,7 @@ public class BankAccount extends JavaPlugin {
 	@SuppressWarnings("static-access")
 	public static Boolean ATM(String accountname,String player,String type,Integer amount,String password) {
 		try {
-			int account = getBalance(accountname);
+			double account = getBalance(accountname);
 			Account iConomyAccount = iConomy.getBank().getAccount(player);
 			if (type == "deposit") {
 				double wallet = iConomyAccount.getBalance();
@@ -511,7 +538,7 @@ public class BankAccount extends JavaPlugin {
 			} else if (type == "transfer") {
 				if (passwordCheck(accountname, password)) {
 					//Player = reciever account
-					int reciever_account = getBalance(player);
+					double reciever_account = getBalance(player);
 					if ((account - amount) >= 0) {
 						account -= amount;
 						reciever_account += amount;
@@ -537,7 +564,7 @@ public class BankAccount extends JavaPlugin {
 			try {
 				Account iConomyAccount = iConomy.getBank().getAccount(player);
 				double wallet = iConomyAccount.getBalance();
-				Integer accountBalance = getBalance(accountname);
+				double accountBalance = getBalance(accountname);
 				stmt.executeUpdate("DELETE FROM `" + SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
 				iConomyAccount.setBalance(wallet + accountBalance);
 				iConomyAccount.save();
@@ -572,12 +599,12 @@ public class BankAccount extends JavaPlugin {
 		return "Error loading players";
 	}
 	
-	public static Integer getBalance(String accountname) {
+	public static double getBalance(String accountname) {
 		try {
 			ResultSet rs;
 			rs = stmt.executeQuery("SELECT `amount` FROM `" + SQL_account_table + "` WHERE `accountname` = '" + accountname +"'");
 			while (rs.next()) {
-				return rs.getInt("amount");
+				return rs.getDouble("amount");
 			}
 		}catch(Exception e) {
 			consoleWarning("Error #091: " + e.toString());

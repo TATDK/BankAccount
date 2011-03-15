@@ -2,6 +2,12 @@ Plugin: BankAccount
 Author: TAT
 CHANGELOG
 
+0.3c
+Fixed wrong percentage in interest
+Now showing decimals
+Now showing if running interest on loadConfiguration
+Now write to console when running interest
+
 0.3b
 Fixed global not working
 

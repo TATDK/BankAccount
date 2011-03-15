@@ -1,0 +1,11 @@
+*****************************
+     UPGRADE 0.3 => 0.3a
+*****************************
+- Add Database for MySQL-info.
+Example:
+MySQL-info:
+    Host: localhost
+    Port: 3306
+    User: root
+    Pass: password
+    Database: minecraft

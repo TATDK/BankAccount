@@ -18,24 +18,8 @@ FIRST TIME INSTALLMENT:
 
 UPDATE:
     Copy BankAccount.jar to your plugin folder in the root folder of your MineCraft server.
+    Please look for an upgrade text file, to see if there are special instructions for the new version
     Run the server and enjoy.
-
-*****************************
-     UPGRADE 0.3 => 0.3a
-*****************************
-- Add Database for MySQL-info.
-Example:
-MySQL-info:
-    Host: localhost
-    Port: 3306
-    User: root
-    Pass: password
-    Database: minecraft
-
-*****************************
-     UPGRADE 0.2 => 0.3
-*****************************
-- Config.yml will be used instead of BankAccount.properties
 
 *****************************
            Features
