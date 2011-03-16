@@ -256,7 +256,7 @@ public class BankAccount extends JavaPlugin {
 				con = DriverManager.getConnection("jdbc:sqlite:" + myFolder.getAbsolutePath() + "/BankAccount.db");
 			}
 			try {
-				stmt = con.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE,ResultSet.CONCUR_UPDATABLE);
+				stmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_UPDATABLE);
 				if (UseMySQL) {
 					consoleLog("Connected to MySQL");
 				} else {

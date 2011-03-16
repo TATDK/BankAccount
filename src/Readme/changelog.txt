@@ -2,6 +2,9 @@ Plugin: BankAccount
 Author: TAT
 CHANGELOG
 
+0.3d
+Fixed FORWARD_ONLY for SQLite
+
 0.3c
 Fixed wrong percentage in interest
 Now showing decimals
