@@ -230,7 +230,7 @@ public class BankAccount extends JavaPlugin {
 					try {
 						if (UseMySQL) {
 							//MySQL
-							ResultSet accounts = stmt.executeQuery("SELECT `amount` FROM `" + SQL_account_table + "`");
+							ResultSet accounts = stmt.executeQuery("SELECT `id`, `amount` FROM `" + SQL_account_table + "`");
 							while (accounts.next()) {
 								Double accountbalance = accounts.getDouble("amount");
 								totalGiven += accountbalance*(interestAmount/100);
