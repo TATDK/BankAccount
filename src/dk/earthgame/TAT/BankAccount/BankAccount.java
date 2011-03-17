@@ -5,6 +5,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -31,7 +32,7 @@ import com.nijikokun.bukkit.Permissions.Permissions;
 
 /**
  * BankAccount for Bukkit
- *
+ * 
  * @author TAT
  */
 public class BankAccount extends JavaPlugin {
@@ -44,19 +45,19 @@ public class BankAccount extends JavaPlugin {
 	private double interestAmount;
 	private int interestJobId;
 	private HashMap<String,UserSaves> UserSaves = new HashMap<String,UserSaves>();
-	private int areaWandId = 339;
+	private int areaWandId;
 	//MySQL
 	private static boolean UseMySQL = false;
-	private static String MySQL_host = "mysql-host";
-	private String MySQL_port = "mysql-port";
-	private String MySQL_username = "mysql-user";
-	private String MySQL_password = "mysql-pass";
-	private String MySQL_database = "mysql-db";
+	private static String MySQL_host;
+	private String MySQL_port;
+	private String MySQL_username;
+	private String MySQL_password;
+	private String MySQL_database;
 	//SQL
 	public static Connection con;
 	public static java.sql.Statement stmt;
-	private static String SQL_account_table = "mysql-account-table";
-	private static String SQL_area_table = "mysql-area-table";
+	private static String SQL_account_table;
+	private static String SQL_area_table;
 	//iConomy
 	public static com.nijiko.coelho.iConomy.iConomy iConomy;
 	private boolean useiConomy = false;
@@ -65,6 +66,7 @@ public class BankAccount extends JavaPlugin {
 	public Permissions Permissions = null;
 	private static boolean UsePermissions = false;
 	public boolean Global;
+	public static boolean SuperAdmins;
 
 	//#########################################################################//
 	
@@ -86,10 +88,11 @@ public class BankAccount extends JavaPlugin {
 	}
 
 	public void setupPermissions() {
+		// Initialize permissions system
 		Plugin test = this.getServer().getPluginManager().getPlugin("Permissions");
 
-		if (Permissions == null) {
-			if (test != null) {
+		if(Permissions == null) {
+			if(test != null) {
 				Permissions = (Permissions)test;
 				consoleLog("Permission system found.");
 			} else {
@@ -110,7 +113,7 @@ public class BankAccount extends JavaPlugin {
 	
 	public Integer playerIsAdmin(Player player) {
 		if (player != null) {
-			if (UsePermissions && Permissions != null) {
+			if (UsePermissions) {
 				if (com.nijikokun.bukkit.Permissions.Permissions.Security.permission(player, "bankaccount.admin")) {
 					return 2;
 				}
@@ -192,22 +195,28 @@ public class BankAccount extends JavaPlugin {
 	public boolean loadConfiguration() {
 		config = new Configuration(new File(this.getDataFolder(), "config.yml"));
 		config.load();
+		//MySQL
 		UseMySQL = config.getBoolean("UseMySQL", false);
-		MySQL_host = config.getString("MySQL-info.Host");
-		MySQL_port = config.getString("MySQL-info.Port");
-		MySQL_username = config.getString("MySQL-info.User");
-		MySQL_password = config.getString("MySQL-info.Pass");
-		MySQL_database = config.getString("MySQL-info.Database");
-		SQL_account_table = config.getString("SQL-account-table");
-		SQL_area_table = config.getString("SQL-area-table");
-		Global = config.getBoolean("Global",true);
+		MySQL_host = config.getString("MySQL-info.Host","localhost");
+		MySQL_port = config.getString("MySQL-info.Port","3306");
+		MySQL_username = config.getString("MySQL-info.User","root");
+		MySQL_password = config.getString("MySQL-info.Pass","");
+		MySQL_database = config.getString("MySQL-info.Database","minecraft");
+		//SQL
+		SQL_account_table = config.getString("SQL-account-table","bankaccounts");
+		SQL_area_table = config.getString("SQL-area-table","bankareas");
+		//Permissions
+		SuperAdmins = config.getBoolean("SuperAdmins", false);
 		UseOP = config.getBoolean("UseOP",true);
 		UsePermissions = config.getBoolean("UsePermissions",false);
 		if (UsePermissions && Permissions == null) {
 			setupPermissions();
 		}
+		//Interest
 		interestAmount = config.getDouble("Interest.Amount", 0);
 		interestTime = config.getInt("Interest.Time", 0);
+		//Area
+		Global = config.getBoolean("Global",true);
 		areaWandId = config.getInt("AreaWandid",339);
 		
 		if (interestTime > 0) {
@@ -219,15 +228,36 @@ public class BankAccount extends JavaPlugin {
 					consoleLog("Running interest system");
 					Double totalGiven = 0.00;
 					try {
-						ResultSet accounts = stmt.executeQuery("SELECT `accountname`, `amount` FROM `" + SQL_account_table + "`");
-						while (accounts.next()) {
-							Double accountbalance = accounts.getDouble("amount");
-							totalGiven += accountbalance*(interestAmount/100);
-							accountbalance *= 1+(interestAmount/100);
-							accounts.updateDouble("amount", accountbalance);
-							accounts.updateRow();
+						if (UseMySQL) {
+							//MySQL
+							ResultSet accounts = stmt.executeQuery("SELECT `amount` FROM `" + SQL_account_table + "`");
+							while (accounts.next()) {
+								Double accountbalance = accounts.getDouble("amount");
+								totalGiven += accountbalance*(interestAmount/100);
+								accountbalance *= 1+(interestAmount/100);
+								accounts.updateDouble("amount", accountbalance);
+								accounts.updateRow();
+							}
+							accounts.close();
+						} else {
+							//SQLite
+							PreparedStatement prep = con.prepareStatement("UPDATE `" + SQL_account_table + "` SET `amount` = ? WHERE `accountname` = ?");
+							ResultSet accounts = stmt.executeQuery("SELECT `accountname`, `amount` FROM `" + SQL_account_table + "`");
+							while (accounts.next()) {
+								String accountname = accounts.getString("accountname");
+								Double accountbalance = accounts.getDouble("amount");
+								totalGiven += accountbalance*(interestAmount/100);
+								accountbalance *= 1+(interestAmount/100);
+								prep.setDouble(1, accountbalance);
+								prep.setString(2, accountname);
+								prep.addBatch();
+							}
+							accounts.close();
+							con.setAutoCommit(false);
+							prep.executeBatch();
+							con.commit();
+							con.setAutoCommit(true);
 						}
-						accounts.close();
 					} catch (SQLException e) {
 						consoleWarning("Couldn't execute interest");
 						consoleLog(e.toString());
@@ -249,16 +279,16 @@ public class BankAccount extends JavaPlugin {
 		}
 		try {
 			if (UseMySQL) {
-				String url = "jdbc:mysql://" + MySQL_host + ":" + MySQL_port + "/" + MySQL_database;
-				con = DriverManager.getConnection(url, MySQL_username, MySQL_password);
+				con = DriverManager.getConnection("jdbc:mysql://" + MySQL_host + ":" + MySQL_port + "/" + MySQL_database, MySQL_username, MySQL_password);
 			} else {
 				con = DriverManager.getConnection("jdbc:sqlite:" + myFolder.getAbsolutePath() + "/BankAccount.db");
 			}
 			try {
-				stmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_UPDATABLE);
 				if (UseMySQL) {
+					stmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_UPDATABLE);
 					consoleLog("Connected to MySQL");
 				} else {
+					stmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_READ_ONLY);
 					consoleLog("Connected to SQLite");
 				}
 				try {
@@ -290,13 +320,22 @@ public class BankAccount extends JavaPlugin {
 					File Upgrade03c = new File(this.getDataFolder(), "SQLUpgrade03c");
 					if (Upgrade03c.exists()) {
 						try {
-							String query = "ALTER TABLE `" + SQL_account_table + "` ALTER COLUMN `amount` DOUBLE( 255,2 ) NOT NULL DEFAULT '0')";
-							stmt.execute(query);
-							consoleLog("Tables upgraded to v.0.3c");
-							if (Upgrade03c.delete()) {
-								consoleLog("SQLUpgrade03c deleted");
+							if (UseMySQL) {
+								String query = "ALTER TABLE `" + SQL_account_table + "` CHANGE  `amount`  `amount` DOUBLE( 255, 2 ) NOT NULL DEFAULT  '0.00'";
+								stmt.execute(query);
+								consoleLog("Tables upgraded to v.0.3c");
+								if (Upgrade03c.delete()) {
+									consoleLog("SQLUpgrade03c deleted");
+								} else {
+									consoleWarning("SQLUpgrade03c could not be deleted, please remove it yourself");
+								}
 							} else {
-								consoleWarning("SQLUpgrade03c could not be deleted, please remove it yourself");
+								consoleLog("SQLUpgrade03c is not for SQLite");
+								if (Upgrade03c.delete()) {
+									consoleLog("SQLUpgrade03c deleted");
+								} else {
+									consoleWarning("SQLUpgrade03c could not be deleted, please remove it yourself");
+								}
 							}
 						} catch (SQLException e4) {
 							consoleWarning("Could not upgrade tables to v.0.3c");
@@ -414,8 +453,7 @@ public class BankAccount extends JavaPlugin {
 		try {
 			stmt.executeUpdate("INSERT INTO `" + SQL_account_table + "` (`accountname`,`players`) VALUES ('" + accountname + "','" + players + "')");
 			return true;
-		}
-		catch(SQLException e) {
+		} catch(SQLException e) {
 			if (e.getMessage() != null)
 				consoleWarning("Error #022: " + e.getMessage());
 			else
@@ -425,6 +463,9 @@ public class BankAccount extends JavaPlugin {
 	}
 	
 	public static Boolean accessAccount(String accountname,String player) {
+		if (SuperAdmins) {
+			return true;
+		}
 		try {
 			ResultSet rs;
 			rs = stmt.executeQuery("SELECT `players` FROM `" + SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
@@ -436,7 +477,7 @@ public class BankAccount extends JavaPlugin {
 					}
 				}
 			}
-		}catch(Exception e) {
+		} catch(Exception e) {
 			consoleWarning("Error #031: " + e.toString());
 		}
 		return false;
@@ -509,20 +550,24 @@ public class BankAccount extends JavaPlugin {
 			double account = getBalance(accountname);
 			Account iConomyAccount = iConomy.getBank().getAccount(player);
 			if (type == "deposit") {
-				if (iConomyAccount.hasEnough(amount)) {
+				double wallet = iConomyAccount.getBalance();
+				if ((wallet - amount) >= 0) {
 					account += amount;
 					stmt.executeUpdate("UPDATE `" + SQL_account_table + "` SET `amount` = '" + account + "' WHERE `accountname` = '" + accountname + "'");
-					iConomyAccount.subtract(amount);
+					iConomyAccount.setBalance(wallet - amount);
+					iConomyAccount.save();
 					return true;
 				} else {
 					return false;
 				}
 			} else if (type == "withdraw") {
 				if (passwordCheck(accountname, password)) {
+					double wallet = iConomyAccount.getBalance();
 					if ((account - amount) >= 0) {
 						account -= amount;
 						stmt.executeUpdate("UPDATE `" + SQL_account_table + "` SET `amount` = '" + account + "' WHERE `accountname` = '" + accountname + "'");
-						iConomyAccount.add(amount);
+						iConomyAccount.setBalance(wallet + amount);
+						iConomyAccount.save();
 						return true;
 					} else {
 						return false;
@@ -558,9 +603,11 @@ public class BankAccount extends JavaPlugin {
 		if (passwordCheck(accountname, password)) {
 			try {
 				Account iConomyAccount = iConomy.getBank().getAccount(player);
+				double wallet = iConomyAccount.getBalance();
 				double accountBalance = getBalance(accountname);
 				stmt.executeUpdate("DELETE FROM `" + SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
-				iConomyAccount.add(accountBalance);
+				iConomyAccount.setBalance(wallet + accountBalance);
+				iConomyAccount.save();
 				return true;
 			}catch(Exception e) {
 				consoleWarning("Error #081: " + e.toString());
