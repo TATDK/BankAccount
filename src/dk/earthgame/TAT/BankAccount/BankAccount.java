@@ -86,11 +86,10 @@ public class BankAccount extends JavaPlugin {
 	}
 
 	public void setupPermissions() {
-		// Initialize permissions system
 		Plugin test = this.getServer().getPluginManager().getPlugin("Permissions");
 
-		if(Permissions == null) {
-			if(test != null) {
+		if (Permissions == null) {
+			if (test != null) {
 				Permissions = (Permissions)test;
 				consoleLog("Permission system found.");
 			} else {
@@ -109,9 +108,9 @@ public class BankAccount extends JavaPlugin {
 		log.warning(pdfFile.getName() + ": " + string);
 	}
 	
-	public static Integer playerIsAdmin(Player player) {
+	public Integer playerIsAdmin(Player player) {
 		if (player != null) {
-			if (UsePermissions) {
+			if (UsePermissions && Permissions != null) {
 				if (com.nijikokun.bukkit.Permissions.Permissions.Security.permission(player, "bankaccount.admin")) {
 					return 2;
 				}
@@ -505,29 +504,25 @@ public class BankAccount extends JavaPlugin {
 	}
 
 	@SuppressWarnings("static-access")
-	public static Boolean ATM(String accountname,String player,String type,Integer amount,String password) {
+	public static Boolean ATM(String accountname,String player,String type,Double amount,String password) {
 		try {
 			double account = getBalance(accountname);
 			Account iConomyAccount = iConomy.getBank().getAccount(player);
 			if (type == "deposit") {
-				double wallet = iConomyAccount.getBalance();
-				if ((wallet - amount) >= 0) {
+				if (iConomyAccount.hasEnough(amount)) {
 					account += amount;
 					stmt.executeUpdate("UPDATE `" + SQL_account_table + "` SET `amount` = '" + account + "' WHERE `accountname` = '" + accountname + "'");
-					iConomyAccount.setBalance(wallet - amount);
-					iConomyAccount.save();
+					iConomyAccount.subtract(amount);
 					return true;
 				} else {
 					return false;
 				}
 			} else if (type == "withdraw") {
 				if (passwordCheck(accountname, password)) {
-					double wallet = iConomyAccount.getBalance();
 					if ((account - amount) >= 0) {
 						account -= amount;
 						stmt.executeUpdate("UPDATE `" + SQL_account_table + "` SET `amount` = '" + account + "' WHERE `accountname` = '" + accountname + "'");
-						iConomyAccount.setBalance(wallet + amount);
-						iConomyAccount.save();
+						iConomyAccount.add(amount);
 						return true;
 					} else {
 						return false;
@@ -563,11 +558,9 @@ public class BankAccount extends JavaPlugin {
 		if (passwordCheck(accountname, password)) {
 			try {
 				Account iConomyAccount = iConomy.getBank().getAccount(player);
-				double wallet = iConomyAccount.getBalance();
 				double accountBalance = getBalance(accountname);
 				stmt.executeUpdate("DELETE FROM `" + SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
-				iConomyAccount.setBalance(wallet + accountBalance);
-				iConomyAccount.save();
+				iConomyAccount.add(accountBalance);
 				return true;
 			}catch(Exception e) {
 				consoleWarning("Error #081: " + e.toString());

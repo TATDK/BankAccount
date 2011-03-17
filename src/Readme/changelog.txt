@@ -2,6 +2,11 @@ Plugin: BankAccount
 Author: TAT
 CHANGELOG
 
+0.3INDEV
+Change from int to double in ATM
+Update to match deprecation of iConomy.save
+Fixed check for admin if UsePermissions is true but Permissions isn't running
+
 0.3d
 Fixed FORWARD_ONLY for SQLite
 
