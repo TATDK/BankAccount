@@ -2,6 +2,12 @@ Plugin: BankAccount
 Author: TAT
 CHANGELOG
 
+0.4
+Added loan
+Added support for GroupManager
+Fixed MySQL interest bug in 0.3e
+Code cleanup
+
 0.3e
 Change from int to double in ATM
 Update to match deprecation of iConomy.save

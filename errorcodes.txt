@@ -1,0 +1,82 @@
+The error codes are set after the following rule
+# + function in 2 digits + error number
+
+ID       Function
+----------------------
+01       accountExists
+02       addAccount
+03       accessAccount
+04       addUser
+05       removeUser
+06       setPassword
+07       ATM
+08       closeAccount
+09       getUsers
+10       getBalance
+11       haveLoan
+12       setArea
+13       removeArea
+14       areaExists
+15       inArea
+16       addTransaction
+17       
+18       
+19       
+20       passwordCheck
+21       passwordCrypt
+22       
+
+Error code    Function        Description
+------------------------------------------------------------------------
+#011          accountExists   Error lookup account - Response type 1
+#012          accountExists   Error lookup account - Response type 2
+#013          accountExists   Error getting ID - Response type 1
+#014          accountExists   Error getting ID - Response type 2
+#021          addAccount      Error adding account - Response type 1
+#022          addAccount      Error adding account - Response type 2
+#031          accessAccount   Exception error
+#032          accessAccount   SQLException error - Response type 1
+#033          accessAccount   SQLException error - Response type 2
+#041          addUser         Error getting players - Response type 1
+#042          addUser         Error getting players - Response type 2
+#043          addUser         Error adding player - Response type 1
+#044          addUser         Error adding player - Response type 2
+#051          removeUser      Error getting players - Response type 1
+#052          removeUser      Error getting players - Response type 2
+#053          removeUser      Error removing player - Response type 1
+#054          removeUser      Error removing player - Response type 2
+#061          setPassword     Error updating password - Response type 1
+#062          setPassword     Error updating password - Response type 2
+#071          ATM             Exception error
+#072          ATM             SQLException error - Response type 1
+#073          ATM             SQLException error - Response type 2
+#081          closeAccount    Exception error
+#082          closeAccount    SQLException error - Response type 1
+#083          closeAccount    SQLException error - Response type 2
+#091          getUsers        Exception error
+#092          getUsers        SQLException error - Response type 1
+#093          getUsers        SQLException error - Response type 2
+#101          getBalance      Exception error
+#102          getBalance      SQLException error - Response type 1
+#103          getBalance      SQLException error - Response type 2
+#111          haveLoan        Error lookup loan - Response type 1
+#112          haveLoan        Error lookup loan - Response type 2
+#113          haveLoan        Error getting ID - Response type 1
+#114          haveLoan        Error getting ID - Response type 2
+#121          setArea         Error lookup areas - Response type 1
+#122          setArea         Error lookup areas - Response type 2
+#131          removeArea      Exception error
+#132          removeArea      SQLException error - Response type 1
+#133          removeArea      SQLException error - Response type 2
+#141          areaExists      Error lookup areas - Response type 1
+#142          areaExists      Error lookup areas - Response type 2
+#143          areaExists      Error getting ID - Response type 1
+#144          areaExists      Error getting ID - Response type 2
+#151          inArea          Error lookup areas - Response type 1
+#152          inArea          Error lookup areas - Response type 2
+#161          inArea          Error lookup areas - Response type 1
+#162          inArea          Error lookup areas - Response type 2
+#201          passwordCheck   Exception error
+#202          passwordCheck   SQLException error - Response type 1
+#203          passwordCheck   SQLException error - Response type 2
+#211          passwordCrypt   Error crypting password

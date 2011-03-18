@@ -16,12 +16,18 @@ CREATE TABLE `bankareas` (
   `y2` INT( 255 ) NOT NULL ,
   `z2` INT( 255 ) NOT NULL
 )
-
-//BANKLOANS IS NOT IN USE YET
 CREATE TABLE `bankloans` (
   `id` INT( 255 ) NOT NULL AUTO_INCREMENT PRIMARY KEY ,
   `player` VARCHAR( 255 ) NOT NULL,
   `amount` DOUBLE NOT NULL ,
   `totaltime` INT( 255 ) NOT NULL,
   `timeleft` INT( 255 ) NOT NULL
+)
+CREATE TABLE `banktransactions` (
+  `id` INT( 255 ) NOT NULL AUTO_INCREMENT PRIMARY KEY ,
+  `player` VARCHAR( 255 ) NOT NULL,
+  `account` VARCHAR( 255 ) NULL,
+  `type` INT( 255 ) NOT NULL,
+  `amount` DOUBLE( 255,2 ) NULL,
+  `time` INT( 255 ) NOT NULL
 )

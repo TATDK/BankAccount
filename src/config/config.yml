@@ -11,6 +11,13 @@
 UseMySQL: false
 
 ##
+#Config: Transactions
+#Doing: Save transactions in table
+#Example: true = activate // false = deactivate
+##
+Transactions: true
+
+##
 #Informations to your MySQL connection
 #Only if you're using MySQL (Set in UseMySQL)
 ##
@@ -27,14 +34,17 @@ MySQL-info:
 ##
 SQL-account-table: bankaccounts
 SQL-area-table: bankareas
+SQL-loan-table: bankloans
+SQL-transaction-table: banktransactions
 
 ##
 #Config: UseOP / UsePermissions
-#Doing: Use OP and/or Permissions to get admins
+#Doing: Use OP, Permissions and/or GroupManager(FakePermissions) to get admins
 #Example: true = activate // false = deactivate
 ##
 UseOP: true
-UsePermissions: true
+UsePermissions: false
+UseGroupManager: false
 
 ##
 #Config: SuperAdmins

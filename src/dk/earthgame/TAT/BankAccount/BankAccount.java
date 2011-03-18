@@ -30,6 +30,8 @@ import com.nijiko.coelho.iConomy.iConomy;
 import com.nijiko.coelho.iConomy.system.Account;
 import com.nijikokun.bukkit.Permissions.Permissions;
 
+import org.anjocaido.groupmanager.GroupManager;
+
 /**
  * BankAccount for Bukkit
  * 
@@ -37,8 +39,8 @@ import com.nijikokun.bukkit.Permissions.Permissions;
  */
 public class BankAccount extends JavaPlugin {
 	//System
-	protected static final Logger log = Logger.getLogger("Minecraft");
-	private static PluginDescriptionFile pdfFile;
+	protected final Logger log = Logger.getLogger("Minecraft");
+	private PluginDescriptionFile pdfFile;
 	private File myFolder;
 	public Configuration config;
 	private int interestTime;
@@ -47,26 +49,55 @@ public class BankAccount extends JavaPlugin {
 	private HashMap<String,UserSaves> UserSaves = new HashMap<String,UserSaves>();
 	private int areaWandId;
 	//MySQL
-	private static boolean UseMySQL = false;
-	private static String MySQL_host;
+	private boolean UseMySQL = false;
+	private String MySQL_host;
 	private String MySQL_port;
 	private String MySQL_username;
 	private String MySQL_password;
 	private String MySQL_database;
 	//SQL
-	public static Connection con;
-	public static java.sql.Statement stmt;
-	private static String SQL_account_table;
-	private static String SQL_area_table;
+	public Connection con;
+	public java.sql.Statement stmt;
+	private String SQL_account_table;
+	private String SQL_area_table;
+	private String SQL_loan_table;
+	private String SQL_transaction_table;
 	//iConomy
-	public static com.nijiko.coelho.iConomy.iConomy iConomy;
+	public com.nijiko.coelho.iConomy.iConomy iConomy;
 	private boolean useiConomy = false;
 	//Permissions
 	private boolean UseOP = true;
 	public Permissions Permissions = null;
 	private boolean UsePermissions = false;
+	public GroupManager GroupManager = null;
+	private boolean UseGroupManager = false;
 	public boolean Global;
-	public static boolean SuperAdmins;
+	public boolean SuperAdmins;
+	//Transaction
+	private boolean Transactions;
+	public enum TransactionTypes {
+		OPEN				(1),
+		DEPOSIT				(2),
+		WITHDRAW			(3),
+		TRANSFER_DEPOSIT	(4),
+		TRANSFER_WITHDRAW	(5),
+		CLOSE				(6),
+		USER_ADD			(7),
+		USER_REMOVE			(8),
+		PASSWORD			(9),
+		LOAN_START			(10),
+		LOAN_PAYMENT		(11),
+		LOAN_PAID			(12),
+		LOAN_MISSING		(13),
+		BOUNTY_START		(14),
+		BOUNTY_END			(15);
+		
+		private final int code;
+		TransactionTypes(int code) {
+			this.code = code;
+		}
+		public int get() { return code; }
+	};
 
 	//#########################################################################//
 	
@@ -76,7 +107,7 @@ public class BankAccount extends JavaPlugin {
 		Plugin test = this.getServer().getPluginManager().getPlugin("iConomy");
 
 		if (test != null) {
-			BankAccount.iConomy = (iConomy)test;
+			iConomy = (iConomy)test;
 			useiConomy = true;
 		} else {
 			consoleWarning("Stopping BankAccount - Reason: Missing iConomy plugin!");
@@ -88,15 +119,27 @@ public class BankAccount extends JavaPlugin {
 	}
 
 	public void setupPermissions() {
-		// Initialize permissions system
 		Plugin test = this.getServer().getPluginManager().getPlugin("Permissions");
 
-		if(Permissions == null) {
+		if (Permissions == null) {
 			if(test != null) {
 				Permissions = (Permissions)test;
 				consoleLog("Permission system found.");
 			} else {
 				consoleLog("Permission system not found.");
+			}
+		}
+	}
+	
+	public void setupGroupManager() {
+		Plugin test = this.getServer().getPluginManager().getPlugin("GroupManager");
+
+		if (GroupManager == null) {
+			if(test != null) {
+				GroupManager = (GroupManager) test;
+				consoleLog("GroupManager found.");
+			} else {
+				consoleLog("GroupManager not found.");
 			}
 		}
 	}
@@ -107,30 +150,36 @@ public class BankAccount extends JavaPlugin {
 		log.info(pdfFile.getName() + ": " + string);
 	}
 
-	public static void consoleWarning(String string) {
+	public void consoleWarning(String string) {
 		log.warning(pdfFile.getName() + ": " + string);
 	}
 	
-	public Integer playerIsAdmin(Player player) {
+	public boolean playerIsAdmin(Player player) {
 		if (player != null) {
 			if (UsePermissions) {
 				if (com.nijikokun.bukkit.Permissions.Permissions.Security.permission(player, "bankaccount.admin")) {
-					return 2;
+					return true;
+				}
+			}
+			if (UseGroupManager) {
+				if (GroupManager.getWorldsHolder().getWorldPermissions(player).has(player,"bankaccount.admin")) {
+					return true;
 				}
 			}
 			if (UseOP) {
 				if (player.isOp()) {
-					return 1;
+					return true;
 				} else {
-					return 0;
+					return false;
 				}
 			} else {
-				return 0;
+				return false;
 			}
 		} else {
-			return 0;
+			return false;
 		}
 	}
+	
 	
 	public void onEnable() {
 		// Register our events
@@ -180,6 +229,19 @@ public class BankAccount extends JavaPlugin {
 		log.info(pdfFile.getName() + " is disabled!" );
 	}
 
+	public void addTransaction(String player, String account, TransactionTypes type, Double amount) {
+		if (Transactions) {
+			try {
+				stmt.executeUpdate("INSERT INTO `" + SQL_transaction_table + "` (`player`,`account`,`type`,`amount`) VALUES ('" + player + "','" + account + "','" + type.get() + "','" + amount + "')");
+			} catch(SQLException e) {
+				if (!e.getMessage().equalsIgnoreCase(null))
+					consoleWarning("Error #162: " + e.getMessage());
+				else
+					consoleWarning("Error #161: " + e.getErrorCode() + " - " + e.getSQLState());
+			}
+		}
+	}
+	
 	//CONFIGURATION AND USERSAVES
 	
 	public UserSaves getSaved(Player player) {
@@ -205,6 +267,8 @@ public class BankAccount extends JavaPlugin {
 		//SQL
 		SQL_account_table = config.getString("SQL-account-table","bankaccounts");
 		SQL_area_table = config.getString("SQL-area-table","bankareas");
+		SQL_loan_table = config.getString("SQL-loan-table","bankloans");
+		SQL_transaction_table = config.getString("SQL-transactions-table","banktransactions");
 		//Permissions
 		SuperAdmins = config.getBoolean("SuperAdmins", false);
 		UseOP = config.getBoolean("UseOP",true);
@@ -212,12 +276,18 @@ public class BankAccount extends JavaPlugin {
 		if (UsePermissions && Permissions == null) {
 			setupPermissions();
 		}
+		UseGroupManager = config.getBoolean("UseGroupManager",false);
+		if (UseGroupManager && GroupManager == null) {
+			setupGroupManager();
+		}
 		//Interest
 		interestAmount = config.getDouble("Interest.Amount", 0);
 		interestTime = config.getInt("Interest.Time", 0);
 		//Area
 		Global = config.getBoolean("Global",true);
 		areaWandId = config.getInt("AreaWandid",339);
+		//Other
+		Transactions = config.getBoolean("Transactions", false);
 		
 		if (interestTime > 0) {
 			if (interestJobId > 0) {
@@ -314,6 +384,22 @@ public class BankAccount extends JavaPlugin {
 							query = "CREATE TABLE IF NOT EXISTS `" + SQL_area_table + "` (`id` INT( 255 ) NOT NULL AUTO_INCREMENT PRIMARY KEY , `areaname` VARCHAR( 255 ) NOT NULL , `world` VARCHAR( 255 ) NOT NULL , `x1` INT( 255 ) NOT NULL , `y1` INT( 255 ) NOT NULL , `z1` INT( 255 ) NOT NULL , `x2` INT( 255 ) NOT NULL , `y2` INT( 255 ) NOT NULL , `z2` INT( 255 ) NOT NULL)";
 						}
 						stmt.execute(query);
+				/*
+						//LOAN TABLE
+						query = "CREATE TABLE IF NOT EXISTS `" + SQL_loan_table + "` (`areaname` VARCHAR( 255 ) NOT NULL , `world` VARCHAR( 255 ) NOT NULL , `x1` INT( 255 ) NOT NULL , `y1` INT( 255 ) NOT NULL , `z1` INT( 255 ) NOT NULL , `x2` INT( 255 ) NOT NULL , `y2` INT( 255 ) NOT NULL , `z2` INT( 255 ) NOT NULL)";
+						if (UseMySQL) {
+							consoleWarning("Created table " + SQL_area_table);
+							query = "CREATE TABLE IF NOT EXISTS `" + SQL_area_table + "` (`id` INT( 255 ) NOT NULL AUTO_INCREMENT PRIMARY KEY , `areaname` VARCHAR( 255 ) NOT NULL , `world` VARCHAR( 255 ) NOT NULL , `x1` INT( 255 ) NOT NULL , `y1` INT( 255 ) NOT NULL , `z1` INT( 255 ) NOT NULL , `x2` INT( 255 ) NOT NULL , `y2` INT( 255 ) NOT NULL , `z2` INT( 255 ) NOT NULL)";
+						}
+						stmt.execute(query);
+						//TRANSACTION TABLE
+						query = "CREATE TABLE IF NOT EXISTS `" + SQL_area_table + "` (`areaname` VARCHAR( 255 ) NOT NULL , `world` VARCHAR( 255 ) NOT NULL , `x1` INT( 255 ) NOT NULL , `y1` INT( 255 ) NOT NULL , `z1` INT( 255 ) NOT NULL , `x2` INT( 255 ) NOT NULL , `y2` INT( 255 ) NOT NULL , `z2` INT( 255 ) NOT NULL)";
+						if (UseMySQL) {
+							consoleWarning("Created table " + SQL_area_table);
+							query = "CREATE TABLE IF NOT EXISTS `" + SQL_area_table + "` (`id` INT( 255 ) NOT NULL AUTO_INCREMENT PRIMARY KEY , `areaname` VARCHAR( 255 ) NOT NULL , `world` VARCHAR( 255 ) NOT NULL , `x1` INT( 255 ) NOT NULL , `y1` INT( 255 ) NOT NULL , `z1` INT( 255 ) NOT NULL , `x2` INT( 255 ) NOT NULL , `y2` INT( 255 ) NOT NULL , `z2` INT( 255 ) NOT NULL)";
+						}
+						stmt.execute(query);
+				*/
 					}
 					
 					//Upgrade 0.3c
@@ -414,7 +500,7 @@ public class BankAccount extends JavaPlugin {
 	
 	//ATM / ACCOUNTS
 	
-	public static Boolean accountExists(String accountname) {
+	public Boolean accountExists(String accountname) {
 		ResultSet rs;
 		int id = 0;
 		try {
@@ -432,13 +518,13 @@ public class BankAccount extends JavaPlugin {
 					}
 				}
 			} catch (SQLException e1) {
-				if (e1.getMessage() != null)
+				if (!e1.getMessage().equalsIgnoreCase(null))
 					consoleWarning("Error #014: " + e1.getMessage());
 				else
 					consoleWarning("Error #013: " + e1.getErrorCode() + " - " + e1.getSQLState());
 			}
 		} catch (SQLException e) {
-			if (e.getMessage() != null)
+			if (!e.getMessage().equalsIgnoreCase(null))
 				consoleWarning("Error #012: " + e.getMessage());
 			else
 				consoleWarning("Error #011: " + e.getErrorCode() + " - " + e.getSQLState());
@@ -449,12 +535,12 @@ public class BankAccount extends JavaPlugin {
 		return false;
 	}
 	
-	public static Boolean addAccount(String accountname,String players) {
+	public Boolean addAccount(String accountname,String players) {
 		try {
 			stmt.executeUpdate("INSERT INTO `" + SQL_account_table + "` (`accountname`,`players`) VALUES ('" + accountname + "','" + players + "')");
 			return true;
 		} catch(SQLException e) {
-			if (e.getMessage() != null)
+			if (!e.getMessage().equalsIgnoreCase(null))
 				consoleWarning("Error #022: " + e.getMessage());
 			else
 				consoleWarning("Error #021: " + e.getErrorCode() + " - " + e.getSQLState());
@@ -462,7 +548,7 @@ public class BankAccount extends JavaPlugin {
 		return false;
 	}
 	
-	public static Boolean accessAccount(String accountname,String player) {
+	public Boolean accessAccount(String accountname,String player) {
 		if (SuperAdmins) {
 			return true;
 		}
@@ -477,13 +563,18 @@ public class BankAccount extends JavaPlugin {
 					}
 				}
 			}
+		} catch(SQLException e1) {
+			if (!e1.getMessage().equalsIgnoreCase(null))
+				consoleWarning("Error #033: " + e1.getMessage());
+			else
+				consoleWarning("Error #032: " + e1.getErrorCode() + " - " + e1.getSQLState());
 		} catch(Exception e) {
 			consoleWarning("Error #031: " + e.toString());
 		}
 		return false;
 	}
 
-	public static Boolean addUser(String accountname,String player) {
+	public Boolean addUser(String accountname,String player) {
 		try {
 			String newPlayers = player;
 			ResultSet rs;
@@ -497,16 +588,22 @@ public class BankAccount extends JavaPlugin {
 			try {
 				stmt.executeUpdate("UPDATE `" + SQL_account_table + "` SET `players` = '" + newPlayers + "' WHERE `accountname` = '" + accountname + "'");
 				return true;
-			}catch(Exception e) {
-				consoleWarning("Error #042: " + e.toString());
+			} catch(SQLException e) {
+				if (!e.getMessage().equalsIgnoreCase(null))
+					consoleWarning("Error #044: " + e.getMessage());
+				else
+					consoleWarning("Error #043: " + e.getErrorCode() + " - " + e.getSQLState());
 			}
-		}catch(Exception e) {
-			consoleWarning("Error #041: " + e.toString());
+		} catch(SQLException e) {
+			if (!e.getMessage().equalsIgnoreCase(null))
+				consoleWarning("Error #042: " + e.getMessage());
+			else
+				consoleWarning("Error #041: " + e.getErrorCode() + " - " + e.getSQLState());
 		}
 		return false;
 	}
 	
-	public static Boolean removeUser(String accountname,String player) {
+	public Boolean removeUser(String accountname,String player) {
 		try {
 			String newPlayers = "";
 			ResultSet rs;
@@ -525,49 +622,53 @@ public class BankAccount extends JavaPlugin {
 			try {
 				stmt.executeUpdate("UPDATE `" + SQL_account_table + "` SET `players` = '" + newPlayers + "' WHERE `accountname` = '" + accountname + "'");
 				return true;
-			}catch(Exception e) {
-				consoleWarning("Error #052: " + e.toString());
+			} catch(SQLException e) {
+				if (!e.getMessage().equalsIgnoreCase(null))
+					consoleWarning("Error #054: " + e.getMessage());
+				else
+					consoleWarning("Error #053: " + e.getErrorCode() + " - " + e.getSQLState());
 			}
-		}catch(Exception e) {
-			consoleWarning("Error #051: " + e.toString());
+		} catch(SQLException e) {
+			if (!e.getMessage().equalsIgnoreCase(null))
+				consoleWarning("Error #052: " + e.getMessage());
+			else
+				consoleWarning("Error #051: " + e.getErrorCode() + " - " + e.getSQLState());
 		}
 		return false;
 	}
 
-	public static Boolean setPassword(String accountname,String password) {
+	public Boolean setPassword(String accountname,String password) {
 		try {
 			stmt.executeUpdate("UPDATE `" + SQL_account_table + "` SET `password` = '" + password + "' WHERE `accountname` = '" + accountname + "'");
 			return true;
-		}catch(Exception e) {
-			consoleWarning("Error #061: " + e.toString());
+		} catch(SQLException e) {
+			if (!e.getMessage().equalsIgnoreCase(null))
+				consoleWarning("Error #062: " + e.getMessage());
+			else
+				consoleWarning("Error #061: " + e.getErrorCode() + " - " + e.getSQLState());
 		}
 		return false;
 	}
 
-	@SuppressWarnings("static-access")
-	public static Boolean ATM(String accountname,String player,String type,Double amount,String password) {
+	public Boolean ATM(String accountname,String player,String type,Double amount,String password) {
 		try {
 			double account = getBalance(accountname);
-			Account iConomyAccount = iConomy.getBank().getAccount(player);
+			Account iConomyAccount = com.nijiko.coelho.iConomy.iConomy.getBank().getAccount(player);
 			if (type == "deposit") {
-				double wallet = iConomyAccount.getBalance();
-				if ((wallet - amount) >= 0) {
+				if (iConomyAccount.hasEnough(amount)) {
 					account += amount;
 					stmt.executeUpdate("UPDATE `" + SQL_account_table + "` SET `amount` = '" + account + "' WHERE `accountname` = '" + accountname + "'");
-					iConomyAccount.setBalance(wallet - amount);
-					iConomyAccount.save();
+					iConomyAccount.subtract(amount);
 					return true;
 				} else {
 					return false;
 				}
 			} else if (type == "withdraw") {
 				if (passwordCheck(accountname, password)) {
-					double wallet = iConomyAccount.getBalance();
 					if ((account - amount) >= 0) {
 						account -= amount;
 						stmt.executeUpdate("UPDATE `" + SQL_account_table + "` SET `amount` = '" + account + "' WHERE `accountname` = '" + accountname + "'");
-						iConomyAccount.setBalance(wallet + amount);
-						iConomyAccount.save();
+						iConomyAccount.add(amount);
 						return true;
 					} else {
 						return false;
@@ -592,24 +693,31 @@ public class BankAccount extends JavaPlugin {
 					return false;
 				}
 			}
-		}catch(Exception e) {
+		} catch(SQLException e1) {
+			if (!e1.getMessage().equalsIgnoreCase(null))
+				consoleWarning("Error #073: " + e1.getMessage());
+			else
+				consoleWarning("Error #072: " + e1.getErrorCode() + " - " + e1.getSQLState());
+		} catch(Exception e) {
 			consoleWarning("Error #071: " + e.toString());
 		}
 		return false;
 	}
 	
-	@SuppressWarnings("static-access")
-	public static Boolean closeAccount(String accountname,String player,String password) {
+	public Boolean closeAccount(String accountname,String player,String password) {
 		if (passwordCheck(accountname, password)) {
 			try {
-				Account iConomyAccount = iConomy.getBank().getAccount(player);
-				double wallet = iConomyAccount.getBalance();
+				Account iConomyAccount = com.nijiko.coelho.iConomy.iConomy.getBank().getAccount(player);
 				double accountBalance = getBalance(accountname);
 				stmt.executeUpdate("DELETE FROM `" + SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
-				iConomyAccount.setBalance(wallet + accountBalance);
-				iConomyAccount.save();
+				iConomyAccount.add(accountBalance);
 				return true;
-			}catch(Exception e) {
+			} catch(SQLException e) {
+				if (!e.getMessage().equalsIgnoreCase(null))
+					consoleWarning("Error #083: " + e.getMessage());
+				else
+					consoleWarning("Error #082: " + e.getErrorCode() + " - " + e.getSQLState());
+			} catch(Exception e) {
 				consoleWarning("Error #081: " + e.toString());
 			}
 			return false;
@@ -618,7 +726,7 @@ public class BankAccount extends JavaPlugin {
 		}
 	}
 	
-	public static String getUsers(String accountname) {
+	public String getUsers(String accountname) {
 		try {
 			String output = "";
 			ResultSet rs;
@@ -633,28 +741,75 @@ public class BankAccount extends JavaPlugin {
 				}
 			}
 			return output;
-		}catch(Exception e) {
+		} catch (SQLException e1) {
+			if (!e1.getMessage().equalsIgnoreCase(null))
+				consoleWarning("Error #093: " + e1.getMessage());
+			else
+				consoleWarning("Error #092: " + e1.getErrorCode() + " - " + e1.getSQLState());
+		} catch(Exception e) {
 			consoleWarning("Error #091: " + e.toString());
 		}
 		return "Error loading players";
 	}
 	
-	public static double getBalance(String accountname) {
+	public double getBalance(String accountname) {
 		try {
 			ResultSet rs;
 			rs = stmt.executeQuery("SELECT `amount` FROM `" + SQL_account_table + "` WHERE `accountname` = '" + accountname +"'");
 			while (rs.next()) {
 				return rs.getDouble("amount");
 			}
-		}catch(Exception e) {
-			consoleWarning("Error #091: " + e.toString());
+		} catch (SQLException e1) {
+			if (!e1.getMessage().equalsIgnoreCase(null))
+				consoleWarning("Error #103: " + e1.getMessage());
+			else
+				consoleWarning("Error #102: " + e1.getErrorCode() + " - " + e1.getSQLState());
+		} catch(Exception e) {
+			consoleWarning("Error #101: " + e.toString());
 		}
 		return 0;
 	}
 
+	//LOANS
+	
+	public Boolean haveLoan(String player) {
+		ResultSet rs;
+		int id = 0;
+		try {
+			if (UseMySQL) {
+				rs = stmt.executeQuery("SELECT `id` FROM `" + SQL_loan_table + "` WHERE `player` = '" + player + "'");
+			} else {
+				rs = stmt.executeQuery("SELECT `rowid` FROM `" + SQL_loan_table + "` WHERE `player` = '" + player + "'");
+			}
+			try {
+				while (rs.next()) {
+					if (UseMySQL) {
+						id = rs.getInt("id");
+					} else {
+						id = rs.getInt("rowid");
+					}
+				}
+			} catch (SQLException e1) {
+				if (!e1.getMessage().equalsIgnoreCase(null))
+					consoleWarning("Error #114: " + e1.getMessage());
+				else
+					consoleWarning("Error #113: " + e1.getErrorCode() + " - " + e1.getSQLState());
+			}
+		} catch (SQLException e) {
+			if (!e.getMessage().equalsIgnoreCase(null))
+				consoleWarning("Error #112: " + e.getMessage());
+			else
+				consoleWarning("Error #111: " + e.getErrorCode() + " - " + e.getSQLState());
+		}
+		if (id > 0) {
+			return true;
+		}
+		return false;
+	}
+	
 	//AREAS
 	
-	public static Boolean areaExists(String name) {
+	public Boolean areaExists(String name) {
 		ResultSet rs;
 		int id = 0;
 		try {
@@ -672,13 +827,13 @@ public class BankAccount extends JavaPlugin {
 					}
 				}
 			} catch (SQLException e1) {
-				if (e1.getMessage() != null)
+				if (!e1.getMessage().equalsIgnoreCase(null))
 					consoleWarning("Error #144: " + e1.getMessage());
 				else
 					consoleWarning("Error #143: " + e1.getErrorCode() + " - " + e1.getSQLState());
 			}
 		} catch (SQLException e) {
-			if (e.getMessage() != null)
+			if (!e.getMessage().equalsIgnoreCase(null))
 				consoleWarning("Error #142: " + e.getMessage());
 			else
 				consoleWarning("Error #141: " + e.getErrorCode() + " - " + e.getSQLState());
@@ -711,12 +866,15 @@ public class BankAccount extends JavaPlugin {
 				}
 			}
 		} catch(SQLException e) {
-			consoleWarning("Error #151: " + e.toString());
+			if (!e.getMessage().equalsIgnoreCase(null))
+				consoleWarning("Error #152: " + e.getMessage());
+			else
+				consoleWarning("Error #151: " + e.getErrorCode() + " - " + e.getSQLState());
 		}
 		return false;
 	}
 	
-	public static Boolean setArea(String name,Location pos1,Location pos2,String world) {
+	public Boolean setArea(String name,Location pos1,Location pos2,String world) {
 		if (areaExists(name)) {
 			return false;
 		}
@@ -724,17 +882,23 @@ public class BankAccount extends JavaPlugin {
 			stmt.executeUpdate("INSERT INTO `" + SQL_area_table + "` (`areaname`,`world`,`x1`, `y1`, `z1`, `x2`, `y2`, `z2`) VALUES ('" + name + "','" + world + "','" + pos1.getBlockX() + "','" + pos1.getBlockY() + "','" + pos1.getBlockZ() + "','" + pos2.getBlockX() + "','" + pos2.getBlockY() + "','" + pos2.getBlockZ() + "')");
 			return true;
 		} catch(SQLException e) {
-			consoleWarning("Error #122: " + e.toString());
+			if (!e.getMessage().equalsIgnoreCase(null))
+				consoleWarning("Error #122: " + e.getMessage());
+			else
+				consoleWarning("Error #121: " + e.getErrorCode() + " - " + e.getSQLState());
 		}
 		return false;
 	}
 
-	public static Boolean removeArea(String name) {
+	public Boolean removeArea(String name) {
 		try {
 			stmt.executeUpdate("DELETE FROM `" + SQL_area_table + "` WHERE `areaname` = '" + name + "'");
 			return true;
 		} catch(SQLException e) {
-			consoleWarning("Error #132: " + e.toString());
+			if (!e.getMessage().equalsIgnoreCase(null))
+				consoleWarning("Error #133: " + e.getMessage());
+			else
+				consoleWarning("Error #132: " + e.getErrorCode() + " - " + e.getSQLState());
 		} catch (Exception e) {
 			consoleWarning("Error #131: " + e.toString());
 		}
@@ -743,7 +907,7 @@ public class BankAccount extends JavaPlugin {
 	
 	//PASSWORDS
 	
-	public static Boolean passwordCheck(String accountname,String password) {
+	public Boolean passwordCheck(String accountname,String password) {
 		String CryptPassword = passwordCrypt(password);
 		try {
 			ResultSet rs;
@@ -755,13 +919,18 @@ public class BankAccount extends JavaPlugin {
 					return true;
 				}
 			}
-		}catch(Exception e) {
-			consoleWarning("Error #101: " + e.toString());
+		} catch(SQLException e) {
+			if (!e.getMessage().equalsIgnoreCase(null))
+				consoleWarning("Error #203: " + e.getMessage());
+			else
+				consoleWarning("Error #202: " + e.getErrorCode() + " - " + e.getSQLState());
+		} catch(Exception e) {
+			consoleWarning("Error #201: " + e.toString());
 		}
 		return false;
 	}
 	
-	public static String passwordCrypt(String password) {
+	public String passwordCrypt(String password) {
 		byte[] temp = password.getBytes();
 		MessageDigest md;
 		try {
@@ -771,12 +940,12 @@ public class BankAccount extends JavaPlugin {
 			password = bytesToHex(output);
 			return password;
 		} catch (NoSuchAlgorithmException e) {
-			BankAccount.consoleWarning("Error #111: Couldn't crypt password");
+			consoleWarning("Error #211: Couldn't crypt password");
 			return "Error";
 		}
 	}
 
-	public static String bytesToHex(byte[] b) {
+	public String bytesToHex(byte[] b) {
 		char hexDigit[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 		StringBuffer buf = new StringBuffer();
 		for (int j=0; j<b.length; j++) {
