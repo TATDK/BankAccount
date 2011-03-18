@@ -127,28 +127,6 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   					} else {
   						sender.sendMessage("ATM: " + ChatColor.RED + "You don't have access to this account!");
   					}
-  				} else if (args[0].equalsIgnoreCase("transfer") && args.length >= 4) {
-  					if (!locationCheck) {
-  						sender.sendMessage("ATM: You're not in bank area");
-  						return true;
-  					}
-  					if (BankAccount.accessAccount(args[1], sendername)) {
-  						if (BankAccount.accountExists(args[2])) {
-							String password = "";
-							if (args.length >= 5) {
-								password = args[4];
-							}
-							if (BankAccount.ATM(args[1], args[2], "transfer", Double.parseDouble(args[3]), password)) {
-								sender.sendMessage("ATM: " + ChatColor.GREEN + iConomy.getBank().format(Double.parseDouble(args[3])) + " transfered from " + args[1] + " to " + args[2]);
-							} else {
-								sender.sendMessage("ATM: " + ChatColor.RED + "Couldn't transfer, are you sure you have enough money on account?");
-							}
-  						} else {
-  							sender.sendMessage("ATM: " + ChatColor.RED + "Reciever account not found!");
-  						}
-  					} else {
-  						sender.sendMessage("ATM: " + ChatColor.RED + "You don't have access to this account!");
-  					}
   				} else if (args[0].equalsIgnoreCase("deposit") && args.length >= 3) {
   					if (!locationCheck) {
   						sender.sendMessage("ATM: You're not in bank area");
@@ -178,6 +156,50 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   							sender.sendMessage("ATM: " + ChatColor.GREEN + iConomy.getBank().format(Double.parseDouble(args[2])) + " " + iConomy.getBank().getCurrency() + " withdrawed from " + args[1]);
   						} else {
   							sender.sendMessage("ATM: " + ChatColor.RED + "Couldn't withdraw, are you sure you have enough money on account?");
+  						}
+  					} else {
+  						sender.sendMessage("ATM: " + ChatColor.RED + "You don't have access to this account!");
+  					}
+  				} else if (args[0].equalsIgnoreCase("transfer") && args.length >= 4) {
+  					if (!locationCheck) {
+  						sender.sendMessage("ATM: You're not in bank area");
+  						return true;
+  					}
+  					if (BankAccount.accessAccount(args[1], sendername)) {
+  						if (BankAccount.accountExists(args[2])) {
+							String password = "";
+							if (args.length >= 5) {
+								password = args[4];
+							}
+							if (BankAccount.ATM(args[1], args[2], "transfer", Double.parseDouble(args[3]), password)) {
+								sender.sendMessage("ATM: " + ChatColor.GREEN + iConomy.getBank().format(Double.parseDouble(args[3])) + " transfered from " + args[1] + " to " + args[2]);
+							} else {
+								sender.sendMessage("ATM: " + ChatColor.RED + "Couldn't transfer, are you sure you have enough money on account?");
+							}
+  						} else {
+  							sender.sendMessage("ATM: " + ChatColor.RED + "Reciever account not found!");
+  						}
+  					} else {
+  						sender.sendMessage("ATM: " + ChatColor.RED + "You don't have access to this account!");
+  					}
+  				} else if (args[0].equalsIgnoreCase("loan") && args.length >= 4) {
+  					if (!locationCheck) {
+  						sender.sendMessage("ATM: You're not in bank area");
+  						return true;
+  					}
+  					if (BankAccount.accessAccount(args[1], sendername)) {
+  						if (BankAccount.accountExists(args[2])) {
+							String password = "";
+							if (args.length >= 4) {
+								password = args[3];
+							}
+							/*if (BankAccount.ATM(args[1], "transfer", Double.parseDouble(args[2]), password)) {
+								sender.sendMessage("ATM: " + ChatColor.GREEN + iConomy.getBank().format(Double.parseDouble(args[3])) + " transfered from " + args[1] + " to " + args[2]);
+							} else {
+								sender.sendMessage("ATM: " + ChatColor.RED + "Couldn't transfer, are you sure you have enough money on account?");
+							}*/
+  						} else {
+  							sender.sendMessage("ATM: " + ChatColor.RED + "Reciever account not found!");
   						}
   					} else {
   						sender.sendMessage("ATM: " + ChatColor.RED + "You don't have access to this account!");
@@ -276,6 +298,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
 		case 2:
 			player.sendMessage(ChatColor.RED + "/account withdraw <accountname> <amount> [password]");
 			player.sendMessage(ChatColor.RED + "/account transfer <from account> <to account> <amount> [password]");
+			player.sendMessage(ChatColor.RED + "/account loan <account> <amount> [password]");
 			player.sendMessage(ChatColor.RED + "/account close <accountname> [password]");
 			if (plugin.playerIsAdmin((Player)player) > 0) {
 				player.sendMessage(ChatColor.RED + "/account select");

@@ -39,7 +39,7 @@ public class BankAccount extends JavaPlugin {
 	//System
 	protected static final Logger log = Logger.getLogger("Minecraft");
 	private static PluginDescriptionFile pdfFile;
-	private static File myFolder;
+	private File myFolder;
 	public Configuration config;
 	private int interestTime;
 	private double interestAmount;
@@ -62,9 +62,9 @@ public class BankAccount extends JavaPlugin {
 	public static com.nijiko.coelho.iConomy.iConomy iConomy;
 	private boolean useiConomy = false;
 	//Permissions
-	private static boolean UseOP = true;
+	private boolean UseOP = true;
 	public Permissions Permissions = null;
-	private static boolean UsePermissions = false;
+	private boolean UsePermissions = false;
 	public boolean Global;
 	public static boolean SuperAdmins;
 

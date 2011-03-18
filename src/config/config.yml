@@ -65,3 +65,12 @@ AreaWandId: 339
 Interest:
     Time: 5
     Amount: 0.1
+
+##
+#Loan settings
+#Active: true = activate // false = deactivate
+#Fixed-rate: 0 = no fixed rate // > 0 = fixed rate set to value
+##
+Loan:
+    Active: false
+    Fixed-rate: 0
