@@ -14,20 +14,23 @@ public class BankAccountCommandExecutor implements CommandExecutor {
 		plugin = instantiate;
 	}
 
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-    	String sendername = ((Player)sender).getName();
-    	if (label.equalsIgnoreCase("account")) {
-    		//LocationCheck: Are you in bankarea?
-      		boolean locationCheck = false;
-  	    	if (!plugin.Global) {
-  	    		if (plugin.inArea(((Player)sender).getWorld().getName(), ((Player)sender).getLocation())) {
-  	    			locationCheck = true;
-  	    		}
-  	    	} else {
-  	    		locationCheck = true;
-  	    	}
-  	    	
-  			if (args.length > 0) {
+	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+		String sendername = ((Player)sender).getName();
+		if (label.equalsIgnoreCase("account")) {
+			if (!plugin.playerIsUser(((Player)sender)) && !plugin.playerIsAdmin(((Player)sender))) {
+				sender.sendMessage("You don't have access to use BankAccount");
+			}
+			//LocationCheck: Are you in bankarea?
+	  		boolean locationCheck = false;
+	  		if (!plugin.Global) {
+  				if (plugin.inArea(((Player)sender).getWorld().getName(), ((Player)sender).getLocation())) {
+  					locationCheck = true;
+  				}
+  			} else {
+  				locationCheck = true;
+  			}
+  			
+	  		if (args.length > 0) {
   				if (args[0].equalsIgnoreCase("open") && args.length >= 2) {
   					if (!locationCheck) {
   						sender.sendMessage("ATM: You're not in bank area");
@@ -201,7 +204,10 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   						sender.sendMessage("ATM: You're not in bank area");
   						return true;
   					}
-  					if (plugin.haveLoan(sendername)) {
+  					if (!plugin.LoanActive) {
+  						sender.sendMessage("ATM: Loans not activated");
+  					}
+  					if (!plugin.haveLoan(sendername)) {
   						//plugin.addTransaction(sendername, null, BankAccount.TransactionTypes.LOAN_START, Double.parseDouble(args[?]));
   						/*if (plugin.accountExists(args[2])) {
   							String password = "";
@@ -296,11 +302,11 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   			return true;
   		}
 		return false;
-    }
-    
-    public void showHelp(CommandSender player, int Page) {
-    	player.sendMessage(ChatColor.DARK_RED + "Bank Account Help - Page " + Page + " of 2");
-    	player.sendMessage(ChatColor.DARK_GREEN + "This is used mainly to shared bank accounts");
+	}
+	
+	public void showHelp(CommandSender player, int Page) {
+		player.sendMessage(ChatColor.DARK_RED + "Bank Account Help - Page " + Page + " of 2");
+		player.sendMessage(ChatColor.DARK_GREEN + "This is used mainly to shared bank accounts");
 		switch (Page) {
 		case 1:
 			player.sendMessage(ChatColor.RED + "/account help [page]");
@@ -315,7 +321,9 @@ public class BankAccountCommandExecutor implements CommandExecutor {
 		case 2:
 			player.sendMessage(ChatColor.RED + "/account withdraw <accountname> <amount> [password]");
 			player.sendMessage(ChatColor.RED + "/account transfer <from account> <to account> <amount> [password]");
-			player.sendMessage(ChatColor.RED + "/account loan <account> <amount> [password]");
+			if (plugin.LoanActive) {
+				player.sendMessage(ChatColor.RED + "/account loan <account> <amount> [password]");
+			}
 			player.sendMessage(ChatColor.RED + "/account close <accountname> [password]");
 			if (plugin.playerIsAdmin((Player)player)) {
 				player.sendMessage(ChatColor.RED + "/account select");
@@ -324,5 +332,5 @@ public class BankAccountCommandExecutor implements CommandExecutor {
 			}
 			break;
 		}
-    }
+	}
 }

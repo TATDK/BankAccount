@@ -80,7 +80,14 @@ Interest:
 #Loan settings
 #Active: true = activate // false = deactivate
 #Fixed-rate: 0 = no fixed rate // > 0 = fixed rate set to value
+#Rate: Variable rates (only if fixed-rate is set to zero)
+#Max-amount: 0.00 = No limit // > 0.00 = Highest amount that can be borrowed at a time (Note: only 1 loan at a time)
 ##
 Loan:
     Active: false
-    Fixed-rate: 0
+    Fixed-rate: 0.00
+    Rate:
+        50: 0.1
+        100: 0.3
+        200: 0.5
+    Max-amount: 200
