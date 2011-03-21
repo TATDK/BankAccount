@@ -1,7 +1,0 @@
-name: BankAccount
-main: dk.earthgame.TAT.BankAccount.BankAccount
-version: 0.4INDEV
-commands:
-    account:
-        description: Shared Bank Accounts
-        usage: /account help - Show help to BankAccount

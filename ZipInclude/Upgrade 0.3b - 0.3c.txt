@@ -1,7 +1,0 @@
-*****************************
-     UPGRADE 0.3b => 0.3c
-*****************************
-Add a new file "SQLUpgrade03c" in /plugins/BankAccount
-It doesn't need any content, it just need to exists
-Then run/restart the server, the server will now update your MySQL or SQLite to v. 0.3c
-The server will try to delete the file after upgrade, if it isn't deleted, please do this yourself.
