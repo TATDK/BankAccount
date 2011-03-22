@@ -75,6 +75,7 @@ public class BankAccount extends JavaPlugin {
 	public boolean Global;
 	public boolean SuperAdmins;
 	//Loans
+	private HashMap<String,Loans> Loans = new HashMap<String,Loans>();
 	public boolean LoanActive;
 	private double Loan_fixed_rate;
     private Map<Double, Double> Loan_rates = new HashMap<Double, Double>();
@@ -857,28 +858,19 @@ public class BankAccount extends JavaPlugin {
 
 	//LOANS
 	
-	public boolean haveLoan(String player) {
+	Loans getLoan(Player player) {
+		if (Loans.containsKey(player.getName())) {
+			return Loans.get(player.getName());
+		}
+		return null;
+	}
+	
+	public void startupLoan() {
 		ResultSet rs;
-		int id = 0;
 		try {
-			if (UseMySQL) {
-				rs = stmt.executeQuery("SELECT `id` FROM `" + SQL_loan_table + "` WHERE `player` = '" + player + "'");
-			} else {
-				rs = stmt.executeQuery("SELECT `rowid` FROM `" + SQL_loan_table + "` WHERE `player` = '" + player + "'");
-			}
-			try {
-				while (rs.next()) {
-					if (UseMySQL) {
-						id = rs.getInt("id");
-					} else {
-						id = rs.getInt("rowid");
-					}
-				}
-			} catch (SQLException e1) {
-				if (!e1.getMessage().equalsIgnoreCase(null))
-					consoleWarning("Error #11-4: " + e1.getMessage());
-				else
-					consoleWarning("Error #11-3: " + e1.getErrorCode() + " - " + e1.getSQLState());
+			rs = stmt.executeQuery("SELECT `player`,`amount`,`rate` FROM `" + SQL_loan_table + "`");
+			while (rs.next()) {
+				addLoan(rs.getString("player"), rs.getDouble("amount"));
 			}
 		} catch (SQLException e) {
 			if (!e.getMessage().equalsIgnoreCase(null))
@@ -886,10 +878,6 @@ public class BankAccount extends JavaPlugin {
 			else
 				consoleWarning("Error #11-1: " + e.getErrorCode() + " - " + e.getSQLState());
 		}
-		if (id > 0) {
-			return true;
-		}
-		return false;
 	}
 	
 	public boolean addLoan(String player,Double amount) {

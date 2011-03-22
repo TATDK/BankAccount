@@ -13,7 +13,7 @@ ID       Function
 08       closeAccount
 09       getUsers
 10       getBalance
-11       haveLoan
+11       startupLoan
 12       setArea
 13       removeArea
 14       areaExists
@@ -59,10 +59,8 @@ Error code    Function        Description
 #10-1         getBalance      Exception error
 #10-2         getBalance      SQLException error - Response type 1
 #10-3         getBalance      SQLException error - Response type 2
-#11-1         haveLoan        Error lookup loan - Response type 1
-#11-2         haveLoan        Error lookup loan - Response type 2
-#11-3         haveLoan        Error getting ID - Response type 1
-#11-4         haveLoan        Error getting ID - Response type 2
+#11-1         haveLoan        Error lookup loans - Response type 1
+#11-2         haveLoan        Error lookup loans - Response type 2
 #12-1         setArea         Error lookup areas - Response type 1
 #12-2         setArea         Error lookup areas - Response type 2
 #13-1         removeArea      Exception error

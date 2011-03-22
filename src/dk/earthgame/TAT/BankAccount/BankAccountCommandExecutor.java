@@ -207,7 +207,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   					if (!plugin.LoanActive) {
   						sender.sendMessage("ATM: Loans not activated");
   					}
-  					if (!plugin.haveLoan(sendername)) {
+  					if (plugin.getLoan(sendername) != null) {
   						//plugin.addTransaction(sendername, null, BankAccount.TransactionTypes.LOAN_START, Double.parseDouble(args[?]));
   						/*if (plugin.accountExists(args[2])) {
   							String password = "";
