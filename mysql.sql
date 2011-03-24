@@ -19,9 +19,10 @@ CREATE TABLE `bankareas` (
 CREATE TABLE `bankloans` (
   `id` INT( 255 ) NOT NULL AUTO_INCREMENT PRIMARY KEY ,
   `player` VARCHAR( 255 ) NOT NULL,
-  `amount` DOUBLE( 255,2 ) NOT NULL,
-  `totaltime` INT( 255 ) NOT NULL,
-  `timeleft` INT( 255 ) NOT NULL
+  `totalamount` DOUBLE( 255,2 ) NOT NULL,
+  `timeleft` INT( 255 ) NOT NULL,
+  `part` INT( 255 ) NOT NULL,
+  `parts` INT( 255 ) NOT NULL
 )
 CREATE TABLE `banktransactions` (
   `id` INT( 255 ) NOT NULL AUTO_INCREMENT PRIMARY KEY ,

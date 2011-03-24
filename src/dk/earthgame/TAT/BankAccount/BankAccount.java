@@ -49,6 +49,7 @@ public class BankAccount extends JavaPlugin {
 	private int interestJobId;
 	private HashMap<String,UserSaves> UserSaves = new HashMap<String,UserSaves>();
 	private int areaWandId;
+	LoanSystem LoanSystem = new LoanSystem(this);
 	//MySQL
 	private boolean UseMySQL = false;
 	private String MySQL_host;
@@ -59,10 +60,10 @@ public class BankAccount extends JavaPlugin {
 	//SQL
 	public Connection con;
 	public java.sql.Statement stmt;
-	private String SQL_account_table;
-	private String SQL_area_table;
-	private String SQL_loan_table;
-	private String SQL_transaction_table;
+	String SQL_account_table;
+	String SQL_area_table;
+	String SQL_loan_table;
+	String SQL_transaction_table;
 	//iConomy
 	public com.nijiko.coelho.iConomy.iConomy iConomy;
 	private boolean useiConomy;
@@ -74,12 +75,6 @@ public class BankAccount extends JavaPlugin {
 	private boolean UseGroupManager;
 	public boolean Global;
 	public boolean SuperAdmins;
-	//Loans
-	private HashMap<String,Loans> Loans = new HashMap<String,Loans>();
-	public boolean LoanActive;
-	private double Loan_fixed_rate;
-    private Map<Double, Double> Loan_rates = new HashMap<Double, Double>();
-	private Double Loan_max_amount;
 	//Transaction
 	private boolean Transactions;
 	public enum TransactionTypes {
@@ -153,11 +148,11 @@ public class BankAccount extends JavaPlugin {
 	
 	//SYSTEM
 	
-	private void consoleLog(String string) {
+	void consoleLog(String string) {
 		log.info(pdfFile.getName() + ": " + string);
 	}
 
-	private void consoleWarning(String string) {
+	void consoleWarning(String string) {
 		log.warning(pdfFile.getName() + ": " + string);
 	}
 	
@@ -245,6 +240,7 @@ public class BankAccount extends JavaPlugin {
 		if (interestJobId > 0) {
 			this.getServer().getScheduler().cancelTask(interestJobId);
 		}
+		interestJobId = 0;
 		getCommand("account").setExecutor(new BankAccountDisabled(this));
 		getCommand("account").setUsage(ChatColor.RED + "BankAccount is disabled");
 		log.info(pdfFile.getName() + " is disabled!" );
@@ -309,12 +305,20 @@ public class BankAccount extends JavaPlugin {
 		Global = config.getBoolean("Global",true);
 		areaWandId = config.getInt("AreaWandid",339);
 		//Loan
-		LoanActive = config.getBoolean("Loan.Active", false);
-		Loan_fixed_rate = config.getDouble("Loan.Fixed-rate", 0.00);
-		Loan_rates = (Map<Double, Double>)config.getProperty("Loan.Rate");
-		Loan_max_amount = config.getDouble("Loan.Max-amount", 200.00);
+		LoanSystem.LoanActive = config.getBoolean("Loan.Active", false);
+		LoanSystem.Fixed_rate = config.getDouble("Loan.Fixed-rate", 0.00);
+		LoanSystem.Rates = (Map<Double, Double>)config.getProperty("Loan.Rate");
+		LoanSystem.Max_amount = config.getDouble("Loan.Max-amount", 200.00);
+		LoanSystem.PaymentTime = config.getInt("Loan.Payment-time", 60);
+		LoanSystem.PaymentParts = config.getInt("Loan.Payment-parts", 3);
 		//Other
 		Transactions = config.getBoolean("Transactions", false);
+		
+		if (LoanSystem.LoanActive) {
+			LoanSystem.startupRunner();
+		} else {
+			LoanSystem.shutdownRunner();
+		}
 		
 		if (interestTime > 0) {
 			if (interestJobId > 0) {
@@ -852,59 +856,6 @@ public class BankAccount extends JavaPlugin {
 				consoleWarning("Error #19-2: " + e.getMessage());
 			else
 				consoleWarning("Error #19-1: " + e.getErrorCode() + " - " + e.getSQLState());
-		}
-		return false;
-	}
-
-	//LOANS
-	
-	Loans getLoan(Player player) {
-		if (Loans.containsKey(player.getName())) {
-			return Loans.get(player.getName());
-		}
-		return null;
-	}
-	
-	public void startupLoan() {
-		ResultSet rs;
-		try {
-			rs = stmt.executeQuery("SELECT `player`,`amount`,`rate` FROM `" + SQL_loan_table + "`");
-			while (rs.next()) {
-				addLoan(rs.getString("player"), rs.getDouble("amount"));
-			}
-		} catch (SQLException e) {
-			if (!e.getMessage().equalsIgnoreCase(null))
-				consoleWarning("Error #11-2: " + e.getMessage());
-			else
-				consoleWarning("Error #11-1: " + e.getErrorCode() + " - " + e.getSQLState());
-		}
-	}
-	
-	public boolean addLoan(String player,Double amount) {
-		Account iConomyAccount = com.nijiko.coelho.iConomy.iConomy.getBank().getAccount(player);
-		if (!iConomyAccount.isNegative() && amount <= Loan_max_amount) {
-			try {
-				Double rate = 0.00;
-				if (Loan_fixed_rate == 0.00) {
-					for (Double RateAmount : Loan_rates.keySet()) {
-						if (RateAmount <= amount) {
-							rate = Loan_rates.get(RateAmount);
-						}
-					}
-				} else {
-					rate = Loan_fixed_rate;
-				}
-				amount *= (1+rate);
-				stmt.executeUpdate("INSERT INTO `" + SQL_loan_table + "` (`player`,`amount`) VALUES ('" + player + "','" + amount + "')");
-				iConomyAccount.add(amount);
-				return true;
-			} catch(SQLException e) {
-				if (!e.getMessage().equalsIgnoreCase(null))
-					consoleWarning("Error #02-2: " + e.getMessage());
-				else
-					consoleWarning("Error #02-1: " + e.getErrorCode() + " - " + e.getSQLState());
-			}
-			return false;
 		}
 		return false;
 	}

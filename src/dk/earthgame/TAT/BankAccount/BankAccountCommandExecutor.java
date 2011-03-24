@@ -204,10 +204,10 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   						sender.sendMessage("ATM: You're not in bank area");
   						return true;
   					}
-  					if (!plugin.LoanActive) {
+  					if (!plugin.LoanSystem.LoanActive) {
   						sender.sendMessage("ATM: Loans not activated");
   					}
-  					if (plugin.getLoan((Player)sender) != null) {
+  					if (!plugin.LoanSystem.haveLoan((Player)sender)) {
   						//plugin.addTransaction(sendername, null, BankAccount.TransactionTypes.LOAN_START, Double.parseDouble(args[?]));
   						/*if (plugin.accountExists(args[2])) {
   							String password = "";
@@ -321,7 +321,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
 		case 2:
 			player.sendMessage(ChatColor.RED + "/account withdraw <accountname> <amount> [password]");
 			player.sendMessage(ChatColor.RED + "/account transfer <from account> <to account> <amount> [password]");
-			if (plugin.LoanActive) {
+			if (plugin.LoanSystem.LoanActive) {
 				player.sendMessage(ChatColor.RED + "/account loan <account> <amount> [password]");
 			}
 			player.sendMessage(ChatColor.RED + "/account close <accountname> [password]");

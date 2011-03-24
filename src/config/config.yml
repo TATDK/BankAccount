@@ -80,8 +80,13 @@ Interest:
 #Loan settings
 #Active: true = activate // false = deactivate
 #Fixed-rate: 0 = no fixed rate // > 0 = fixed rate set to value
-#Rate: Variable rates (only if fixed-rate is set to zero)
+#Rate: Variable rates after amount loaned (only if fixed-rate is set to zero)
 #Max-amount: 0.00 = No limit // > 0.00 = Highest amount that can be borrowed at a time (Note: only 1 loan at a time)
+#Payment-time: 0 = No deadline // > 0 = Deadline x minutes after loan taken (20 minutes = 1 Minecraft day)
+#Payment-parts: Split the payment up in x parts
+#    Example: Payment-time: 60, Payment-parts: 3
+#             The money must be paid back after 60 minutes (3 Minecraft days)
+#             The money will be split in 3 parts and after 60/3 = 20 minutes (1 Minecraft day) the first part will be paid automatically 
 ##
 Loan:
     Active: false
@@ -91,3 +96,5 @@ Loan:
         100: 0.3
         200: 0.5
     Max-amount: 200
+    Payment-time: 60
+    Payment-parts: 3
