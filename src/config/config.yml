@@ -81,6 +81,10 @@ Interest:
 #Active: true = activate // false = deactivate
 #Fixed-rate: 0 = no fixed rate // > 0 = fixed rate set to value
 #Rate: Variable rates after amount loaned (only if fixed-rate is set to zero)
+#    Example: 0.01: 0.05
+#             50.01: 0.10
+#             Loans from 0.01 => 50.00 there there will be a rate on 0.05
+#             Loans from 50.01 => Max_amount there will be a rate on 0.10
 #Max-amount: 0.00 = No limit // > 0.00 = Highest amount that can be borrowed at a time (Note: only 1 loan at a time)
 #Payment-time: 0 = No deadline // > 0 = Deadline x minutes after loan taken (20 minutes = 1 Minecraft day)
 #Payment-parts: Split the payment up in x parts
@@ -92,9 +96,10 @@ Loan:
     Active: false
     Fixed-rate: 0.00
     Rate:
-        50: 0.1
-        100: 0.3
-        200: 0.5
+        0.01: 0.05
+        50.01: 0.10
+        100.01: 0.30
+        200.01: 0.50
     Max-amount: 200
     Payment-time: 60
     Payment-parts: 3

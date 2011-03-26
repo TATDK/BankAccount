@@ -8,6 +8,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -20,6 +21,8 @@ import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event.Type;
 import org.bukkit.event.block.BlockListener;
 import org.bukkit.event.block.BlockRightClickEvent;
+import org.bukkit.event.server.PluginEvent;
+import org.bukkit.event.server.ServerListener;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
@@ -203,23 +206,52 @@ public class BankAccount extends JavaPlugin {
 		
 		BlockListener rightClickListener = new BlockListener() {
 			@Override
-            public void onBlockRightClick(BlockRightClickEvent event) {
-				UserSaves mySave = getSaved(event.getPlayer());
+			public void onBlockRightClick(BlockRightClickEvent event) {
+				UserSaves mySave = getSaved(event.getPlayer().getName());
 				if (event.getPlayer().getItemInHand().getTypeId() == areaWandId && mySave.selecting) {
-		        	World world = event.getBlock().getWorld();
-		    		Location pos = event.getBlock().getLocation();
-		    		world.getBlockAt(pos);
-		        	if (mySave.setPosition(pos) == 2) {
-		        		event.getPlayer().sendMessage("ATM: Area selected, to confirm: /account setarea <areaname>");
-		        	} else {
-		        		event.getPlayer().sendMessage("ATM: Position 1 selected, please select position 2");
-		        	}
-		        }
-            }
+					World world = event.getBlock().getWorld();
+					Location pos = event.getBlock().getLocation();
+					world.getBlockAt(pos);
+					if (mySave.setPosition(pos) == 2) {
+						event.getPlayer().sendMessage("ATM: Area selected, to confirm: /account setarea <areaname>");
+					} else {
+						event.getPlayer().sendMessage("ATM: Position 1 selected, please select position 2");
+					}
+				}
+			}
+		};
+		
+		ServerListener pluginListener = new ServerListener() {
+			public void onPluginEnabled(PluginEvent event) {
+				if (iConomy != null && !LoanSystem.running) {
+					if (iConomy.isEnabled()) {
+						iConomy = (iConomy)iConomy;
+						if (LoanSystem.LoanActive) {
+							LoanSystem.startupRunner();
+						}
+						consoleLog("Established connection with iConomy!");
+					}
+				}
+			}
+
+			public void onPluginDisabled(PluginEvent event) {
+				if (iConomy != null) {
+					String plugin = event.getPlugin().getDescription().getName();
+
+					if (plugin.equals("iConomy")) {
+						iConomy = null;
+						if (LoanSystem.LoanActive) {
+							LoanSystem.shutdownRunner();
+						}
+						consoleWarning("Lost connection with iConomy!");
+					}
+				}
+			}
 		};
 		
 		PluginManager pm = getServer().getPluginManager();
 		pm.registerEvent(Type.BLOCK_RIGHTCLICKED, rightClickListener, Priority.Normal, this);
+		pm.registerEvent(Type.PLUGIN_ENABLE, pluginListener, Priority.Low, this);
 		
 		pdfFile = this.getDescription();
 		log.info(pdfFile.getName() + " version " + pdfFile.getVersion() + " is enabled!" );
@@ -249,7 +281,8 @@ public class BankAccount extends JavaPlugin {
 	public void addTransaction(String player, String account, TransactionTypes type, Double amount) {
 		if (Transactions) {
 			try {
-				stmt.executeUpdate("INSERT INTO `" + SQL_transaction_table + "` (`player`,`account`,`type`,`amount`) VALUES ('" + player + "','" + account + "','" + type.get() + "','" + amount + "')");
+				int time = Math.round(new Date().getTime()/1000);
+				stmt.executeUpdate("INSERT INTO `" + SQL_transaction_table + "` (`player`,`account`,`type`,`amount`,`time`) VALUES ('" + player + "','" + account + "','" + type.get() + "','" + amount + "','" + time +"')");
 			} catch(SQLException e) {
 				if (!e.getMessage().equalsIgnoreCase(null))
 					consoleWarning("Error #16-2: " + e.getMessage());
@@ -261,13 +294,13 @@ public class BankAccount extends JavaPlugin {
 	
 	//CONFIGURATION AND USERSAVES
 	
-	UserSaves getSaved(Player player) {
-		if (UserSaves.containsKey(player.getName())) {
-			return UserSaves.get(player.getName());
+	UserSaves getSaved(String player) {
+		if (UserSaves.containsKey(player)) {
+			return UserSaves.get(player);
 		}
 		
 		UserSaves save = new UserSaves();
-		UserSaves.put(player.getName(), save);
+		UserSaves.put(player, save);
 		return save;
 	}
 	
@@ -314,12 +347,6 @@ public class BankAccount extends JavaPlugin {
 		//Other
 		Transactions = config.getBoolean("Transactions", false);
 		
-		if (LoanSystem.LoanActive) {
-			LoanSystem.startupRunner();
-		} else {
-			LoanSystem.shutdownRunner();
-		}
-		
 		if (interestTime > 0) {
 			if (interestJobId > 0) {
 				this.getServer().getScheduler().cancelTask(interestJobId);
@@ -363,7 +390,7 @@ public class BankAccount extends JavaPlugin {
 						consoleWarning("Couldn't execute interest");
 						consoleLog(e.toString());
 					}
-					consoleLog("Total given " + totalGiven + " " + com.nijiko.coelho.iConomy.iConomy.getBank().getCurrency() + " in interest");
+					consoleLog("Total given " + String.format("%.2g%", totalGiven) + " " + com.nijiko.coelho.iConomy.iConomy.getBank().getCurrency() + " in interest");
 				}
 			}, interestTime*20*60, interestTime*20*60);
 			consoleLog("Running interest every " + interestTime + " minutes by " + interestAmount + "%");
@@ -430,14 +457,12 @@ public class BankAccount extends JavaPlugin {
 					}
 					if (!checkLoan) {
 						//LOAN TABLE
-				/*
-						query = "CREATE TABLE IF NOT EXISTS `" + SQL_loan_table + "` (`areaname` VARCHAR( 255 ) NOT NULL , `world` VARCHAR( 255 ) NOT NULL , `x1` INT( 255 ) NOT NULL , `y1` INT( 255 ) NOT NULL , `z1` INT( 255 ) NOT NULL , `x2` INT( 255 ) NOT NULL , `y2` INT( 255 ) NOT NULL , `z2` INT( 255 ) NOT NULL)";
+						String query = "CREATE TABLE IF NOT EXISTS `" + SQL_loan_table + "` (`player` VARCHAR( 255 ) NOT NULL, `totalamount` DOUBLE( 255,2 ) NOT NULL, `timepayment` INT( 255 ) NOT NULL, `timeleft` INT( 255 ) NOT NULL, `part` INT( 255 ) NOT NULL, `parts` INT( 255 ) NOT NULL)";
 						if (UseMySQL) {
 							consoleWarning("Created table " + SQL_loan_table);
-							query = "CREATE TABLE IF NOT EXISTS `" + SQL_loan_table + "` (`id` INT( 255 ) NOT NULL AUTO_INCREMENT PRIMARY KEY , `areaname` VARCHAR( 255 ) NOT NULL , `world` VARCHAR( 255 ) NOT NULL , `x1` INT( 255 ) NOT NULL , `y1` INT( 255 ) NOT NULL , `z1` INT( 255 ) NOT NULL , `x2` INT( 255 ) NOT NULL , `y2` INT( 255 ) NOT NULL , `z2` INT( 255 ) NOT NULL)";
+							query = "CREATE TABLE IF NOT EXISTS `" + SQL_loan_table + "` (`id` INT( 255 ) NOT NULL AUTO_INCREMENT PRIMARY KEY, `player` VARCHAR( 255 ) NOT NULL, `totalamount` DOUBLE( 255,2 ) NOT NULL, `timeleft` INT( 255 ) NOT NULL, `part` INT( 255 ) NOT NULL, `parts` INT( 255 ) NOT NULL)";
 						}
 						stmt.execute(query);
-				*/
 					}
 					if (!checkTransaction) {
 						//TRANSACTION TABLE
@@ -504,6 +529,14 @@ public class BankAccount extends JavaPlugin {
 			consoleLog("Shuting down");
 			this.getServer().getPluginManager().disablePlugin(this);
 			return false;
+		}
+		
+		if (iConomy.isEnabled()) {
+			if (LoanSystem.LoanActive) {
+				LoanSystem.startupRunner();
+			} else {
+				LoanSystem.shutdownRunner();
+			}
 		}
 		return true;
 	}

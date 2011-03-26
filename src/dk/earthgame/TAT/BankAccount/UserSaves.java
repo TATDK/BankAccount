@@ -3,6 +3,7 @@ package dk.earthgame.TAT.BankAccount;
 import org.bukkit.Location;
 
 public class UserSaves {
+	public double bounty;
 	public boolean selecting;
 	private static Location pos1;
 	private static Location pos2;

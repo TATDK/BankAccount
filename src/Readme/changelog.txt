@@ -2,7 +2,7 @@ Plugin: BankAccount
 Author: TAT
 CHANGELOG
 
-0.4INDEV
+0.4EARLY
 Added loan
 Added API
 Added support for GroupManager

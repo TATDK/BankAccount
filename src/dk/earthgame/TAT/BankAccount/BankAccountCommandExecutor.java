@@ -199,7 +199,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   					} else {
   						sender.sendMessage("ATM: " + ChatColor.RED + "You don't have access to this account!");
   					}
-  				} else if (args[0].equalsIgnoreCase("loan") && args.length >= 4) {
+  				} else if (args[0].equalsIgnoreCase("loan") && args.length >= 2) {
   					if (!locationCheck) {
   						sender.sendMessage("ATM: You're not in bank area");
   						return true;
@@ -208,20 +208,12 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   						sender.sendMessage("ATM: Loans not activated");
   					}
   					if (!plugin.LoanSystem.haveLoan((Player)sender)) {
-  						//plugin.addTransaction(sendername, null, BankAccount.TransactionTypes.LOAN_START, Double.parseDouble(args[?]));
-  						/*if (plugin.accountExists(args[2])) {
-  							String password = "";
-							if (args.length >= 4) {
-								password = args[3];
-							}
-							if (plugin.ATM(args[1], "transfer", Double.parseDouble(args[2]), password)) {
-								sender.sendMessage("ATM: " + ChatColor.GREEN + iConomy.getBank().format(Double.parseDouble(args[3])) + " transfered from " + args[1] + " to " + args[2]);
-							} else {
-								sender.sendMessage("ATM: " + ChatColor.RED + "Couldn't transfer, are you sure you have enough money on account?");
-							}
+  						plugin.addTransaction(sendername, null, BankAccount.TransactionTypes.LOAN_START, Double.parseDouble(args[1]));
+  						if (plugin.LoanSystem.addLoan(sendername, Double.parseDouble(args[1]))) {
+  							sender.sendMessage("ATM: " + ChatColor.GREEN + iConomy.getBank().format(Double.parseDouble(args[1])) + " loaned.");
   						} else {
-  							sender.sendMessage("ATM: " + ChatColor.RED + "Reciever account not found!");
-  						}*/
+  							sender.sendMessage("ATM: " + ChatColor.RED + "Couldn't create loan!");
+  						}
   					} else {
   						sender.sendMessage("ATM: " + ChatColor.RED + "You already have a loan, pay it first!");
   					}
@@ -251,7 +243,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   					}
   				} else if (args[0].equalsIgnoreCase("select")) {
   					if (plugin.playerIsAdmin((Player)sender)) {
-  						UserSaves mySave = plugin.getSaved((Player)sender);
+  						UserSaves mySave = plugin.getSaved(sendername);
   						if (mySave.selecting) {
   							mySave.selecting = false;
 							sender.sendMessage("ATM: " + ChatColor.GREEN + "No longer selecting area");
@@ -264,7 +256,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   					}
   				} else if (args[0].equalsIgnoreCase("setarea") && args.length >= 2) {
   					if (plugin.playerIsAdmin((Player)sender)) {
-  						UserSaves mySave = plugin.getSaved((Player)sender);
+  						UserSaves mySave = plugin.getSaved(sendername);
   						if (mySave.getPosition(1) != null && mySave.getPosition(2) != null) {
   							if (plugin.setArea(args[1], mySave.getPosition(1), mySave.getPosition(2), ((Player)sender).getWorld().getName())) {
   								sender.sendMessage("ATM: " + ChatColor.GREEN + "Area added");
@@ -322,7 +314,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
 			player.sendMessage(ChatColor.RED + "/account withdraw <accountname> <amount> [password]");
 			player.sendMessage(ChatColor.RED + "/account transfer <from account> <to account> <amount> [password]");
 			if (plugin.LoanSystem.LoanActive) {
-				player.sendMessage(ChatColor.RED + "/account loan <account> <amount> [password]");
+				player.sendMessage(ChatColor.RED + "/account loan <amount>");
 			}
 			player.sendMessage(ChatColor.RED + "/account close <accountname> [password]");
 			if (plugin.playerIsAdmin((Player)player)) {
