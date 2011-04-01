@@ -5,10 +5,12 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 import com.nijiko.coelho.iConomy.system.Account;
+
+import dk.earthgame.TAT.BankAccount.System.TransactionTypes;
+
 
 public class LoanSystem {
 	private BankAccount plugin;
@@ -30,15 +32,16 @@ public class LoanSystem {
 	public void startupRunner() {
 		ResultSet rs;
 		try {
-			rs = plugin.stmt.executeQuery("SELECT `player`,`totalamount`,`part`,`parts`,`timeleft`,`timepayment` FROM `" + plugin.SQL_loan_table + "`");
+			rs = plugin.stmt.executeQuery("SELECT `player`,`totalamount`,`remaining`,`part`,`parts`,`timeleft`,`timepayment` FROM `" + plugin.SQL_loan_table + "`");
 			while (rs.next()) {
 				String player = rs.getString("player");
 				double totalamount = rs.getDouble("totalamount");
+				double remaining = rs.getDouble("remaining");
 				int part = rs.getInt("part");
 				int parts = rs.getInt("parts");
 				int timeleft = rs.getInt("timeleft");
 				int timepayment = rs.getInt("timepayment");
-				Loans.put(player, new Loan(plugin,this,player,totalamount,timeleft,timepayment,part,parts));
+				Loans.put(player, new Loan(plugin,this,player,totalamount,remaining,timeleft,timepayment,part,parts));
 			}
 			running = true;
 		} catch (SQLException e) {
@@ -60,6 +63,14 @@ public class LoanSystem {
 				while (it.hasNext()) {
 			        Map.Entry<String,Loan> pairs = (Map.Entry<String,Loan>)it.next();
 			        pairs.getValue().runLoan();
+			        if (pairs.getValue().remaining <= 0) {
+			        	Loans.remove(pairs.getKey());
+			        	if (plugin.getSaved(pairs.getKey()).bounty > 0.00) {
+			        		plugin.addTransaction(pairs.getKey(), "", TransactionTypes.LOAN_MISSING, pairs.getValue().remaining);
+			        	} else {
+			        		plugin.addTransaction(pairs.getKey(), "", TransactionTypes.LOAN_PAID, 0.00);
+			        	}
+			        }
 			    }
 				plugin.consoleLog("Loan stop");
 			}
@@ -71,21 +82,37 @@ public class LoanSystem {
 			((Plugin)plugin).getServer().getScheduler().cancelTask(JobId);
 		}
 		JobId = 0;
+		Loans.clear();
 		running = false;
 	}
 	
-	public boolean haveLoan(Player player) {
-		if (Loans.containsKey(player.getName())) {
+	public boolean haveLoan(String player) {
+		if (Loans.containsKey(player)) {
 			return true;
 		}
 		return false;
 	}
 	
-	Loan getLoan(Player player) {
-		if (Loans.containsKey(player.getName())) {
-			return Loans.get(player.getName());
+	public Loan getLoan(String player) {
+		if (Loans.containsKey(player)) {
+			return Loans.get(player);
 		}
 		return null;
+	}
+	
+	public double payment(String player,double amount) {
+		if (haveLoan(player)) {
+			Loan playerLoan = getLoan(player);
+			Account iConomyAccount = com.nijiko.coelho.iConomy.iConomy.getBank().getAccount(player);
+			if (playerLoan.remaining < amount) {
+				amount = playerLoan.remaining;
+			}
+			if (iConomyAccount.hasEnough(amount)) {
+				playerLoan.manualPayment(amount);
+				return amount;
+			}
+		}
+		return 0.00;
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -109,8 +136,8 @@ public class LoanSystem {
 					rate = Fixed_rate;
 				}
 				double totalamount = amount*(1+rate);
-				plugin.stmt.executeUpdate("INSERT INTO `" + plugin.SQL_loan_table + "` (`player`,`totalamount`,`parts`,`part`,`timeleft`,`timepayment`) VALUES ('" + player + "','" + totalamount + "','" + PaymentParts + "','0','" + (PaymentTime/PaymentParts) + "','" + PaymentTime + "')");
-				Loans.put(player, new Loan(plugin, this, player,amount,(PaymentTime/PaymentParts)*60,(PaymentTime/PaymentParts)*60, 0, PaymentParts));
+				plugin.stmt.executeUpdate("INSERT INTO `" + plugin.SQL_loan_table + "` (`player`,`totalamount`,`remaining`,`parts`,`part`,`timeleft`,`timepayment`) VALUES ('" + player + "','" + totalamount + "','" + totalamount + "','" + PaymentParts + "','0','" + (PaymentTime/PaymentParts) + "','" + PaymentTime + "')");
+				Loans.put(player, new Loan(plugin, this, player,totalamount,totalamount,(PaymentTime/PaymentParts)*60,(PaymentTime/PaymentParts)*60, 0, PaymentParts));
 				iConomyAccount.add(amount);
 				return true;
 			} catch(SQLException e) {

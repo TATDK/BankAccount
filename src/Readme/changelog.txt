@@ -2,12 +2,19 @@ Plugin: BankAccount
 Author: TAT
 CHANGELOG
 
-0.4EARLY
+0.4EARLYBIRDY
 Added loan
+	- Automatic payment
+	- Manual payment
+	- Loan status
 Added API
 Added support for GroupManager
+Added permission nodes
+Players shall now have permission for bankaccount.user (If using Permissions or GroupManager)
 Fixed MySQL interest bug in 0.3e
 New way to add missing tables
+New way to hook up to plugin
+New way to show help
 Code cleanup
 
 0.3e

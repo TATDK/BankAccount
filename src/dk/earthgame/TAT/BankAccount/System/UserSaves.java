@@ -1,4 +1,4 @@
-package dk.earthgame.TAT.BankAccount;
+package dk.earthgame.TAT.BankAccount.System;
 
 import org.bukkit.Location;
 

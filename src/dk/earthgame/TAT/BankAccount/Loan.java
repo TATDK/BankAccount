@@ -6,25 +6,33 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.sql.SQLException;
 
+import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
+
 import com.nijiko.coelho.iConomy.iConomy;
 import com.nijiko.coelho.iConomy.system.Account;
+
+import dk.earthgame.TAT.BankAccount.System.TransactionTypes;
+
 
 public class Loan {
 	private BankAccount plugin;
 	private LoanSystem system;
 	private String player;
 	private Account account;
-	private double totalamount; //Amount + rates
+	public double totalamount; //Amount + rates
+	public double remaining; //Amount that needs to be paid
 	private int timeleft; //Time to next payment
 	private int timepayment; //Time between every payment
 	private int part; //Paid times
 	private int parts; //Number of times until deadline
 	
-	Loan(BankAccount plugin, LoanSystem system, String player,double totalamount,int timeleft,int timepayment,int part,int parts) {
+	Loan(BankAccount plugin, LoanSystem system, String player,double totalamount,double remaining,int timeleft,int timepayment,int part,int parts) {
 		this.plugin = plugin;
 		this.system = system;
 		this.player = player;
 		this.totalamount = totalamount;
+		this.remaining = remaining;
 		this.timeleft = timeleft;
 		this.timepayment = timepayment;
 		this.part = part;
@@ -48,11 +56,28 @@ public class Loan {
 	void runPayment() {
 		part++;
 		timeleft += timepayment;
+		double subtract = 0.00;
+		
+		if (remaining <= (totalamount/parts)) {
+			subtract = remaining;
+		} else {
+			subtract = (totalamount/parts);
+		}
+		
+		remaining -= subtract;
 		
 		try {
 			plugin.stmt.executeUpdate("UPDATE `" + plugin.SQL_loan_table + "` SET `part` = '" + part + "' WHERE `player` = '" + player + "'");
 		} catch (SQLException e) {
 			e.printStackTrace();
+		}
+		
+		//Check if player is online
+		boolean online = false;
+		Player messageTo = null;
+		if (plugin.getServer().getPlayer(player) != null) {
+			messageTo = plugin.getServer().getPlayer(player);
+			online = true;
 		}
 		
 		if (part >= parts) {
@@ -61,17 +86,29 @@ public class Loan {
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
-			if (account.hasOver(totalamount/parts)) {
-				account.subtract(totalamount/parts);
+			if (account.hasOver(subtract)) {
+				account.subtract(subtract);
 			} else {
-				addBounty();
+				addBounty(subtract);
 			}
 		} else {
-			account.subtract(totalamount/parts);
+			account.subtract(subtract);
 		}
+		remaining -= subtract;
+		if (online) {
+			messageTo.sendMessage("ATM: " + ChatColor.GREEN + iConomy.getBank().format(subtract) + " paid off your loan.");
+			if (remaining <= 0) {
+				messageTo.sendMessage("ATM: " + ChatColor.GREEN + "Your loan is fully paid off.");
+			}
+		}
+		plugin.addTransaction(player, null, TransactionTypes.LOAN_PAYMENT, subtract);
 	}
 	
-	void addBounty() {
+	void manualPayment(double amount) {
+		remaining -= amount;
+	}
+	
+	void addBounty(double amount) {
 		FileReader fr;
 		try {
 			fr = new FileReader("server.properties");
@@ -79,9 +116,9 @@ public class Loan {
 			String s;
 			while((s=br.readLine()) .indexOf("pvp")==-1);
 			if (s.split("=")[1].equalsIgnoreCase("true")) {
-				plugin.getSaved(player).bounty = totalamount/parts;
+				plugin.getSaved(player).bounty = amount;
 			} else {
-				account.subtract(totalamount/parts);
+				account.subtract(amount);
 			}
 			fr.close();
 		} catch (FileNotFoundException e) {

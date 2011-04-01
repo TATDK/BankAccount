@@ -20,6 +20,7 @@ CREATE TABLE `bankloans` (
   `id` INT( 255 ) NOT NULL AUTO_INCREMENT PRIMARY KEY ,
   `player` VARCHAR( 255 ) NOT NULL,
   `totalamount` DOUBLE( 255,2 ) NOT NULL,
+  `remaining` DOUBLE( 255,2 ) NOT NULL,
   `timepayment` INT( 255 ) NOT NULL,
   `timeleft` INT( 255 ) NOT NULL,
   `part` INT( 255 ) NOT NULL,

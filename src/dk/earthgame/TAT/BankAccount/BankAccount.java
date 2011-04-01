@@ -19,9 +19,11 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event.Type;
-import org.bukkit.event.block.BlockListener;
-import org.bukkit.event.block.BlockRightClickEvent;
-import org.bukkit.event.server.PluginEvent;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerListener;
+import org.bukkit.event.server.PluginDisableEvent;
+import org.bukkit.event.server.PluginEnableEvent;
 import org.bukkit.event.server.ServerListener;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
@@ -34,6 +36,10 @@ import com.nijiko.coelho.iConomy.iConomy;
 import com.nijiko.coelho.iConomy.system.Account;
 import com.nijikokun.bukkit.Permissions.Permissions;
 
+import dk.earthgame.TAT.BankAccount.System.PermissionNodes;
+import dk.earthgame.TAT.BankAccount.System.TransactionTypes;
+import dk.earthgame.TAT.BankAccount.System.UserSaves;
+
 import org.anjocaido.groupmanager.GroupManager;
 
 /**
@@ -42,6 +48,7 @@ import org.anjocaido.groupmanager.GroupManager;
  * @author TAT
  */
 public class BankAccount extends JavaPlugin {
+	protected final Plugin thisPlugin = this;
 	//System
 	protected final Logger log = Logger.getLogger("Minecraft");
 	private PluginDescriptionFile pdfFile;
@@ -50,6 +57,7 @@ public class BankAccount extends JavaPlugin {
 	private int interestTime;
 	private double interestAmount;
 	private int interestJobId;
+	private int checkJobId;
 	private HashMap<String,UserSaves> UserSaves = new HashMap<String,UserSaves>();
 	private int areaWandId;
 	LoanSystem LoanSystem = new LoanSystem(this);
@@ -68,8 +76,7 @@ public class BankAccount extends JavaPlugin {
 	String SQL_loan_table;
 	String SQL_transaction_table;
 	//iConomy
-	public com.nijiko.coelho.iConomy.iConomy iConomy;
-	private boolean useiConomy;
+	public iConomy iConomy;
 	//Permissions
 	private boolean UseOP;
 	public Permissions Permissions = null;
@@ -80,74 +87,8 @@ public class BankAccount extends JavaPlugin {
 	public boolean SuperAdmins;
 	//Transaction
 	private boolean Transactions;
-	public enum TransactionTypes {
-		OPEN				(1),
-		DEPOSIT				(2),
-		WITHDRAW			(3),
-		TRANSFER_DEPOSIT	(4),
-		TRANSFER_WITHDRAW	(5),
-		CLOSE				(6),
-		USER_ADD			(7),
-		USER_REMOVE			(8),
-		PASSWORD			(9),
-		LOAN_START			(10),
-		LOAN_PAYMENT		(11),
-		LOAN_PAID			(12),
-		LOAN_MISSING		(13),
-		BOUNTY_START		(14),
-		BOUNTY_END			(15);
-		
-		private final int code;
-		TransactionTypes(int code) {
-			this.code = code;
-		}
-		public int get() { return code; }
-	};
 
 	//#########################################################################//
-	
-	//THIRD-PART PLUGINS
-	
-	private boolean checkiConomy() {
-		Plugin test = this.getServer().getPluginManager().getPlugin("iConomy");
-
-		if (test != null) {
-			iConomy = (iConomy)test;
-			useiConomy = true;
-		} else {
-			consoleWarning("Stopping BankAccount - Reason: Missing iConomy plugin!");
-			this.getServer().getPluginManager().disablePlugin(this);
-			useiConomy = false;
-		}
-
-		return useiConomy;
-	}
-
-	private void setupPermissions() {
-		Plugin test = this.getServer().getPluginManager().getPlugin("Permissions");
-
-		if (Permissions == null) {
-			if(test != null) {
-				Permissions = (Permissions)test;
-				consoleLog("Permission system found.");
-			} else {
-				consoleLog("Permission system not found.");
-			}
-		}
-	}
-	
-	private void setupGroupManager() {
-		Plugin test = this.getServer().getPluginManager().getPlugin("GroupManager");
-
-		if (GroupManager == null) {
-			if(test != null) {
-				GroupManager = (GroupManager) test;
-				consoleLog("GroupManager found.");
-			} else {
-				consoleLog("GroupManager not found.");
-			}
-		}
-	}
 	
 	//SYSTEM
 	
@@ -159,15 +100,16 @@ public class BankAccount extends JavaPlugin {
 		log.warning(pdfFile.getName() + ": " + string);
 	}
 	
-	public boolean playerIsAdmin(Player player) {
+	//System
+	boolean checkPermission(Player player,PermissionNodes node) {
 		if (player != null) {
 			if (UsePermissions) {
-				if (com.nijikokun.bukkit.Permissions.Permissions.Security.permission(player, "bankaccount.admin")) {
+				if (com.nijikokun.bukkit.Permissions.Permissions.Security.permission(player, node.getNode())) {
 					return true;
 				}
 			}
 			if (UseGroupManager) {
-				if (GroupManager.getWorldsHolder().getWorldPermissions(player).has(player,"bankaccount.admin")) {
+				if (GroupManager.getWorldsHolder().getWorldPermissions(player).has(player, node.getNode())) {
 					return true;
 				}
 			}
@@ -176,27 +118,22 @@ public class BankAccount extends JavaPlugin {
 					return true;
 				}
 			}
+			if (node != PermissionNodes.ACCESS) {
+				if (checkPermission(player,PermissionNodes.ADMIN) || checkPermission(player,PermissionNodes.EXTENDED)) {
+					return true;
+				}
+				if (node == PermissionNodes.OPEN || node == PermissionNodes.DEPOSIT || node == PermissionNodes.WITHDRAW) {
+					if (checkPermission(player, PermissionNodes.BASIC))
+						return true;
+				}
+			}
 		}
 		return false;
 	}
 	
-	public boolean playerIsUser(Player player) {
-		if (player != null) {
-			if (UsePermissions) {
-				if (com.nijikokun.bukkit.Permissions.Permissions.Security.permission(player, "bankaccount.user")) {
-					return true;
-				}
-			}
-			if (UseGroupManager) {
-				if (GroupManager.getWorldsHolder().getWorldPermissions(player).has(player,"bankaccount.user")) {
-					return true;
-				}
-			}
-			if (!UsePermissions && !UseGroupManager) {
-				return true;
-			}
-		}
-		return false;
+	//Open function
+	public boolean playerPermission(Player player,PermissionNodes node) {
+		return checkPermission(player, node);
 	}
 	
 	public void onEnable() {
@@ -204,54 +141,138 @@ public class BankAccount extends JavaPlugin {
 		getCommand("account").setExecutor(new BankAccountCommandExecutor(this));
 		getCommand("account").setUsage("/account help - Show help to BankAccount");
 		
-		BlockListener rightClickListener = new BlockListener() {
+		PlayerListener rightClickListener = new PlayerListener() {
 			@Override
-			public void onBlockRightClick(BlockRightClickEvent event) {
-				UserSaves mySave = getSaved(event.getPlayer().getName());
-				if (event.getPlayer().getItemInHand().getTypeId() == areaWandId && mySave.selecting) {
-					World world = event.getBlock().getWorld();
-					Location pos = event.getBlock().getLocation();
-					world.getBlockAt(pos);
-					if (mySave.setPosition(pos) == 2) {
-						event.getPlayer().sendMessage("ATM: Area selected, to confirm: /account setarea <areaname>");
-					} else {
-						event.getPlayer().sendMessage("ATM: Position 1 selected, please select position 2");
+			public void onPlayerInteract(PlayerInteractEvent event) {
+				if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+					UserSaves mySave = getSaved(event.getPlayer().getName());
+					if (event.getPlayer().getItemInHand().getTypeId() == areaWandId && mySave.selecting) {
+						World world = event.getClickedBlock().getWorld();
+						Location pos = event.getClickedBlock().getLocation();
+						world.getBlockAt(pos);
+						if (mySave.setPosition(pos) == 2) {
+							event.getPlayer().sendMessage("ATM: Area selected, to confirm: /account setarea <areaname>");
+						} else {
+							event.getPlayer().sendMessage("ATM: Position 1 selected, please select position 2");
+						}
 					}
 				}
 			}
 		};
 		
 		ServerListener pluginListener = new ServerListener() {
-			public void onPluginEnabled(PluginEvent event) {
-				if (iConomy != null && !LoanSystem.running) {
-					if (iConomy.isEnabled()) {
-						iConomy = (iConomy)iConomy;
-						if (LoanSystem.LoanActive) {
+			Plugin checkPlugin(String pluginname) {
+				return getServer().getPluginManager().getPlugin(pluginname);
+			}
+			
+			@Override
+			public void onPluginEnable(PluginEnableEvent event) {
+				String plugin = event.getPlugin().getDescription().getName();
+				if (iConomy == null && plugin.equalsIgnoreCase("iConomy")) {
+					Plugin test = checkPlugin("iConomy");
+					if (test != null) {
+						iConomy = (iConomy)test;
+						if (LoanSystem.LoanActive && !LoanSystem.running) {
 							LoanSystem.startupRunner();
 						}
-						consoleLog("Established connection with iConomy!");
+						if (interestTime > 0) {
+							if (interestJobId > 0) {
+								getServer().getScheduler().cancelTask(interestJobId);
+							}
+							interestJobId = getServer().getScheduler().scheduleSyncRepeatingTask(thisPlugin, new Runnable() {
+								public void run() {
+									consoleLog("Running interest system");
+																		
+									Double totalGiven = 0.00;
+									try {
+										if (UseMySQL) {
+											//MySQL
+											ResultSet accounts = stmt.executeQuery("SELECT `id`, `amount` FROM `" + SQL_account_table + "`");
+											while (accounts.next()) {
+												Double accountbalance = accounts.getDouble("amount");
+												totalGiven += accountbalance*(interestAmount/100);
+												accountbalance *= 1+(interestAmount/100);
+												accounts.updateDouble("amount", accountbalance);
+												accounts.updateRow();
+											}
+											accounts.close();
+										} else {
+											//SQLite
+											PreparedStatement prep = con.prepareStatement("UPDATE `" + SQL_account_table + "` SET `amount` = ? WHERE `accountname` = ?");
+											ResultSet accounts = stmt.executeQuery("SELECT `accountname`, `amount` FROM `" + SQL_account_table + "`");
+											while (accounts.next()) {
+												String accountname = accounts.getString("accountname");
+												Double accountbalance = accounts.getDouble("amount");
+												totalGiven += accountbalance*(interestAmount/100);
+												accountbalance *= 1+(interestAmount/100);
+												prep.setDouble(1, accountbalance);
+												prep.setString(2, accountname);
+												prep.addBatch();
+											}
+											accounts.close();
+											con.setAutoCommit(false);
+											prep.executeBatch();
+											con.commit();
+											con.setAutoCommit(true);
+										}
+									} catch (SQLException e) {
+										consoleWarning("Couldn't execute interest");
+										consoleLog(e.toString());
+									}
+									consoleLog("Total given " + com.nijiko.coelho.iConomy.iConomy.getBank().format(totalGiven) + " " + com.nijiko.coelho.iConomy.iConomy.getBank().getCurrency() + " in interest");
+								}
+							}, interestTime*20*60, interestTime*20*60);
+							consoleLog("Running interest every " + interestTime + " minutes by " + interestAmount + "%");
+						}
+						consoleLog("Established connection with " + plugin + "!");
+					}
+				}
+				if (Permissions == null && plugin.equalsIgnoreCase("Permissions")) {
+					Plugin test = checkPlugin("Permissions");
+					if (test != null) {
+						Permissions = (Permissions)test;
+						consoleLog("Established connection with " + plugin + "!");
+					}
+				}
+				if (GroupManager == null && plugin.equalsIgnoreCase("GroupManager")) {
+					Plugin test = checkPlugin("GroupManager");
+					if (test != null) {
+						GroupManager = (GroupManager)test;
+						consoleLog("Established connection with " + plugin + "!");
+						if (checkJobId > 0) {
+							getServer().getScheduler().cancelTask(checkJobId);
+						}
 					}
 				}
 			}
 
-			public void onPluginDisabled(PluginEvent event) {
-				if (iConomy != null) {
-					String plugin = event.getPlugin().getDescription().getName();
-
-					if (plugin.equals("iConomy")) {
-						iConomy = null;
-						if (LoanSystem.LoanActive) {
-							LoanSystem.shutdownRunner();
-						}
-						consoleWarning("Lost connection with iConomy!");
+			@Override
+			public void onPluginDisable(PluginDisableEvent event) {
+				String plugin = event.getPlugin().getDescription().getName();
+				if (iConomy != null && plugin.equalsIgnoreCase("iConomy")) {
+					iConomy = null;
+					if (LoanSystem.LoanActive && LoanSystem.running) {
+						LoanSystem.shutdownRunner();
 					}
+					consoleWarning("Lost connection with " + plugin + "!");
+					consoleWarning("Stopping BankAccount - Reason: Missing iConomy plugin!");
+					getServer().getPluginManager().disablePlugin(thisPlugin);
+				}
+				if (Permissions != null && plugin.equalsIgnoreCase("Permissions")) {
+					Permissions = null;
+					consoleWarning("Lost connection with " + plugin + "!");
+				}
+				if (GroupManager != null && plugin.equalsIgnoreCase("GroupManager")) {
+					GroupManager = null;
+					consoleWarning("Lost connection with " + plugin + "!");
 				}
 			}
 		};
 		
 		PluginManager pm = getServer().getPluginManager();
-		pm.registerEvent(Type.BLOCK_RIGHTCLICKED, rightClickListener, Priority.Normal, this);
+		pm.registerEvent(Type.PLAYER_INTERACT, rightClickListener, Priority.Normal, this);
 		pm.registerEvent(Type.PLUGIN_ENABLE, pluginListener, Priority.Low, this);
+		pm.registerEvent(Type.PLUGIN_DISABLE, pluginListener, Priority.Low, this);
 		
 		pdfFile = this.getDescription();
 		log.info(pdfFile.getName() + " version " + pdfFile.getVersion() + " is enabled!" );
@@ -262,9 +283,18 @@ public class BankAccount extends JavaPlugin {
 			myFolder.mkdir();
 			consoleLog("Folder created");
 		}
+		
+		checkJobId = this.getServer().getScheduler().scheduleSyncDelayedTask(thisPlugin, new Runnable() {
+			public void run() {
+				if (iConomy == null) {
+					consoleWarning("Stopping BankAccount - Reason: Missing iConomy plugin!");
+					getServer().getPluginManager().disablePlugin(thisPlugin);
+					checkJobId = 0;
+				}
+			}
+		}, 20*60);
 
 		createDefaultConfiguration();
-		checkiConomy();
 		loadConfiguration();
 	}
 
@@ -324,13 +354,7 @@ public class BankAccount extends JavaPlugin {
 		SuperAdmins = config.getBoolean("SuperAdmins", false);
 		UseOP = config.getBoolean("UseOP",true);
 		UsePermissions = config.getBoolean("UsePermissions",false);
-		if (UsePermissions && Permissions == null) {
-			setupPermissions();
-		}
 		UseGroupManager = config.getBoolean("UseGroupManager",false);
-		if (UseGroupManager && GroupManager == null) {
-			setupGroupManager();
-		}
 		//Interest
 		interestAmount = config.getDouble("Interest.Amount", 0);
 		interestTime = config.getInt("Interest.Time", 0);
@@ -347,54 +371,6 @@ public class BankAccount extends JavaPlugin {
 		//Other
 		Transactions = config.getBoolean("Transactions", false);
 		
-		if (interestTime > 0) {
-			if (interestJobId > 0) {
-				this.getServer().getScheduler().cancelTask(interestJobId);
-			}
-			interestJobId = this.getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
-				public void run() {
-					consoleLog("Running interest system");
-					Double totalGiven = 0.00;
-					try {
-						if (UseMySQL) {
-							//MySQL
-							ResultSet accounts = stmt.executeQuery("SELECT `id`, `amount` FROM `" + SQL_account_table + "`");
-							while (accounts.next()) {
-								Double accountbalance = accounts.getDouble("amount");
-								totalGiven += accountbalance*(interestAmount/100);
-								accountbalance *= 1+(interestAmount/100);
-								accounts.updateDouble("amount", accountbalance);
-								accounts.updateRow();
-							}
-							accounts.close();
-						} else {
-							//SQLite
-							PreparedStatement prep = con.prepareStatement("UPDATE `" + SQL_account_table + "` SET `amount` = ? WHERE `accountname` = ?");
-							ResultSet accounts = stmt.executeQuery("SELECT `accountname`, `amount` FROM `" + SQL_account_table + "`");
-							while (accounts.next()) {
-								String accountname = accounts.getString("accountname");
-								Double accountbalance = accounts.getDouble("amount");
-								totalGiven += accountbalance*(interestAmount/100);
-								accountbalance *= 1+(interestAmount/100);
-								prep.setDouble(1, accountbalance);
-								prep.setString(2, accountname);
-								prep.addBatch();
-							}
-							accounts.close();
-							con.setAutoCommit(false);
-							prep.executeBatch();
-							con.commit();
-							con.setAutoCommit(true);
-						}
-					} catch (SQLException e) {
-						consoleWarning("Couldn't execute interest");
-						consoleLog(e.toString());
-					}
-					consoleLog("Total given " + String.format("%.2g%", totalGiven) + " " + com.nijiko.coelho.iConomy.iConomy.getBank().getCurrency() + " in interest");
-				}
-			}, interestTime*20*60, interestTime*20*60);
-			consoleLog("Running interest every " + interestTime + " minutes by " + interestAmount + "%");
-		}
 		consoleLog("Properties Loaded");
 		try {
 			if (UseMySQL) {
@@ -457,7 +433,7 @@ public class BankAccount extends JavaPlugin {
 					}
 					if (!checkLoan) {
 						//LOAN TABLE
-						String query = "CREATE TABLE IF NOT EXISTS `" + SQL_loan_table + "` (`player` VARCHAR( 255 ) NOT NULL, `totalamount` DOUBLE( 255,2 ) NOT NULL, `timepayment` INT( 255 ) NOT NULL, `timeleft` INT( 255 ) NOT NULL, `part` INT( 255 ) NOT NULL, `parts` INT( 255 ) NOT NULL)";
+						String query = "CREATE TABLE IF NOT EXISTS `" + SQL_loan_table + "` (`player` VARCHAR( 255 ) NOT NULL, `totalamount` DOUBLE( 255,2 ) NOT NULL, `remaining` DOUBLE( 255,2 ) NOT NULL, `timepayment` INT( 255 ) NOT NULL, `timeleft` INT( 255 ) NOT NULL, `part` INT( 255 ) NOT NULL, `parts` INT( 255 ) NOT NULL)";
 						if (UseMySQL) {
 							consoleWarning("Created table " + SQL_loan_table);
 							query = "CREATE TABLE IF NOT EXISTS `" + SQL_loan_table + "` (`id` INT( 255 ) NOT NULL AUTO_INCREMENT PRIMARY KEY, `player` VARCHAR( 255 ) NOT NULL, `totalamount` DOUBLE( 255,2 ) NOT NULL, `timeleft` INT( 255 ) NOT NULL, `part` INT( 255 ) NOT NULL, `parts` INT( 255 ) NOT NULL)";
@@ -529,14 +505,6 @@ public class BankAccount extends JavaPlugin {
 			consoleLog("Shuting down");
 			this.getServer().getPluginManager().disablePlugin(this);
 			return false;
-		}
-		
-		if (iConomy.isEnabled()) {
-			if (LoanSystem.LoanActive) {
-				LoanSystem.startupRunner();
-			} else {
-				LoanSystem.shutdownRunner();
-			}
 		}
 		return true;
 	}
