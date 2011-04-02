@@ -1,8 +1,6 @@
 package dk.earthgame.TAT.BankAccount;
 
 import java.io.*;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -15,11 +13,15 @@ import java.util.logging.Logger;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.World;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event.Type;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageByProjectileEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityListener;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerListener;
 import org.bukkit.event.server.PluginDisableEvent;
@@ -36,6 +38,7 @@ import com.nijiko.coelho.iConomy.iConomy;
 import com.nijiko.coelho.iConomy.system.Account;
 import com.nijikokun.bukkit.Permissions.Permissions;
 
+import dk.earthgame.TAT.BankAccount.System.Password;
 import dk.earthgame.TAT.BankAccount.System.PermissionNodes;
 import dk.earthgame.TAT.BankAccount.System.TransactionTypes;
 import dk.earthgame.TAT.BankAccount.System.UserSaves;
@@ -61,6 +64,7 @@ public class BankAccount extends JavaPlugin {
 	private HashMap<String,UserSaves> UserSaves = new HashMap<String,UserSaves>();
 	private int areaWandId;
 	LoanSystem LoanSystem = new LoanSystem(this);
+	Password PasswordSystem = new Password(this);
 	//MySQL
 	private boolean UseMySQL = false;
 	private String MySQL_host;
@@ -71,7 +75,7 @@ public class BankAccount extends JavaPlugin {
 	//SQL
 	public Connection con;
 	public java.sql.Statement stmt;
-	String SQL_account_table;
+	public String SQL_account_table;
 	String SQL_area_table;
 	String SQL_loan_table;
 	String SQL_transaction_table;
@@ -96,7 +100,7 @@ public class BankAccount extends JavaPlugin {
 		log.info(pdfFile.getName() + ": " + string);
 	}
 
-	void consoleWarning(String string) {
+	public void consoleWarning(String string) {
 		log.warning(pdfFile.getName() + ": " + string);
 	}
 	
@@ -144,18 +148,66 @@ public class BankAccount extends JavaPlugin {
 		PlayerListener rightClickListener = new PlayerListener() {
 			@Override
 			public void onPlayerInteract(PlayerInteractEvent event) {
-				if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+				if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
 					UserSaves mySave = getSaved(event.getPlayer().getName());
 					if (event.getPlayer().getItemInHand().getTypeId() == areaWandId && mySave.selecting) {
-						World world = event.getClickedBlock().getWorld();
 						Location pos = event.getClickedBlock().getLocation();
-						world.getBlockAt(pos);
 						if (mySave.setPosition(pos) == 2) {
 							event.getPlayer().sendMessage("ATM: Area selected, to confirm: /account setarea <areaname>");
 						} else {
 							event.getPlayer().sendMessage("ATM: Position 1 selected, please select position 2");
 						}
 					}
+				}
+			}
+		};
+		
+		EntityListener entityListener = new EntityListener() {
+			public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
+				Entity attacker = event.getDamager();
+				Entity defender = event.getEntity();
+
+				if (defender instanceof Player) {
+					Player player = (Player)defender;
+					if (player.getHealth() - event.getDamage() <= 0) {
+						if (attacker != null && attacker instanceof Player) {
+							double bounty = getSaved(((Player)attacker).getName()).bounty;
+							if (bounty > 0.00) {
+								Account attackerAccount = com.nijiko.coelho.iConomy.iConomy.getBank().getAccount(((Player)attacker).getName());
+								attackerAccount.add(bounty);
+								getSaved(((Player)attacker).getName()).bounty = 0.00;
+							}
+						}
+					}
+				}
+			}
+
+			public void onEntityDamageByProjectile(EntityDamageByProjectileEvent event) {
+				Entity defender = event.getEntity();
+				Entity attacker = event.getDamager();
+
+				if (defender instanceof Player) {
+					Player player = (Player)defender;
+					if (player.getHealth() - event.getDamage() <= 0) {
+						if (attacker != null && attacker instanceof Player) {
+							double bounty = getSaved(((Player)attacker).getName()).bounty;
+							if (bounty > 0.00) {
+								Account attackerAccount = com.nijiko.coelho.iConomy.iConomy.getBank().getAccount(((Player)attacker).getName());
+								attackerAccount.add(bounty);
+								getSaved(((Player)attacker).getName()).bounty = 0.00;
+							}
+						}
+					}
+				}
+			}
+			@Override
+			public void onEntityDamage(EntityDamageEvent event) {
+				if (event instanceof EntityDamageByProjectileEvent) {
+					this.onEntityDamageByProjectile((EntityDamageByProjectileEvent) event);
+					return;
+				} else if (event instanceof EntityDamageByEntityEvent) {
+					this.onEntityDamageByEntity((EntityDamageByEntityEvent) event);
+					return;
 				}
 			}
 		};
@@ -270,7 +322,11 @@ public class BankAccount extends JavaPlugin {
 		};
 		
 		PluginManager pm = getServer().getPluginManager();
+		//RightClick - Used for area selection
 		pm.registerEvent(Type.PLAYER_INTERACT, rightClickListener, Priority.Normal, this);
+		//Damage - Used for bounty
+		pm.registerEvent(Type.ENTITY_DAMAGE, entityListener, Priority.Normal, this);
+		//Enable/Disable - Used for hook up to other plugins
 		pm.registerEvent(Type.PLUGIN_ENABLE, pluginListener, Priority.Low, this);
 		pm.registerEvent(Type.PLUGIN_DISABLE, pluginListener, Priority.Low, this);
 		
@@ -712,7 +768,7 @@ public class BankAccount extends JavaPlugin {
 					return false;
 				}
 			} else if (type == "withdraw") {
-				if (passwordCheck(accountname, password)) {
+				if (PasswordSystem.passwordCheck(accountname, password)) {
 					if ((account - amount) >= 0) {
 						account -= amount;
 						stmt.executeUpdate("UPDATE `" + SQL_account_table + "` SET `amount` = '" + account + "' WHERE `accountname` = '" + accountname + "'");
@@ -725,7 +781,7 @@ public class BankAccount extends JavaPlugin {
 					return false;
 				}
 			} else if (type == "transfer") {
-				if (passwordCheck(accountname, password)) {
+				if (PasswordSystem.passwordCheck(accountname, password)) {
 					//Player = reciever account
 					double reciever_account = getBalance(player);
 					if ((account - amount) >= 0) {
@@ -753,7 +809,7 @@ public class BankAccount extends JavaPlugin {
 	}
 	
 	public boolean closeAccount(String accountname,String player,String password) {
-		if (passwordCheck(accountname, password)) {
+		if (PasswordSystem.passwordCheck(accountname, password)) {
 			try {
 				Account iConomyAccount = com.nijiko.coelho.iConomy.iConomy.getBank().getAccount(player);
 				double accountBalance = getBalance(accountname);
@@ -957,55 +1013,5 @@ public class BankAccount extends JavaPlugin {
 			consoleWarning("Error #13-1: " + e.toString());
 		}
 		return false;
-	}
-	
-	//PASSWORDS
-	
-	private boolean passwordCheck(String accountname,String password) {
-		String CryptPassword = passwordCrypt(password);
-		try {
-			ResultSet rs;
-			rs = stmt.executeQuery("SELECT `password` FROM `" + SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
-			while (rs.next()) {
-				if (CryptPassword.equalsIgnoreCase(rs.getString("password"))) {
-					return true;
-				} else if (rs.getString("password").equalsIgnoreCase(password)) {
-					return true;
-				}
-			}
-		} catch(SQLException e) {
-			if (!e.getMessage().equalsIgnoreCase(null))
-				consoleWarning("Error #20-3: " + e.getMessage());
-			else
-				consoleWarning("Error #20-2: " + e.getErrorCode() + " - " + e.getSQLState());
-		} catch(Exception e) {
-			consoleWarning("Error #20-1: " + e.toString());
-		}
-		return false;
-	}
-	
-	public String passwordCrypt(String password) {
-		byte[] temp = password.getBytes();
-		MessageDigest md;
-		try {
-			md = MessageDigest.getInstance("MD5");
-			md.update(temp);
-			byte[] output = md.digest();
-			password = bytesToHex(output);
-			return password;
-		} catch (NoSuchAlgorithmException e) {
-			consoleWarning("Error #21-1: Couldn't crypt password");
-			return "Error";
-		}
-	}
-
-	private String bytesToHex(byte[] b) {
-		char hexDigit[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
-		StringBuffer buf = new StringBuffer();
-		for (int j=0; j<b.length; j++) {
-			buf.append(hexDigit[(b[j] >> 4) & 0x0f]);
-			buf.append(hexDigit[b[j] & 0x0f]);
-		}
-		return buf.toString();
 	}
 }

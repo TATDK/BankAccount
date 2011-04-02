@@ -148,7 +148,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
 						if (args.length >= 3) {
 							password = args[2];
 						}
-						password = plugin.passwordCrypt(password);
+						password = plugin.PasswordSystem.passwordCrypt(password);
 						if (!password.equalsIgnoreCase("Error")) {
 							if (plugin.setPassword(args[1], password)) {
 								plugin.addTransaction(sendername, args[1], TransactionTypes.PASSWORD, 0.00);

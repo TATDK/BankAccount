@@ -68,6 +68,7 @@ public class LoanSystem {
 			        	if (plugin.getSaved(pairs.getKey()).bounty > 0.00) {
 			        		plugin.addTransaction(pairs.getKey(), "", TransactionTypes.LOAN_MISSING, pairs.getValue().remaining);
 			        	} else {
+			        		plugin.consoleLog(pairs.getKey() + " paid a part of the loan back");
 			        		plugin.addTransaction(pairs.getKey(), "", TransactionTypes.LOAN_PAID, 0.00);
 			        	}
 			        }

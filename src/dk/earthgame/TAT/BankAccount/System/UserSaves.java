@@ -8,6 +8,10 @@ public class UserSaves {
 	private static Location pos1;
 	private static Location pos2;
 	
+	public UserSaves() {
+		
+	}
+	
 	public void clearPositions() {
 		pos1 = null;
 		pos2 = null;
