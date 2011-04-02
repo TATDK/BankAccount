@@ -110,6 +110,9 @@ public class LoanSystem {
 			}
 			if (iConomyAccount.hasEnough(amount)) {
 				playerLoan.manualPayment(amount);
+				if (playerLoan.remaining <= 0.00) {
+					Loans.remove(player);
+				}
 				return amount;
 			}
 		}

@@ -271,7 +271,7 @@ public class BankAccount extends JavaPlugin {
 										consoleWarning("Couldn't execute interest");
 										consoleLog(e.toString());
 									}
-									consoleLog("Total given " + com.nijiko.coelho.iConomy.iConomy.getBank().format(totalGiven) + " " + com.nijiko.coelho.iConomy.iConomy.getBank().getCurrency() + " in interest");
+									consoleLog("Total given " + com.nijiko.coelho.iConomy.iConomy.getBank().format(totalGiven) + " in interest");
 								}
 							}, interestTime*20*60, interestTime*20*60);
 							consoleLog("Running interest every " + interestTime + " minutes by " + interestAmount + "%");

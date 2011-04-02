@@ -64,8 +64,6 @@ public class Loan {
 			subtract = (totalamount/parts);
 		}
 		
-		remaining -= subtract;
-		
 		try {
 			plugin.stmt.executeUpdate("UPDATE `" + plugin.SQL_loan_table + "` SET `part` = '" + part + "' WHERE `player` = '" + player + "'");
 		} catch (SQLException e) {
@@ -94,7 +92,9 @@ public class Loan {
 		} else {
 			account.subtract(subtract);
 		}
+		
 		remaining -= subtract;
+		
 		if (online) {
 			messageTo.sendMessage("ATM: " + ChatColor.GREEN + iConomy.getBank().format(subtract) + " paid off your loan.");
 			if (remaining <= 0) {
