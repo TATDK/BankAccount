@@ -36,6 +36,7 @@ import org.bukkit.util.config.Configuration;
 
 import com.nijiko.coelho.iConomy.iConomy;
 import com.nijiko.coelho.iConomy.system.Account;
+import com.nijiko.permissions.PermissionHandler;
 import com.nijikokun.bukkit.Permissions.Permissions;
 
 import dk.earthgame.TAT.BankAccount.System.Password;
@@ -83,7 +84,7 @@ public class BankAccount extends JavaPlugin {
 	public iConomy iConomy;
 	//Permissions
 	private boolean UseOP;
-	public Permissions Permissions = null;
+	public PermissionHandler Permissions = null;
 	private boolean UsePermissions;
 	public GroupManager GroupManager = null;
 	private boolean UseGroupManager;
@@ -96,6 +97,62 @@ public class BankAccount extends JavaPlugin {
 	
 	//SYSTEM
 	
+	void foundiConomy() {
+		if (LoanSystem.LoanActive && !LoanSystem.running) {
+			LoanSystem.startupRunner();
+		}
+		if (interestTime > 0) {
+			if (interestJobId > 0) {
+				getServer().getScheduler().cancelTask(interestJobId);
+			}
+			interestJobId = getServer().getScheduler().scheduleSyncRepeatingTask(thisPlugin, new Runnable() {
+				public void run() {
+					consoleLog("Running interest system");
+														
+					Double totalGiven = 0.00;
+					try {
+						if (UseMySQL) {
+							//MySQL
+							ResultSet accounts = stmt.executeQuery("SELECT `id`, `amount` FROM `" + SQL_account_table + "`");
+							while (accounts.next()) {
+								Double accountbalance = accounts.getDouble("amount");
+								totalGiven += accountbalance*(interestAmount/100);
+								accountbalance *= 1+(interestAmount/100);
+								accounts.updateDouble("amount", accountbalance);
+								accounts.updateRow();
+							}
+							accounts.close();
+						} else {
+							//SQLite
+							PreparedStatement prep = con.prepareStatement("UPDATE `" + SQL_account_table + "` SET `amount` = ? WHERE `accountname` = ?");
+							ResultSet accounts = stmt.executeQuery("SELECT `accountname`, `amount` FROM `" + SQL_account_table + "`");
+							while (accounts.next()) {
+								String accountname = accounts.getString("accountname");
+								Double accountbalance = accounts.getDouble("amount");
+								totalGiven += accountbalance*(interestAmount/100);
+								accountbalance *= 1+(interestAmount/100);
+								prep.setDouble(1, accountbalance);
+								prep.setString(2, accountname);
+								prep.addBatch();
+							}
+							accounts.close();
+							con.setAutoCommit(false);
+							prep.executeBatch();
+							con.commit();
+							con.setAutoCommit(true);
+						}
+					} catch (SQLException e) {
+						consoleWarning("Couldn't execute interest");
+						consoleLog(e.toString());
+					}
+					consoleLog("Total given " + com.nijiko.coelho.iConomy.iConomy.getBank().format(totalGiven) + " in interest");
+				}
+			}, interestTime*20*60, interestTime*20*60);
+			consoleLog("Running interest every " + interestTime + " minutes by " + interestAmount + "%");
+		}
+		consoleLog("Established connection with iConomy!");
+	}
+	
 	void consoleLog(String string) {
 		log.info(pdfFile.getName() + ": " + string);
 	}
@@ -103,12 +160,11 @@ public class BankAccount extends JavaPlugin {
 	public void consoleWarning(String string) {
 		log.warning(pdfFile.getName() + ": " + string);
 	}
-	
-	//System
-	boolean checkPermission(Player player,PermissionNodes node) {
+
+	boolean checkPermission(Player player,PermissionNodes node,boolean extraLookup) {
 		if (player != null) {
 			if (UsePermissions) {
-				if (com.nijikokun.bukkit.Permissions.Permissions.Security.permission(player, node.getNode())) {
+				if (Permissions.has(player, node.getNode())) {
 					return true;
 				}
 			}
@@ -122,12 +178,19 @@ public class BankAccount extends JavaPlugin {
 					return true;
 				}
 			}
-			if (node != PermissionNodes.ACCESS) {
-				if (checkPermission(player,PermissionNodes.ADMIN) || checkPermission(player,PermissionNodes.EXTENDED)) {
-					return true;
+			if (node != PermissionNodes.ACCESS && !extraLookup) {
+				if (node != PermissionNodes.ADMIN) {
+					if (checkPermission(player,PermissionNodes.ADMIN, true)) {
+						return true;
+					}
+				}
+				if (node != PermissionNodes.EXTENDED) {
+					if (checkPermission(player,PermissionNodes.EXTENDED, true)) {
+						return true;
+					}
 				}
 				if (node == PermissionNodes.OPEN || node == PermissionNodes.DEPOSIT || node == PermissionNodes.WITHDRAW) {
-					if (checkPermission(player, PermissionNodes.BASIC))
+					if (checkPermission(player, PermissionNodes.BASIC, true))
 						return true;
 				}
 			}
@@ -137,7 +200,7 @@ public class BankAccount extends JavaPlugin {
 	
 	//Open function
 	public boolean playerPermission(Player player,PermissionNodes node) {
-		return checkPermission(player, node);
+		return checkPermission(player, node, false);
 	}
 	
 	public void onEnable() {
@@ -224,65 +287,13 @@ public class BankAccount extends JavaPlugin {
 					Plugin test = checkPlugin("iConomy");
 					if (test != null) {
 						iConomy = (iConomy)test;
-						if (LoanSystem.LoanActive && !LoanSystem.running) {
-							LoanSystem.startupRunner();
-						}
-						if (interestTime > 0) {
-							if (interestJobId > 0) {
-								getServer().getScheduler().cancelTask(interestJobId);
-							}
-							interestJobId = getServer().getScheduler().scheduleSyncRepeatingTask(thisPlugin, new Runnable() {
-								public void run() {
-									consoleLog("Running interest system");
-																		
-									Double totalGiven = 0.00;
-									try {
-										if (UseMySQL) {
-											//MySQL
-											ResultSet accounts = stmt.executeQuery("SELECT `id`, `amount` FROM `" + SQL_account_table + "`");
-											while (accounts.next()) {
-												Double accountbalance = accounts.getDouble("amount");
-												totalGiven += accountbalance*(interestAmount/100);
-												accountbalance *= 1+(interestAmount/100);
-												accounts.updateDouble("amount", accountbalance);
-												accounts.updateRow();
-											}
-											accounts.close();
-										} else {
-											//SQLite
-											PreparedStatement prep = con.prepareStatement("UPDATE `" + SQL_account_table + "` SET `amount` = ? WHERE `accountname` = ?");
-											ResultSet accounts = stmt.executeQuery("SELECT `accountname`, `amount` FROM `" + SQL_account_table + "`");
-											while (accounts.next()) {
-												String accountname = accounts.getString("accountname");
-												Double accountbalance = accounts.getDouble("amount");
-												totalGiven += accountbalance*(interestAmount/100);
-												accountbalance *= 1+(interestAmount/100);
-												prep.setDouble(1, accountbalance);
-												prep.setString(2, accountname);
-												prep.addBatch();
-											}
-											accounts.close();
-											con.setAutoCommit(false);
-											prep.executeBatch();
-											con.commit();
-											con.setAutoCommit(true);
-										}
-									} catch (SQLException e) {
-										consoleWarning("Couldn't execute interest");
-										consoleLog(e.toString());
-									}
-									consoleLog("Total given " + com.nijiko.coelho.iConomy.iConomy.getBank().format(totalGiven) + " in interest");
-								}
-							}, interestTime*20*60, interestTime*20*60);
-							consoleLog("Running interest every " + interestTime + " minutes by " + interestAmount + "%");
-						}
-						consoleLog("Established connection with " + plugin + "!");
+						foundiConomy();
 					}
 				}
 				if (Permissions == null && plugin.equalsIgnoreCase("Permissions")) {
 					Plugin test = checkPlugin("Permissions");
 					if (test != null) {
-						Permissions = (Permissions)test;
+						Permissions = ((Permissions)test).getHandler();
 						consoleLog("Established connection with " + plugin + "!");
 					}
 				}
@@ -343,6 +354,7 @@ public class BankAccount extends JavaPlugin {
 		checkJobId = this.getServer().getScheduler().scheduleSyncDelayedTask(thisPlugin, new Runnable() {
 			public void run() {
 				if (iConomy == null) {
+					//Shutdown if iConomy isn't found
 					consoleWarning("Stopping BankAccount - Reason: Missing iConomy plugin!");
 					getServer().getPluginManager().disablePlugin(thisPlugin);
 					checkJobId = 0;
@@ -352,6 +364,41 @@ public class BankAccount extends JavaPlugin {
 
 		createDefaultConfiguration();
 		loadConfiguration();
+		
+		/*
+		 * Check if missing hook up is possible
+		 * Checking for iConomy, GroupManager, Permissions
+		 * 
+		 * Run 1 minute after BankAccount startup
+		 * Used if BankAccount is started after one of the third-part plugins
+		 */
+		if (iConomy == null) {
+			Plugin test = getServer().getPluginManager().getPlugin("iConomy");
+			if (test != null) {
+				if (test.isEnabled()) {
+					iConomy = (iConomy)test;
+					foundiConomy();
+				}
+			}
+		}
+		if (Permissions == null) {
+			Plugin test = getServer().getPluginManager().getPlugin("Permissions");
+			if (test != null) {
+				if (test.isEnabled()) {
+					Permissions = ((Permissions)test).getHandler();
+					consoleLog("Established connection with Permissions!");
+				}
+			}
+		}
+		if (GroupManager == null) {
+			Plugin test = getServer().getPluginManager().getPlugin("GroupManager");
+			if (test != null) {
+				if (test.isEnabled()) {
+					GroupManager = (GroupManager)test;
+					consoleLog("Established connection with GroupManager!");
+				}
+			}
+		}
 	}
 
 	public void onDisable() {

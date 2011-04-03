@@ -31,7 +31,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
 		String sendername = ((Player)sender).getName();
 		if (label.equalsIgnoreCase("account")) {
 			if (!plugin.playerPermission((Player)sender,PermissionNodes.ACCESS)) {
-				sender.sendMessage("You don't have access to use BankAccount");
+				sender.sendMessage(ChatColor.DARK_RED + "You don't have access to use BankAccount");
 				return true;
 			}
 			//LocationCheck: Are you in bankarea?
@@ -488,7 +488,14 @@ public class BankAccountCommandExecutor implements CommandExecutor {
 			}
 		}
 		
-		player.sendMessage(ChatColor.DARK_GREEN + "Bank Account Help - Page " + Page + " of " + (int)Math.ceil(commands.size()/7));
+		int pages = (int)Math.max(1, Math.ceil(commands.size()/7));
+		//Only show pages that exists
+		if (Page > pages) {
+			Page = pages;
+		} else if (Page < 0) {
+			Page = 1;
+		}
+		player.sendMessage(ChatColor.DARK_GREEN + "Bank Account Help - Page " + Page + " of " + pages);
 		player.sendMessage(ChatColor.DARK_GREEN + "This is used mainly to shared bank accounts");
 		player.sendMessage(ChatColor.GOLD + "/account help [page]");
 		if (commands.size() > 7) {

@@ -16,6 +16,7 @@ New way to add missing tables
 New way to hook up to plugin
 New way to show help
 Code cleanup
+Updated to CraftBukkit #617
 
 0.3e
 Change from int to double in ATM
