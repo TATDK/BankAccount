@@ -2,7 +2,7 @@ Plugin: BankAccount
 Author: TAT
 CHANGELOG
 
-0.4EARLYBIRDY
+0.4
 Added loan
 	- Automatic payment
 	- Manual payment

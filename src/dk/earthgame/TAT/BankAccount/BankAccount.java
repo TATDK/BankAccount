@@ -204,6 +204,8 @@ public class BankAccount extends JavaPlugin {
 	}
 	
 	public void onEnable() {
+		getDataFolder().mkdir();
+		
 		// Register our events
 		getCommand("account").setExecutor(new BankAccountCommandExecutor(this));
 		getCommand("account").setUsage("/account help - Show help to BankAccount");
