@@ -488,7 +488,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
 			}
 		}
 		
-		int pages = (int)Math.max(1, Math.ceil(commands.size()/7));
+		int pages = (int)Math.max(1, Math.ceil(commands.size()/7)+1);
 		//Only show pages that exists
 		if (Page > pages) {
 			Page = pages;
@@ -499,7 +499,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
 		player.sendMessage(ChatColor.DARK_GREEN + "This is used mainly to shared bank accounts");
 		player.sendMessage(ChatColor.GOLD + "/account help [page]");
 		if (commands.size() > 7) {
-			int start = Page*7;
+			int start = (Page-1)*7;
 			int temp = 0;
 			for (String command : commands) {
 				temp++;
