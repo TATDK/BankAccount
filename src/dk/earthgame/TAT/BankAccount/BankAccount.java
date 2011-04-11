@@ -292,14 +292,14 @@ public class BankAccount extends JavaPlugin {
 						foundiConomy();
 					}
 				}
-				if (Permissions == null && plugin.equalsIgnoreCase("Permissions")) {
+				if (Permissions == null && plugin.equalsIgnoreCase("Permissions") && UsePermissions) {
 					Plugin test = checkPlugin("Permissions");
 					if (test != null) {
 						Permissions = ((Permissions)test).getHandler();
 						consoleLog("Established connection with " + plugin + "!");
 					}
 				}
-				if (GroupManager == null && plugin.equalsIgnoreCase("GroupManager")) {
+				if (GroupManager == null && plugin.equalsIgnoreCase("GroupManager") && UseGroupManager) {
 					Plugin test = checkPlugin("GroupManager");
 					if (test != null) {
 						GroupManager = (GroupManager)test;
@@ -383,7 +383,7 @@ public class BankAccount extends JavaPlugin {
 				}
 			}
 		}
-		if (Permissions == null) {
+		if (Permissions == null && UsePermissions) {
 			Plugin test = getServer().getPluginManager().getPlugin("Permissions");
 			if (test != null) {
 				if (test.isEnabled()) {
@@ -392,7 +392,7 @@ public class BankAccount extends JavaPlugin {
 				}
 			}
 		}
-		if (GroupManager == null) {
+		if (GroupManager == null && UseGroupManager) {
 			Plugin test = getServer().getPluginManager().getPlugin("GroupManager");
 			if (test != null) {
 				if (test.isEnabled()) {
