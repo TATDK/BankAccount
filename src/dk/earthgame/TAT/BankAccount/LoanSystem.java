@@ -109,6 +109,7 @@ public class LoanSystem {
 				amount = playerLoan.remaining;
 			}
 			if (iConomyAccount.hasEnough(amount)) {
+				iConomyAccount.subtract(amount);
 				playerLoan.manualPayment(amount);
 				if (playerLoan.remaining <= 0.00) {
 					Loans.remove(player);

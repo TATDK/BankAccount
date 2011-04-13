@@ -6,8 +6,10 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -56,8 +58,9 @@ public class BankAccount extends JavaPlugin {
 	//System
 	protected final Logger log = Logger.getLogger("Minecraft");
 	private PluginDescriptionFile pdfFile;
+	HashMap<String, Integer> fontWidth = new HashMap<String, Integer>();
 	private File myFolder;
-	public Configuration config;
+	Configuration config;
 	private int interestTime;
 	private double interestAmount;
 	private int interestJobId;
@@ -96,6 +99,173 @@ public class BankAccount extends JavaPlugin {
 	//#########################################################################//
 	
 	//SYSTEM
+	
+	void loadFontWidth() {
+		/*
+		 * Widths is in pixels
+		 * Got them from fontWidths.txt uploaded to the Bukkit forum by Edward Hand
+		 * http://forums.bukkit.org/threads/formatting-plugin-output-text-into-columns.8481/
+		 */
+		fontWidth.clear();
+		fontWidth.put(" ",4);
+		fontWidth.put("!",2);
+		fontWidth.put("\"",5);
+		fontWidth.put("#",6);
+		fontWidth.put("$",6);
+		fontWidth.put("%",6);
+		fontWidth.put("&",6);
+		fontWidth.put("'",3);
+		fontWidth.put("(",5);
+		fontWidth.put(")",5);
+		fontWidth.put("*",5);
+		fontWidth.put("+",6);
+		fontWidth.put(",",2);
+		fontWidth.put("-",6);
+		fontWidth.put(".",2);
+		fontWidth.put("/",6);
+		fontWidth.put("0",6);
+		fontWidth.put("1",6);
+		fontWidth.put("2",6);
+		fontWidth.put("3",6);
+		fontWidth.put("4",6);
+		fontWidth.put("5",6);
+		fontWidth.put("6",6);
+		fontWidth.put("7",6);
+		fontWidth.put("8",6);
+		fontWidth.put("9",6);
+		fontWidth.put(":",2);
+		fontWidth.put(";",2);
+		fontWidth.put("<",5);
+		fontWidth.put("=",6);
+		fontWidth.put(">",5);
+		fontWidth.put("?",6);
+		fontWidth.put("@",7);
+		fontWidth.put("A",6);
+		fontWidth.put("B",6);
+		fontWidth.put("C",6);
+		fontWidth.put("D",6);
+		fontWidth.put("E",6);
+		fontWidth.put("F",6);
+		fontWidth.put("G",6);
+		fontWidth.put("H",6);
+		fontWidth.put("I",4);
+		fontWidth.put("J",6);
+		fontWidth.put("K",6);
+		fontWidth.put("L",6);
+		fontWidth.put("M",6);
+		fontWidth.put("N",6);
+		fontWidth.put("O",6);
+		fontWidth.put("P",6);
+		fontWidth.put("Q",6);
+		fontWidth.put("R",6);
+		fontWidth.put("S",6);
+		fontWidth.put("T",6);
+		fontWidth.put("U",6);
+		fontWidth.put("V",6);
+		fontWidth.put("W",6);
+		fontWidth.put("X",6);
+		fontWidth.put("Y",6);
+		fontWidth.put("Z",6);
+		fontWidth.put("[",4);
+		fontWidth.put("\\",6);
+		fontWidth.put("]",4);
+		fontWidth.put("^",6);
+		fontWidth.put("_",6);
+		fontWidth.put("'",3);
+		fontWidth.put("a",6);
+		fontWidth.put("b",6);
+		fontWidth.put("c",6);
+		fontWidth.put("d",6);
+		fontWidth.put("e",6);
+		fontWidth.put("f",5);
+		fontWidth.put("g",6);
+		fontWidth.put("h",6);
+		fontWidth.put("i",2);
+		fontWidth.put("j",6);
+		fontWidth.put("k",5);
+		fontWidth.put("l",3);
+		fontWidth.put("m",6);
+		fontWidth.put("n",6);
+		fontWidth.put("o",6);
+		fontWidth.put("p",6);
+		fontWidth.put("q",6);
+		fontWidth.put("r",6);
+		fontWidth.put("s",6);
+		fontWidth.put("t",4);
+		fontWidth.put("u",6);
+		fontWidth.put("v",6);
+		fontWidth.put("w",6);
+		fontWidth.put("x",6);
+		fontWidth.put("y",6);
+		fontWidth.put("z",6);
+		fontWidth.put("{",5);
+		fontWidth.put("|",2);
+		fontWidth.put("}",5);
+		fontWidth.put("~",7);
+		fontWidth.put("⌂",6);
+		fontWidth.put("Ç",6);
+		fontWidth.put("ü",6);
+		fontWidth.put("é",6);
+		fontWidth.put("â",6);
+		fontWidth.put("ä",6);
+		fontWidth.put("à",6);
+		fontWidth.put("å",6);
+		fontWidth.put("ç",6);
+		fontWidth.put("ê",6);
+		fontWidth.put("ë",6);
+		fontWidth.put("è",6);
+		fontWidth.put("ï",4);
+		fontWidth.put("î",6);
+		fontWidth.put("ì",3);
+		fontWidth.put("Ä",6);
+		fontWidth.put("Å",6);
+		fontWidth.put("É",6);
+		fontWidth.put("æ",6);
+		fontWidth.put("Æ",6);
+		fontWidth.put("ô",6);
+		fontWidth.put("ö",6);
+		fontWidth.put("ò",6);
+		fontWidth.put("û",6);
+		fontWidth.put("ù",6);
+		fontWidth.put("ÿ",6);
+		fontWidth.put("Ö",6);
+		fontWidth.put("Ü",6);
+		fontWidth.put("ø",6);
+		fontWidth.put("£",6);
+		fontWidth.put("Ø",6);
+		fontWidth.put("×",4);
+		fontWidth.put("ƒ",6);
+		fontWidth.put("á",6);
+		fontWidth.put("í",3);
+		fontWidth.put("ó",6);
+		fontWidth.put("ú",6);
+		fontWidth.put("ñ",6);
+		fontWidth.put("Ñ",6);
+		fontWidth.put("ª",6);
+		fontWidth.put("º",6);
+		fontWidth.put("¿",6);
+		fontWidth.put("®",7);
+		fontWidth.put("¬",6);
+		fontWidth.put("½",6);
+		fontWidth.put("¼",6);
+		fontWidth.put("¡",2);
+		fontWidth.put("«",6);
+		fontWidth.put("»",6);
+	}
+	
+	int stringWidth(String text) {
+		if (fontWidth.isEmpty()) {
+			return 0;
+		}
+		char[] chars = text.toCharArray();
+		int width = 0;
+		for (char current : chars) {
+			if (fontWidth.containsKey(String.valueOf(current))) {
+				width += fontWidth.get(String.valueOf(current));
+			}
+		}
+		return width;
+	}
 	
 	void foundiConomy() {
 		if (LoanSystem.LoanActive && !LoanSystem.running) {
@@ -353,6 +523,9 @@ public class BankAccount extends JavaPlugin {
 			consoleLog("Folder created");
 		}
 		
+		/*
+		 * Check if iConomy isn't hooked up 1 minute after startup of BankAccount
+		 */
 		checkJobId = this.getServer().getScheduler().scheduleSyncDelayedTask(thisPlugin, new Runnable() {
 			public void run() {
 				if (iConomy == null) {
@@ -366,12 +539,12 @@ public class BankAccount extends JavaPlugin {
 
 		createDefaultConfiguration();
 		loadConfiguration();
+		loadFontWidth();
 		
 		/*
 		 * Check if missing hook up is possible
 		 * Checking for iConomy, GroupManager, Permissions
 		 * 
-		 * Run 1 minute after BankAccount startup
 		 * Used if BankAccount is started after one of the third-part plugins
 		 */
 		if (iConomy == null) {
@@ -662,19 +835,12 @@ public class BankAccount extends JavaPlugin {
 			} else {
 				rs = stmt.executeQuery("SELECT `rowid` FROM `" + SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
 			}
-			try {
-				while (rs.next()) {
-					if (UseMySQL) {
-						id = rs.getInt("id");
-					} else {
-						id = rs.getInt("rowid");
-					}
+			while (rs.next()) {
+				if (UseMySQL) {
+					id = rs.getInt("id");
+				} else {
+					id = rs.getInt("rowid");
 				}
-			} catch (SQLException e1) {
-				if (!e1.getMessage().equalsIgnoreCase(null))
-					consoleWarning("Error #01-4: " + e1.getMessage());
-				else
-					consoleWarning("Error #01-3: " + e1.getErrorCode() + " - " + e1.getSQLState());
 			}
 		} catch (SQLException e) {
 			if (!e.getMessage().equalsIgnoreCase(null))
@@ -686,6 +852,26 @@ public class BankAccount extends JavaPlugin {
 			return true;
 		}
 		return false;
+	}
+	
+	public List<String> accountList(String player) {
+		List<String> accounts = new ArrayList<String>();
+		ResultSet rs;
+		try {
+			rs = stmt.executeQuery("SELECT `accountname` FROM `" + SQL_account_table + "` WHERE `players` LIKE '%" + player + "%'");
+			while (rs.next()) {
+				//Make sure it's not just a part of the name
+				if (accessAccount(rs.getString("accountname"),player)) {
+					accounts.add(rs.getString("accountname"));
+				}
+			}
+		} catch (SQLException e) {
+			if (!e.getMessage().equalsIgnoreCase(null))
+				consoleWarning("Error #22-2: " + e.getMessage());
+			else
+				consoleWarning("Error #22-1: " + e.getErrorCode() + " - " + e.getSQLState());
+		}
+		return accounts;
 	}
 	
 	public boolean addAccount(String accountname,String players) {

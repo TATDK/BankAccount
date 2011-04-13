@@ -13,7 +13,7 @@ public enum PermissionNodes {
 	TRANSFER			("bankaccount.transfer"),	//Access to transfer from own accounts
 	LOAN				("bankaccount.loan"),		//Access to loan money
 	EXTENDED			("bankaccount.extended"),	//Access to all commands except area commands
-	BASIC				("backaccount.basic");		//Access the same as: open,user,deposit,withdraw
+	BASIC				("bankaccount.basic");		//Access the same as: open,user,deposit,withdraw
 	
 	private final String node;
 	PermissionNodes(String node) {

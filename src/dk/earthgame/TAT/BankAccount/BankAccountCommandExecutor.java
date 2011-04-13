@@ -54,6 +54,9 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   						sender.sendMessage("ATM: You're not in bank area");
   						return true;
   					}
+  					if (plugin.stringWidth(args[1]) > 150) {
+  						sender.sendMessage("ATM: " + ChatColor.RED + "Accountname to long");
+  					}
   					if (plugin.accountExists(args[1])) {
   						sender.sendMessage("ATM: " + ChatColor.RED + "Accountname is taken");
   					} else {
@@ -106,6 +109,29 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   							sender.sendMessage(ChatColor.WHITE + "Players: " + ChatColor.GREEN + plugin.getUsers(args[1]));
   						} else {
   							sender.sendMessage("ATM: " + ChatColor.RED + "You don't have access to this account!");
+  						}
+  					}
+  				} else if (args[0].equalsIgnoreCase("list") && args.length >= 2) {
+  					if (!locationCheck) {
+  						sender.sendMessage("ATM: You're not in bank area");
+  						return true;
+  					}
+  					List<String> accounts = plugin.accountList(sendername);
+  					int tmpWidth = 0;
+  					String output = "";
+  					for (String account : accounts) {
+  						if (tmpWidth == 0) {
+  							tmpWidth = plugin.stringWidth(account);
+  							output = account;
+  						} else {
+  							while (tmpWidth < 160) {
+  								output += " ";
+  								tmpWidth += plugin.stringWidth(" ");
+  							}
+  							output += account;
+  	  						sender.sendMessage(output);
+  	  						tmpWidth = 0;
+  	  						output = "";
   						}
   					}
   				} else if (args[0].equalsIgnoreCase("adduser") && args.length >= 3) {

@@ -2,6 +2,13 @@ Plugin: BankAccount
 Author: TAT
 CHANGELOG
 
+0.5DEV
+Fixed basic permissionnode
+Fixed not showing all commands in help
+Added command to list accounts
+Do no longer look for unused plugins
+Now subtract money when manual payment is used
+
 0.4
 Added loan
 	- Automatic payment

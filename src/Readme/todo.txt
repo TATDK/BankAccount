@@ -3,4 +3,3 @@ Author: TAT
 TODO
 
 - NPC Banker and Trader?? (Perhaps)
-- Loans

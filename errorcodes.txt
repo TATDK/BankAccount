@@ -1,5 +1,5 @@
 The error codes are set after the following rule
-#[function in 2 digits]-[error number]
+#[functionID in 2 digits]-[error number]
 
 ID       Function
 ----------------------
@@ -24,14 +24,12 @@ ID       Function
 19       subtract
 20       passwordCheck
 21       passwordCrypt
-22       
+22       accountList
 
 Error code    Function        Description
 ------------------------------------------------------------------------
 #01-1         accountExists   Error lookup account - Response type 1
 #01-2         accountExists   Error lookup account - Response type 2
-#01-3         accountExists   Error getting ID - Response type 1
-#01-4         accountExists   Error getting ID - Response type 2
 #02-1         addAccount      Error adding account - Response type 1
 #02-2         addAccount      Error adding account - Response type 2
 #03-1         accessAccount   Exception error
@@ -84,3 +82,5 @@ Error code    Function        Description
 #20-2         passwordCheck   SQLException error - Response type 1
 #20-3         passwordCheck   SQLException error - Response type 2
 #21-1         passwordCrypt   Error crypting password
+#22-1         accountList     Error getting list - Response type 1
+#22-2         accountList     Error getting list - Response type 2
