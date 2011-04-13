@@ -134,6 +134,10 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   	  						output = "";
   						}
   					}
+  					//If not all accounts is sent
+  					if (output != "") {
+  						sender.sendMessage(output);
+  					}
   				} else if (args[0].equalsIgnoreCase("adduser") && args.length >= 3) {
   					if (!locationCheck) {
   						sender.sendMessage("ATM: You're not in bank area");
