@@ -5,7 +5,13 @@ CHANGELOG
 0.5DEV
 Fixed basic permissionnode
 Fixed not showing all commands in help
+Fixed lookup for access when using SuperAdmin
 Added command to list accounts
+Added setting for let players deposit to all accounts
+Cleanup in config to make it (hopefully) more simple
+- SQL-tables grouped
+- Permissions grouped
+- Global replaced by Areas
 Do no longer look for unused plugins
 Now subtract money when manual payment is used
 

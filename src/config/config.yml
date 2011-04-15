@@ -5,23 +5,18 @@
 ##
 
 ##
-#Config: UseMySQL
-#Example: true = MySQL // false = SQLite (flatfile)
+#SQL Settings
+#    Transaction: true = save transactions in table // false = don't save transactions
+#    MySQL: true = database (MySQL) // false = flatfile (SQLite)
+#    Host: [ONLY MySQL] Server IP or address to MySQL server (Same as Minecraft server: localhost)
+#    Port: [ONLY MySQL] Server port to MySQL server (Default: 3306)
+#    User: [ONLY MySQL] Username to MySQL
+#    Pass: [ONLY MySQL] Password to MySQL
+#    Database: [ONLY MySQL] Database where the data must be saved
 ##
-UseMySQL: false
-
-##
-#Config: Transactions
-#Doing: Save transactions in table
-#Example: true = activate // false = deactivate
-##
-Transactions: true
-
-##
-#Informations to your MySQL connection
-#Only if you're using MySQL (Set in UseMySQL)
-##
-MySQL-info:
+SQL-info:
+    Transactions: true
+    MySQL: false
     Host: localhost
     Port: 3306
     User: root
@@ -29,48 +24,44 @@ MySQL-info:
     Database: minecraft
 
 ##
-#Config: SQL-account-table / SQL-area-table
-#Doing: Names of account and area table
+#Config: SQL-tables (Account / Area / Loan / Transaction)
+#Doing: Names of SQL tables
 ##
-SQL-account-table: bankaccounts
-SQL-area-table: bankareas
-SQL-loan-table: bankloans
-SQL-transaction-table: banktransactions
+SQL-tables:
+    Account: bankaccounts
+    Area: bankareas
+    Loan: bankloans
+    Transaction: banktransactions
 
 ##
-#Config: UseOP / UsePermissions
-#Doing: Use OP, Permissions and/or GroupManager(FakePermissions) to get admins
-#Example: true = activate // false = deactivate
+#Permissions settings (Permission plugins and other permission configs)
+#    OP: true = use OP // false = don't use OP
+#    Permissions: true = use Permissions // false = don't use Permissions
+#    GroupManager: true = use GroupManager // false = don't use GroupManager
+#    SuperAdmins: true = admins have access to all accounts // false = admins only have access to own accounts
+#    DepositAll: true = players can deposit to all accounts // false = players can only deposit to own accounts (players must have permission to deposit)
 ##
-UseOP: true
-UsePermissions: false
-UseGroupManager: false
+Permissions:
+    OP: true
+    Permissions: false
+    GroupManager: false
+    SuperAdmins: true
+    DepositAll: true
 
 ##
-#Config: SuperAdmins
-#Doing: Give the admins power to access all accounts?
-#Example: true = activate // false = deactivate
+#Config: Areas
+#Doing: Is it possible to use commands global or in specific areas (example: banks or trade areas)?
+#    Active: true = specific areas // false = global
+#    AreaWandId: 339 (Paper) // Other item ID
 ##
-SuperAdmins: true
-
-##
-#Config: Global
-#Doing: Is it possible to use commands global or in specific areas?
-#Example: true = global // false = specific areas
-##
-Global: true
-
-##
-#Config: AreaWandId
-#Doing: Item ID to selection of areas
-#Example: 339 = Paper
-##
-AreaWandId: 339
+Areas:
+    Active: true
+    AreaWandId: 339
 
 ##
 #Interest settings
-#Time is in minutes
-#Amount is % of account balance added to every account
+#    Time is in minutes
+#    Amount is % of account balance added to every account
 ##
 Interest:
     Time: 5
@@ -78,19 +69,19 @@ Interest:
 
 ##
 #Loan settings
-#Active: true = activate // false = deactivate
-#Fixed-rate: 0 = no fixed rate // > 0 = fixed rate set to value
-#Rate: Variable rates after amount loaned (only if fixed-rate is set to zero)
-#    Example: 0.01: 0.05
-#             50.01: 0.10
-#             Loans from 0.01 => 50.00 there there will be a rate on 0.05
-#             Loans from 50.01 => Max_amount there will be a rate on 0.10
-#Max-amount: 0.00 = No limit // > 0.00 = Highest amount that can be borrowed at a time (Note: only 1 loan at a time)
-#Payment-time: 0 = No deadline // > 0 = Deadline x minutes after loan taken (20 minutes = 1 Minecraft day)
-#Payment-parts: Split the payment up in x parts
-#    Example: Payment-time: 60, Payment-parts: 3
-#             The money must be paid back after 60 minutes (3 Minecraft days)
-#             The money will be split in 3 parts and after 60/3 = 20 minutes (1 Minecraft day) the first part will be paid automatically 
+#    Active: true = activate // false = deactivate
+#    Fixed-rate: 0 = no fixed rate // > 0 = fixed rate set to value
+#    Rate: Variable rates after amount loaned (only if fixed-rate is set to zero)
+#        Example: 0.01: 0.05
+#                 50.01: 0.10
+#                 Loans from 0.01 => 50.00 there there will be a rate on 0.05
+#                 Loans from 50.01 => Max_amount there will be a rate on 0.10
+#    Max-amount: 0.00 = No limit // > 0.00 = Highest amount that can be borrowed at a time (Note: only 1 loan at a time)
+#    Payment-time: 0 = No deadline // > 0 = Deadline x minutes after loan taken (20 minutes = 1 Minecraft day)
+#    Payment-parts: Split the payment up in x parts
+#        Example: Payment-time: 60, Payment-parts: 3
+#                 The money must be paid back after 60 minutes (3 Minecraft days)
+#                 The money will be split in 3 parts and after 60/3 = 20 minutes (1 Minecraft day) the first part will be paid automatically 
 ##
 Loan:
     Active: false

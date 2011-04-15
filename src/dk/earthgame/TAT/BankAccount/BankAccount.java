@@ -44,6 +44,7 @@ import com.nijikokun.bukkit.Permissions.Permissions;
 import dk.earthgame.TAT.BankAccount.System.Password;
 import dk.earthgame.TAT.BankAccount.System.PermissionNodes;
 import dk.earthgame.TAT.BankAccount.System.TransactionTypes;
+import dk.earthgame.TAT.BankAccount.System.Upgrade;
 import dk.earthgame.TAT.BankAccount.System.UserSaves;
 
 import org.anjocaido.groupmanager.GroupManager;
@@ -87,12 +88,13 @@ public class BankAccount extends JavaPlugin {
 	public iConomy iConomy;
 	//Permissions
 	private boolean UseOP;
-	public PermissionHandler Permissions = null;
+	private PermissionHandler Permissions = null;
 	private boolean UsePermissions;
-	public GroupManager GroupManager = null;
+	private GroupManager GroupManager = null;
 	private boolean UseGroupManager;
-	public boolean Global;
-	public boolean SuperAdmins;
+	boolean Areas;
+	private boolean SuperAdmins;
+	boolean DepositAll;
 	//Transaction
 	private boolean Transactions;
 
@@ -323,7 +325,7 @@ public class BankAccount extends JavaPlugin {
 		consoleLog("Established connection with iConomy!");
 	}
 	
-	void consoleLog(String string) {
+	public void consoleLog(String string) {
 		log.info(pdfFile.getName() + ": " + string);
 	}
 
@@ -465,6 +467,7 @@ public class BankAccount extends JavaPlugin {
 				if (Permissions == null && plugin.equalsIgnoreCase("Permissions") && UsePermissions) {
 					Plugin test = checkPlugin("Permissions");
 					if (test != null) {
+						((Permissions)test).getDatabase();
 						Permissions = ((Permissions)test).getHandler();
 						consoleLog("Established connection with " + plugin + "!");
 					}
@@ -616,29 +619,31 @@ public class BankAccount extends JavaPlugin {
 	private boolean loadConfiguration() {
 		config = new Configuration(new File(this.getDataFolder(), "config.yml"));
 		config.load();
-		//MySQL
-		UseMySQL = config.getBoolean("UseMySQL", false);
-		MySQL_host = config.getString("MySQL-info.Host","localhost");
-		MySQL_port = config.getString("MySQL-info.Port","3306");
-		MySQL_username = config.getString("MySQL-info.User","root");
-		MySQL_password = config.getString("MySQL-info.Pass","");
-		MySQL_database = config.getString("MySQL-info.Database","minecraft");
 		//SQL
-		SQL_account_table = config.getString("SQL-account-table","bankaccounts");
-		SQL_area_table = config.getString("SQL-area-table","bankareas");
-		SQL_loan_table = config.getString("SQL-loan-table","bankloans");
-		SQL_transaction_table = config.getString("SQL-transactions-table","banktransactions");
+		Transactions = config.getBoolean("SQL-info.Transactions", false);
+		UseMySQL = config.getBoolean("SQL-info.MySQL", false);
+		MySQL_host = config.getString("SQL-info.Host","localhost");
+		MySQL_port = config.getString("SQL-info.Port","3306");
+		MySQL_username = config.getString("SQL-info.User","root");
+		MySQL_password = config.getString("SQL-info.Pass","");
+		MySQL_database = config.getString("SQL-info.Database","minecraft");
+		//SQL TABLES
+		SQL_account_table = config.getString("SQL-tables.Account","bankaccounts");
+		SQL_area_table = config.getString("SQL-tables.Area","bankareas");
+		SQL_loan_table = config.getString("SQL-tables.Loan","bankloans");
+		SQL_transaction_table = config.getString("SQL-tables.Transaction","banktransactions");
 		//Permissions
-		SuperAdmins = config.getBoolean("SuperAdmins", false);
-		UseOP = config.getBoolean("UseOP",true);
-		UsePermissions = config.getBoolean("UsePermissions",false);
-		UseGroupManager = config.getBoolean("UseGroupManager",false);
+		UseOP = config.getBoolean("Permissions.OP",true);
+		UsePermissions = config.getBoolean("Permissions.Permissions",false);
+		UseGroupManager = config.getBoolean("Permissions.GroupManager",false);
+		SuperAdmins = config.getBoolean("Permissions.SuperAdmins", false);
+		DepositAll = config.getBoolean("Permissions.DepositAll", false);
 		//Interest
 		interestAmount = config.getDouble("Interest.Amount", 0);
 		interestTime = config.getInt("Interest.Time", 0);
 		//Area
-		Global = config.getBoolean("Global",true);
-		areaWandId = config.getInt("AreaWandid",339);
+		Areas = config.getBoolean("Areas.Active",false);
+		areaWandId = config.getInt("Areas.AreaWandid",339);
 		//Loan
 		LoanSystem.LoanActive = config.getBoolean("Loan.Active", false);
 		LoanSystem.Fixed_rate = config.getDouble("Loan.Fixed-rate", 0.00);
@@ -646,8 +651,6 @@ public class BankAccount extends JavaPlugin {
 		LoanSystem.Max_amount = config.getDouble("Loan.Max-amount", 200.00);
 		LoanSystem.PaymentTime = config.getInt("Loan.Payment-time", 60);
 		LoanSystem.PaymentParts = config.getInt("Loan.Payment-parts", 3);
-		//Other
-		Transactions = config.getBoolean("Transactions", false);
 		
 		consoleLog("Properties Loaded");
 		try {
@@ -728,32 +731,7 @@ public class BankAccount extends JavaPlugin {
 						stmt.execute(query);
 					}
 					
-					//Upgrade 0.3c
-					File Upgrade03c = new File(this.getDataFolder(), "SQLUpgrade03c");
-					if (Upgrade03c.exists()) {
-						try {
-							if (UseMySQL) {
-								String query = "ALTER TABLE `" + SQL_account_table + "` CHANGE  `amount`  `amount` DOUBLE( 255, 2 ) NOT NULL DEFAULT  '0.00'";
-								stmt.execute(query);
-								consoleLog("Tables upgraded to v.0.3c");
-								if (Upgrade03c.delete()) {
-									consoleLog("SQLUpgrade03c deleted");
-								} else {
-									consoleWarning("SQLUpgrade03c could not be deleted, please remove it yourself");
-								}
-							} else {
-								consoleLog("SQLUpgrade03c is not for SQLite");
-								if (Upgrade03c.delete()) {
-									consoleLog("SQLUpgrade03c deleted");
-								} else {
-									consoleWarning("SQLUpgrade03c could not be deleted, please remove it yourself");
-								}
-							}
-						} catch (SQLException e4) {
-							consoleWarning("Could not upgrade tables to v.0.3c");
-							consoleWarning(e4.toString());
-						}
-					}
+					new Upgrade(this, UseMySQL);
 				} catch (SQLException e3) {
 					consoleWarning("Failed to find and create table " + SQL_account_table);
 					consoleWarning("Failed to find and create table " + SQL_area_table);
@@ -887,10 +865,40 @@ public class BankAccount extends JavaPlugin {
 		return false;
 	}
 	
-	public boolean accessAccount(String accountname,String player) {
-		if (SuperAdmins) {
-			return true;
+	public boolean accessAccount(String accountname,Player player) {
+		if (SuperAdmins && playerPermission(player, PermissionNodes.ADMIN)) {
+			if (accountExists(accountname)) {
+				return true;
+			} else {
+				return false;
+			}
 		}
+		try {
+			ResultSet rs;
+			rs = stmt.executeQuery("SELECT `players` FROM `" + SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
+			while(rs.next()) {
+				String[] players = rs.getString("players").split(";");
+				for (String p : players) {
+					if (p.equalsIgnoreCase(player.getName())) {
+						return true;
+					}
+				}
+			}
+		} catch(SQLException e1) {
+			if (!e1.getMessage().equalsIgnoreCase(null))
+				consoleWarning("Error #03-3: " + e1.getMessage());
+			else
+				consoleWarning("Error #03-2: " + e1.getErrorCode() + " - " + e1.getSQLState());
+		} catch(Exception e) {
+			consoleWarning("Error #03-1: " + e.toString());
+		}
+		return false;
+	}
+	
+	/*
+	 * Doesn't support SuperAdmins
+	 */
+	public boolean accessAccount(String accountname,String player) {
 		try {
 			ResultSet rs;
 			rs = stmt.executeQuery("SELECT `players` FROM `" + SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");

@@ -36,7 +36,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
 			}
 			//LocationCheck: Are you in bankarea?
 	  		boolean locationCheck = false;
-	  		if (!plugin.Global) {
+	  		if (plugin.Areas) {
   				if (plugin.inArea(((Player)sender).getWorld().getName(), ((Player)sender).getLocation())) {
   					locationCheck = true;
   				}
@@ -111,7 +111,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   							sender.sendMessage("ATM: " + ChatColor.RED + "You don't have access to this account!");
   						}
   					}
-  				} else if (args[0].equalsIgnoreCase("list") && args.length >= 2) {
+  				} else if (args[0].equalsIgnoreCase("list")) {
   					if (!locationCheck) {
   						sender.sendMessage("ATM: You're not in bank area");
   						return true;
@@ -143,7 +143,9 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   						sender.sendMessage("ATM: You're not in bank area");
   						return true;
   					}
-  					if (plugin.accessAccount(args[1], sendername)) {
+  					if (!plugin.accountExists(args[1])) {
+  						sender.sendMessage("ATM: " + ChatColor.RED + "Account not found");
+  					} else if (plugin.accessAccount(args[1], sendername)) {
   						if (plugin.addUser(args[1], args[2])) {
   							plugin.addTransaction(sendername, args[1], TransactionTypes.USER_ADD, 0.00);
   							sender.sendMessage("ATM: " + ChatColor.GREEN + args[2] + " added to account");
@@ -154,7 +156,9 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   						sender.sendMessage("ATM: " + ChatColor.RED + "You don't have access to this account!");
   					}
   				} else if (args[0].equalsIgnoreCase("removeuser") && args.length >= 3) {
-  					if (plugin.accessAccount(args[1], sendername)) {
+  					if (!plugin.accountExists(args[1])) {
+  						sender.sendMessage("ATM: " + ChatColor.RED + "Account not found");
+  					} else if (plugin.accessAccount(args[1], sendername)) {
   						if (plugin.removeUser(args[1], args[2])) {
   							plugin.addTransaction(sendername, args[1], TransactionTypes.USER_REMOVE, 0.00);
   							sender.sendMessage("ATM: " + ChatColor.GREEN + args[2] + " removed from account");
@@ -173,7 +177,9 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   						sender.sendMessage("ATM: You're not in bank area");
   						return true;
   					}
-  					if (plugin.accessAccount(args[1], sendername)) {
+  					if (!plugin.accountExists(args[1])) {
+  						sender.sendMessage("ATM: " + ChatColor.RED + "Account not found");
+  					} else if (plugin.accessAccount(args[1], sendername)) {
 	  					String password = "";
 						if (args.length >= 3) {
 							password = args[2];
@@ -201,7 +207,9 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   						sender.sendMessage("ATM: You're not in bank area");
   						return true;
   					}
-  					if (plugin.accessAccount(args[1], sendername)) {
+  					if (!plugin.accountExists(args[1])) {
+  						sender.sendMessage("ATM: " + ChatColor.RED + "Account not found");
+  					} else if (plugin.accessAccount(args[1], sendername) || plugin.DepositAll) {
   						String password = "";
   						if (plugin.ATM(args[1], sendername, "deposit", Double.parseDouble(args[2]), password)) {
   							plugin.addTransaction(sendername, args[1], TransactionTypes.DEPOSIT, Double.parseDouble(args[2]));
