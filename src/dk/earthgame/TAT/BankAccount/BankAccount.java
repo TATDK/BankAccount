@@ -696,7 +696,7 @@ public class BankAccount extends JavaPlugin {
 					}
 					if (!checkAccount) {
 						//ACCOUNT TABLE
-						String query = "CREATE TABLE IF NOT EXISTS `" + SQL_account_table + "` (`accountname` VARCHAR( 255 ) NOT NULL , `players` LONGTEXT NOT NULL, `password` VARCHAR( 255 ) NULL DEFAULT '', `amount` DOUBLE( 255,2 ) NOT NULL DEFAULT '0')";
+						String query = "CREATE TABLE IF NOT EXISTS `" + SQL_account_table + "` (`accountname` VARCHAR( 255 ) NOT NULL , `owners` LONGTEXT NOT NULL, `users` LONGTEXT NOT NULL, `password` VARCHAR( 255 ) NULL DEFAULT '', `amount` DOUBLE( 255,2 ) NOT NULL DEFAULT '0')";
 						if (UseMySQL) {
 							consoleWarning("Created table " + SQL_account_table);
 							query = "CREATE TABLE IF NOT EXISTS `" + SQL_account_table + "` (`id` INT( 255 ) NOT NULL AUTO_INCREMENT PRIMARY KEY , `accountname` VARCHAR( 255 ) NOT NULL , `players` LONGTEXT NOT NULL, `password` VARCHAR( 255 ) NULL DEFAULT '', `amount` DOUBLE( 255,2 ) NOT NULL DEFAULT '0')";
@@ -731,6 +731,7 @@ public class BankAccount extends JavaPlugin {
 						stmt.execute(query);
 					}
 					
+					//Run upgrades of SQL tables
 					new Upgrade(this, UseMySQL);
 				} catch (SQLException e3) {
 					consoleWarning("Failed to find and create table " + SQL_account_table);
@@ -865,7 +866,7 @@ public class BankAccount extends JavaPlugin {
 		return false;
 	}
 	
-	public boolean accessAccount(String accountname,Player player) {
+	public boolean accessAccount(String accountname,Player player,boolean writeAccess) {
 		if (SuperAdmins && playerPermission(player, PermissionNodes.ADMIN)) {
 			if (accountExists(accountname)) {
 				return true;
@@ -874,8 +875,14 @@ public class BankAccount extends JavaPlugin {
 			}
 		}
 		try {
+			String coloum;
+			if (writeAccess) {
+				coloum = "owners";
+			} else {
+				coloum = "users";
+			}
 			ResultSet rs;
-			rs = stmt.executeQuery("SELECT `players` FROM `" + SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
+			rs = stmt.executeQuery("SELECT `" + coloum + "` FROM `" + SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
 			while(rs.next()) {
 				String[] players = rs.getString("players").split(";");
 				for (String p : players) {
