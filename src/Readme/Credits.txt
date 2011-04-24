@@ -1,0 +1,9 @@
+/******************NPClib******************/
+
+Gotten from the Bukkit forum.
+http://forums.bukkit.org/threads/NPClib.3298
+
+Original source code available from GitHub
+https://github.com/Kekec852/NPCLib
+
+Edited to match the coding style of BankAccount and for special features.

@@ -35,6 +35,7 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
 import org.bukkit.util.config.Configuration;
+import org.martin.bukkit.npclib.NPCManager;
 
 import com.nijiko.coelho.iConomy.iConomy;
 import com.nijiko.coelho.iConomy.system.Account;
@@ -97,6 +98,8 @@ public class BankAccount extends JavaPlugin {
 	boolean DepositAll;
 	//Transaction
 	private boolean Transactions;
+	//NPC
+	NPCManager m = new NPCManager(this);
 
 	//#########################################################################//
 	
