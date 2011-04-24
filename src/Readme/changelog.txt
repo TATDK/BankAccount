@@ -8,12 +8,16 @@ Fixed not showing all commands in help
 Fixed lookup for access when using SuperAdmin
 Added command to list accounts
 Added setting for let players deposit to all accounts
+Added API informations
+Added account access
+- Owners: All access
+- Users: Deposit, balance and info only
+Do no longer look for unused plugins
+Now subtract money from iConomy when manual payment is used
 Cleanup in config to make it (hopefully) more simple
 - SQL-tables grouped
 - Permissions grouped
 - Global replaced by Areas
-Do no longer look for unused plugins
-Now subtract money when manual payment is used
 
 0.4
 Added loan

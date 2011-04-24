@@ -14,16 +14,16 @@ public class Upgrade {
 				if (UseMySQL) {
 					String query = "ALTER TABLE `" + plugin.SQL_account_table + "` CHANGE  `amount`  `amount` DOUBLE( 255, 2 ) NOT NULL DEFAULT  '0.00'";
 					plugin.stmt.execute(query);
-					plugin.consoleLog("Tables upgraded to v.0.3c");
+					plugin.consoleInfo("Tables upgraded to v.0.3c");
 					if (Upgrade03c.delete()) {
-						plugin.consoleLog("SQLUpgrade03c deleted");
+						plugin.consoleInfo("SQLUpgrade03c deleted");
 					} else {
 						plugin.consoleWarning("SQLUpgrade03c could not be deleted, please remove it yourself");
 					}
 				} else {
-					plugin.consoleLog("SQLUpgrade03c is not for SQLite");
+					plugin.consoleInfo("SQLUpgrade03c is not for SQLite");
 					if (Upgrade03c.delete()) {
-						plugin.consoleLog("SQLUpgrade03c deleted");
+						plugin.consoleInfo("SQLUpgrade03c deleted");
 					} else {
 						plugin.consoleWarning("SQLUpgrade03c could not be deleted, please remove it yourself");
 					}
@@ -41,13 +41,13 @@ public class Upgrade {
 				if (UseMySQL) {
 					String query = "ALTER TABLE `" + plugin.SQL_account_table + "` CHANGE  `players`  `owners` LONGTEXT NOT NULL";
 					plugin.stmt.execute(query);
-					plugin.consoleLog("Tables upgraded to v.0.5");
+					plugin.consoleInfo("Tables upgraded to v.0.5");
 				} else {
 					//TODO: Setup SQLite Update
-					plugin.consoleLog("SQLUpgrade05 is not for SQLite");
+					plugin.consoleInfo("SQLUpgrade05 is not for SQLite");
 				}
 				if (Upgrade05.delete()) {
-					plugin.consoleLog("SQLUpgrade05 deleted");
+					plugin.consoleInfo("SQLUpgrade05 deleted");
 				} else {
 					plugin.consoleWarning("SQLUpgrade05 could not be deleted, please remove it yourself");
 				}

@@ -168,10 +168,6 @@ public class BankAccount extends JavaPlugin {
 		fontWidth.put("X",6);
 		fontWidth.put("Y",6);
 		fontWidth.put("Z",6);
-		fontWidth.put("[",4);
-		fontWidth.put("\\",6);
-		fontWidth.put("]",4);
-		fontWidth.put("^",6);
 		fontWidth.put("_",6);
 		fontWidth.put("'",3);
 		fontWidth.put("a",6);
@@ -200,59 +196,6 @@ public class BankAccount extends JavaPlugin {
 		fontWidth.put("x",6);
 		fontWidth.put("y",6);
 		fontWidth.put("z",6);
-		fontWidth.put("{",5);
-		fontWidth.put("|",2);
-		fontWidth.put("}",5);
-		fontWidth.put("~",7);
-		fontWidth.put("⌂",6);
-		fontWidth.put("Ç",6);
-		fontWidth.put("ü",6);
-		fontWidth.put("é",6);
-		fontWidth.put("â",6);
-		fontWidth.put("ä",6);
-		fontWidth.put("à",6);
-		fontWidth.put("å",6);
-		fontWidth.put("ç",6);
-		fontWidth.put("ê",6);
-		fontWidth.put("ë",6);
-		fontWidth.put("è",6);
-		fontWidth.put("ï",4);
-		fontWidth.put("î",6);
-		fontWidth.put("ì",3);
-		fontWidth.put("Ä",6);
-		fontWidth.put("Å",6);
-		fontWidth.put("É",6);
-		fontWidth.put("æ",6);
-		fontWidth.put("Æ",6);
-		fontWidth.put("ô",6);
-		fontWidth.put("ö",6);
-		fontWidth.put("ò",6);
-		fontWidth.put("û",6);
-		fontWidth.put("ù",6);
-		fontWidth.put("ÿ",6);
-		fontWidth.put("Ö",6);
-		fontWidth.put("Ü",6);
-		fontWidth.put("ø",6);
-		fontWidth.put("£",6);
-		fontWidth.put("Ø",6);
-		fontWidth.put("×",4);
-		fontWidth.put("ƒ",6);
-		fontWidth.put("á",6);
-		fontWidth.put("í",3);
-		fontWidth.put("ó",6);
-		fontWidth.put("ú",6);
-		fontWidth.put("ñ",6);
-		fontWidth.put("Ñ",6);
-		fontWidth.put("ª",6);
-		fontWidth.put("º",6);
-		fontWidth.put("¿",6);
-		fontWidth.put("®",7);
-		fontWidth.put("¬",6);
-		fontWidth.put("½",6);
-		fontWidth.put("¼",6);
-		fontWidth.put("¡",2);
-		fontWidth.put("«",6);
-		fontWidth.put("»",6);
 	}
 	
 	int stringWidth(String text) {
@@ -279,7 +222,7 @@ public class BankAccount extends JavaPlugin {
 			}
 			interestJobId = getServer().getScheduler().scheduleSyncRepeatingTask(thisPlugin, new Runnable() {
 				public void run() {
-					consoleLog("Running interest system");
+					consoleInfo("Running interest system");
 														
 					Double totalGiven = 0.00;
 					try {
@@ -315,22 +258,34 @@ public class BankAccount extends JavaPlugin {
 						}
 					} catch (SQLException e) {
 						consoleWarning("Couldn't execute interest");
-						consoleLog(e.toString());
+						consoleInfo(e.toString());
 					}
-					consoleLog("Total given " + com.nijiko.coelho.iConomy.iConomy.getBank().format(totalGiven) + " in interest");
+					consoleInfo("Total given " + com.nijiko.coelho.iConomy.iConomy.getBank().format(totalGiven) + " in interest");
 				}
 			}, interestTime*20*60, interestTime*20*60);
-			consoleLog("Running interest every " + interestTime + " minutes by " + interestAmount + "%");
+			consoleInfo("Running interest every " + interestTime + " minutes by " + interestAmount + "%");
 		}
-		consoleLog("Established connection with iConomy!");
+		consoleInfo("Established connection with iConomy!");
 	}
 	
-	public void consoleLog(String string) {
-		log.info(pdfFile.getName() + ": " + string);
+	/**
+	 * Output Info to log on behalf of BankAccount
+	 * 
+	 * @since 1.0
+	 * @param message
+	 */
+	public void consoleInfo(String message) {
+		log.info("[" + pdfFile.getName() + "] " + message);
 	}
 
-	public void consoleWarning(String string) {
-		log.warning(pdfFile.getName() + ": " + string);
+	/**
+	 * Output Warning to log on behalf of BankAccount
+	 * 
+	 * @since 1.0
+	 * @param message
+	 */
+	public void consoleWarning(String message) {
+		log.warning("[" + pdfFile.getName() + "] " + message);
 	}
 
 	boolean checkPermission(Player player,PermissionNodes node,boolean extraLookup) {
@@ -370,7 +325,13 @@ public class BankAccount extends JavaPlugin {
 		return false;
 	}
 	
-	//Open function
+	/**
+	 * Check for a permission
+	 * 
+	 * @param player - The player
+	 * @param node - The PermissionNode (dk.earthgame.TAT.BankAccount.System.PermissionNodes)
+	 * @return boolean
+	 */
 	public boolean playerPermission(Player player,PermissionNodes node) {
 		return checkPermission(player, node, false);
 	}
@@ -469,14 +430,14 @@ public class BankAccount extends JavaPlugin {
 					if (test != null) {
 						((Permissions)test).getDatabase();
 						Permissions = ((Permissions)test).getHandler();
-						consoleLog("Established connection with " + plugin + "!");
+						consoleInfo("Established connection with " + plugin + "!");
 					}
 				}
 				if (GroupManager == null && plugin.equalsIgnoreCase("GroupManager") && UseGroupManager) {
 					Plugin test = checkPlugin("GroupManager");
 					if (test != null) {
 						GroupManager = (GroupManager)test;
-						consoleLog("Established connection with " + plugin + "!");
+						consoleInfo("Established connection with " + plugin + "!");
 						if (checkJobId > 0) {
 							getServer().getScheduler().cancelTask(checkJobId);
 						}
@@ -521,9 +482,9 @@ public class BankAccount extends JavaPlugin {
 
 		myFolder = getDataFolder();
 		if (!myFolder.exists()) {
-			consoleLog("Config folder missing, creating...");
+			consoleInfo("Config folder missing, creating...");
 			myFolder.mkdir();
-			consoleLog("Folder created");
+			consoleInfo("Folder created");
 		}
 		
 		/*
@@ -564,7 +525,7 @@ public class BankAccount extends JavaPlugin {
 			if (test != null) {
 				if (test.isEnabled()) {
 					Permissions = ((Permissions)test).getHandler();
-					consoleLog("Established connection with Permissions!");
+					consoleInfo("Established connection with Permissions!");
 				}
 			}
 		}
@@ -573,7 +534,7 @@ public class BankAccount extends JavaPlugin {
 			if (test != null) {
 				if (test.isEnabled()) {
 					GroupManager = (GroupManager)test;
-					consoleLog("Established connection with GroupManager!");
+					consoleInfo("Established connection with GroupManager!");
 				}
 			}
 		}
@@ -589,6 +550,14 @@ public class BankAccount extends JavaPlugin {
 		log.info(pdfFile.getName() + " is disabled!" );
 	}
 
+	/**
+	 * Add a transaction to the database
+	 * 
+	 * @param player - Username of the player
+	 * @param account - Name of account
+	 * @param type - Type of transaction (dk.earthgame.TAT.BankAccount.System.TransactionTypes)
+	 * @param amount - amount of money the transaction (0.00 if money isn't a part of the transaction)
+	 */
 	public void addTransaction(String player, String account, TransactionTypes type, Double amount) {
 		if (Transactions) {
 			try {
@@ -605,7 +574,13 @@ public class BankAccount extends JavaPlugin {
 	
 	//CONFIGURATION AND USERSAVES
 	
-	UserSaves getSaved(String player) {
+	/**
+	 * Get the saved data of a player
+	 * 
+	 * @param player - The username of the player
+	 * @return UserSaves - the saved data
+	 */
+	public UserSaves getSaved(String player) {
 		if (UserSaves.containsKey(player)) {
 			return UserSaves.get(player);
 		}
@@ -652,7 +627,7 @@ public class BankAccount extends JavaPlugin {
 		LoanSystem.PaymentTime = config.getInt("Loan.Payment-time", 60);
 		LoanSystem.PaymentParts = config.getInt("Loan.Payment-parts", 3);
 		
-		consoleLog("Properties Loaded");
+		consoleInfo("Properties Loaded");
 		try {
 			if (UseMySQL) {
 				Class.forName("com.mysql.jdbc.Driver");
@@ -671,10 +646,10 @@ public class BankAccount extends JavaPlugin {
 			try {
 				if (UseMySQL) {
 					stmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_UPDATABLE);
-					consoleLog("Connected to MySQL");
+					consoleInfo("Connected to MySQL");
 				} else {
 					stmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_READ_ONLY);
-					consoleLog("Connected to SQLite");
+					consoleInfo("Connected to SQLite");
 				}
 				try {
 					boolean checkAccount = false;
@@ -737,7 +712,7 @@ public class BankAccount extends JavaPlugin {
 					consoleWarning("Failed to find and create table " + SQL_account_table);
 					consoleWarning("Failed to find and create table " + SQL_area_table);
 					consoleWarning(e3.toString());
-					consoleLog("Shuting down");
+					consoleInfo("Shuting down");
 					this.getServer().getPluginManager().disablePlugin(this);
 					return false;
 				}
@@ -748,7 +723,7 @@ public class BankAccount extends JavaPlugin {
 					consoleWarning("Failed to connect to SQLite");
 				}
 				consoleWarning(e2.toString());
-				consoleLog("Shuting down");
+				consoleInfo("Shuting down");
 				this.getServer().getPluginManager().disablePlugin(this);
 				return false;
 			}
@@ -759,7 +734,7 @@ public class BankAccount extends JavaPlugin {
 				consoleWarning("Failed to connect to SQLite");
 			}
 			consoleWarning(e1.toString());
-			consoleLog("Shuting down");
+			consoleInfo("Shuting down");
 			this.getServer().getPluginManager().disablePlugin(this);
 			return false;
 		}
@@ -782,10 +757,10 @@ public class BankAccount extends JavaPlugin {
 						output.write(buf, 0, length);
 					}
 					
-					consoleLog("Default config file created!");
+					consoleInfo("Default config file created!");
 				} catch (IOException e) {
 					e.printStackTrace();
-					consoleLog("Error creating config file!");
+					consoleInfo("Error creating config file!");
 				} finally {
 					try {
 						if (input != null)
@@ -799,12 +774,18 @@ public class BankAccount extends JavaPlugin {
 				}
 			}
 		} else {
-			consoleLog("Config file found!");
+			consoleInfo("Config file found!");
 		}
 	}
 	
 	//ATM / ACCOUNTS
-	
+	/**
+	 * Check if an account exists
+	 * 
+	 * @since 1.0
+	 * @param accountname - The name of the account
+	 * @return boolean
+	 */
 	public boolean accountExists(String accountname) {
 		ResultSet rs;
 		int id = 0;
@@ -833,6 +814,13 @@ public class BankAccount extends JavaPlugin {
 		return false;
 	}
 	
+	/**
+	 * List of accounts, the user have access to
+	 * 
+	 * @since 1.0
+	 * @param player - Username of the player
+	 * @return List<String>
+	 */
 	public List<String> accountList(String player) {
 		List<String> accounts = new ArrayList<String>();
 		ResultSet rs;
@@ -840,7 +828,7 @@ public class BankAccount extends JavaPlugin {
 			rs = stmt.executeQuery("SELECT `accountname` FROM `" + SQL_account_table + "` WHERE `players` LIKE '%" + player + "%'");
 			while (rs.next()) {
 				//Make sure it's not just a part of the name
-				if (accessAccount(rs.getString("accountname"),player)) {
+				if (accessAccount(rs.getString("accountname"),player,false)) {
 					accounts.add(rs.getString("accountname"));
 				}
 			}
@@ -853,6 +841,40 @@ public class BankAccount extends JavaPlugin {
 		return accounts;
 	}
 	
+	/**
+	 * List of accounts, the user have access to
+	 * 
+	 * @since 1.0
+	 * @param player - Username of the player
+	 * @return List<String>
+	 */
+	public List<String> accountList(Player player) {
+		List<String> accounts = new ArrayList<String>();
+		ResultSet rs;
+		try {
+			rs = stmt.executeQuery("SELECT `accountname` FROM `" + SQL_account_table + "` WHERE `players` LIKE '%" + player + "%'");
+			while (rs.next()) {
+				//Make sure it's not just a part of the name
+				if (accessAccount(rs.getString("accountname"),player,false)) {
+					accounts.add(rs.getString("accountname"));
+				}
+			}
+		} catch (SQLException e) {
+			if (!e.getMessage().equalsIgnoreCase(null))
+				consoleWarning("Error #22-2: " + e.getMessage());
+			else
+				consoleWarning("Error #22-1: " + e.getErrorCode() + " - " + e.getSQLState());
+		}
+		return accounts;
+	}
+	
+	/**
+	 * Add an new account
+	 * 
+	 * @param accountname - The name of the account
+	 * @param player - Username of the players - Name of players seperated by comma (,)
+	 * @return boolean
+	 */
 	public boolean addAccount(String accountname,String players) {
 		try {
 			stmt.executeUpdate("INSERT INTO `" + SQL_account_table + "` (`accountname`,`players`) VALUES ('" + accountname + "','" + players + "')");
@@ -866,28 +888,46 @@ public class BankAccount extends JavaPlugin {
 		return false;
 	}
 	
+	/**
+	 * 
+	 * @param accountname
+	 * @param player - Username of the player
+	 * @param writeAccess
+	 * @return
+	 */
 	public boolean accessAccount(String accountname,Player player,boolean writeAccess) {
+		if (!accountExists(accountname)) {
+			//There is no spoon... I mean account
+			return false;
+		}
 		if (SuperAdmins && playerPermission(player, PermissionNodes.ADMIN)) {
-			if (accountExists(accountname)) {
-				return true;
-			} else {
-				return false;
-			}
+			//Ta ta taaa da.. SuperAdmin!
+			return true;
 		}
 		try {
 			String coloum;
 			if (writeAccess) {
 				coloum = "owners";
 			} else {
-				coloum = "users";
+				coloum = "users`, `owners";
 			}
 			ResultSet rs;
 			rs = stmt.executeQuery("SELECT `" + coloum + "` FROM `" + SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
 			while(rs.next()) {
-				String[] players = rs.getString("players").split(";");
-				for (String p : players) {
+				//Owners
+				String[] owners = rs.getString("owners").split(";");
+				for (String p : owners) {
 					if (p.equalsIgnoreCase(player.getName())) {
 						return true;
+					}
+				}
+				//Users (if no write access is needed)
+				if (!writeAccess) {
+					String[] users = rs.getString("users").split(";");
+					for (String p : users) {
+						if (p.equalsIgnoreCase(player.getName())) {
+							return true;
+						}
 					}
 				}
 			}
@@ -902,18 +942,32 @@ public class BankAccount extends JavaPlugin {
 		return false;
 	}
 	
-	/*
-	 * Doesn't support SuperAdmins
+	/**
+	 * 
+	 * @param accountname
+	 * @param player - Username of the player
+	 * @param writeAccess
+	 * @return
 	 */
-	public boolean accessAccount(String accountname,String player) {
+	public boolean accessAccount(String accountname,String player,boolean writeAccess) {
 		try {
 			ResultSet rs;
-			rs = stmt.executeQuery("SELECT `players` FROM `" + SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
+			rs = stmt.executeQuery("SELECT `users`, `owners` FROM `" + SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
 			while(rs.next()) {
-				String[] players = rs.getString("players").split(";");
-				for (String p : players) {
+				//Owners
+				String[] owners = rs.getString("owners").split(";");
+				for (String p : owners) {
 					if (p.equalsIgnoreCase(player)) {
 						return true;
+					}
+				}
+				//Users (if no write access is needed)
+				if (!writeAccess) {
+					String[] users = rs.getString("users").split(";");
+					for (String p : users) {
+						if (p.equalsIgnoreCase(player)) {
+							return true;
+						}
 					}
 				}
 			}
@@ -928,6 +982,12 @@ public class BankAccount extends JavaPlugin {
 		return false;
 	}
 
+	/**
+	 * 
+	 * @param accountname
+	 * @param player - Username of the player
+	 * @return
+	 */
 	public boolean addUser(String accountname,String player) {
 		try {
 			String newPlayers = player;
@@ -957,6 +1017,12 @@ public class BankAccount extends JavaPlugin {
 		return false;
 	}
 	
+	/**
+	 * 
+	 * @param accountname
+	 * @param player - Username of the player
+	 * @return
+	 */
 	public boolean removeUser(String accountname,String player) {
 		try {
 			String newPlayers = "";
@@ -991,6 +1057,12 @@ public class BankAccount extends JavaPlugin {
 		return false;
 	}
 
+	/**
+	 * 
+	 * @param accountname
+	 * @param password
+	 * @return
+	 */
 	public boolean setPassword(String accountname,String password) {
 		try {
 			stmt.executeUpdate("UPDATE `" + SQL_account_table + "` SET `password` = '" + password + "' WHERE `accountname` = '" + accountname + "'");
@@ -1004,6 +1076,15 @@ public class BankAccount extends JavaPlugin {
 		return false;
 	}
 
+	/**
+	 * 
+	 * @param accountname
+	 * @param player - Username of the player
+	 * @param type
+	 * @param amount
+	 * @param password
+	 * @return
+	 */
 	public boolean ATM(String accountname,String player,String type,Double amount,String password) {
 		try {
 			double account = getBalance(accountname);
@@ -1058,6 +1139,13 @@ public class BankAccount extends JavaPlugin {
 		return false;
 	}
 	
+	/**
+	 * 
+	 * @param accountname
+	 * @param player - Username of the player
+	 * @param password
+	 * @return
+	 */
 	public boolean closeAccount(String accountname,String player,String password) {
 		if (PasswordSystem.passwordCheck(accountname, password)) {
 			try {
@@ -1080,6 +1168,11 @@ public class BankAccount extends JavaPlugin {
 		}
 	}
 	
+	/**
+	 * 
+	 * @param accountname
+	 * @return
+	 */
 	public String getUsers(String accountname) {
 		try {
 			String output = "";
@@ -1106,6 +1199,11 @@ public class BankAccount extends JavaPlugin {
 		return "Error loading players";
 	}
 	
+	/**
+	 * 
+	 * @param accountname
+	 * @return
+	 */
 	public double getBalance(String accountname) {
 		try {
 			ResultSet rs;
@@ -1124,6 +1222,12 @@ public class BankAccount extends JavaPlugin {
 		return 0;
 	}
 	
+	/**
+	 * 
+	 * @param balance
+	 * @param accountname
+	 * @return
+	 */
 	public boolean setBalance(double balance,String accountname) {
 		try {
 			stmt.executeUpdate("UPDATE `" + SQL_account_table + "` SET `amount` = '" + balance + "' WHERE `accountname` = '" + accountname + "'");
@@ -1137,6 +1241,12 @@ public class BankAccount extends JavaPlugin {
 		return false;
 	}
 	
+	/**
+	 * 
+	 * @param amount
+	 * @param accountname
+	 * @return
+	 */
 	public boolean add(double amount,String accountname) {
 		double temp = getBalance(accountname);
 		temp += amount;
@@ -1152,6 +1262,12 @@ public class BankAccount extends JavaPlugin {
 		return false;
 	}
 	
+	/**
+	 * 
+	 * @param amount
+	 * @param accountname
+	 * @return
+	 */
 	public boolean subtract(double amount,String accountname) {
 		double temp = getBalance(accountname);
 		temp -= amount;
@@ -1168,7 +1284,9 @@ public class BankAccount extends JavaPlugin {
 	}
 	
 	//AREAS
-	
+	/**
+	 * 
+	 */
 	public boolean areaExists(String name) {
 		ResultSet rs;
 		int id = 0;
@@ -1204,6 +1322,12 @@ public class BankAccount extends JavaPlugin {
 		return false;
 	}
 	
+	/**
+	 * 
+	 * @param world
+	 * @param pos
+	 * @return
+	 */
 	public boolean inArea(String world,Location pos) {
 		try {
 			ResultSet rs = stmt.executeQuery("SELECT `x1`,`y1`,`z1`,`x2`,`y2`,`z2` FROM `" + SQL_area_table + "` WHERE `world` = '" + world + "'");
@@ -1234,6 +1358,14 @@ public class BankAccount extends JavaPlugin {
 		return false;
 	}
 	
+	/**
+	 * 
+	 * @param name
+	 * @param pos1
+	 * @param pos2
+	 * @param world
+	 * @return
+	 */
 	public boolean setArea(String name,Location pos1,Location pos2,String world) {
 		if (areaExists(name)) {
 			return false;
@@ -1250,6 +1382,11 @@ public class BankAccount extends JavaPlugin {
 		return false;
 	}
 
+	/**
+	 * 
+	 * @param name
+	 * @return
+	 */
 	public boolean removeArea(String name) {
 		try {
 			stmt.executeUpdate("DELETE FROM `" + SQL_area_table + "` WHERE `areaname` = '" + name + "'");

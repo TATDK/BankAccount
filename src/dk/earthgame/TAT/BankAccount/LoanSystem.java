@@ -29,6 +29,9 @@ public class LoanSystem {
 		plugin = instantiate;
 	}
 
+	/**
+	 * Start the automatic loan system
+	 */
 	public void startupRunner() {
 		ResultSet rs;
 		try {
@@ -58,7 +61,7 @@ public class LoanSystem {
 		JobId = ((Plugin)plugin).getServer().getScheduler().scheduleSyncRepeatingTask((Plugin)plugin, new Runnable() {
 			@SuppressWarnings({ "unchecked", "rawtypes" })
 			public void run() {
-				plugin.consoleLog("Loan start");
+				plugin.consoleInfo("Loan start");
 				Iterator it = Loans.entrySet().iterator();
 				while (it.hasNext()) {
 			        Map.Entry<String,Loan> pairs = (Map.Entry<String,Loan>)it.next();
@@ -68,16 +71,19 @@ public class LoanSystem {
 			        	if (plugin.getSaved(pairs.getKey()).bounty > 0.00) {
 			        		plugin.addTransaction(pairs.getKey(), "", TransactionTypes.LOAN_MISSING, pairs.getValue().remaining);
 			        	} else {
-			        		plugin.consoleLog(pairs.getKey() + " paid a part of the loan back");
+			        		plugin.consoleInfo(pairs.getKey() + " paid a part of the loan back");
 			        		plugin.addTransaction(pairs.getKey(), "", TransactionTypes.LOAN_PAID, 0.00);
 			        	}
 			        }
 			    }
-				plugin.consoleLog("Loan stop");
+				plugin.consoleInfo("Loan stop");
 			}
 		}, 0, runTime*20*60);
 	}
 	
+	/**
+	 * Shutdown the automatic loan runner
+	 */
 	public void shutdownRunner() {
 		if (JobId > 0) {
 			((Plugin)plugin).getServer().getScheduler().cancelTask(JobId);
@@ -87,6 +93,12 @@ public class LoanSystem {
 		running = false;
 	}
 	
+	/**
+	 * Check if the player have a loan
+	 * 
+	 * @param player - The username of the player
+	 * @return boolean
+	 */
 	public boolean haveLoan(String player) {
 		if (Loans.containsKey(player)) {
 			return true;
@@ -94,6 +106,12 @@ public class LoanSystem {
 		return false;
 	}
 	
+	/**
+	 * Get the loan of a player, returns null of none loan is found
+	 * 
+	 * @param player - The username of the player
+	 * @return Loan
+	 */
 	public Loan getLoan(String player) {
 		if (Loans.containsKey(player)) {
 			return Loans.get(player);
@@ -101,6 +119,13 @@ public class LoanSystem {
 		return null;
 	}
 	
+	/**
+	 * Run a payment of a loan
+	 * 
+	 * @param player - The username of the player
+	 * @param amount - Amount money
+	 * @return double - The amount that are removed from the loan
+	 */
 	public double payment(String player,double amount) {
 		if (haveLoan(player)) {
 			Loan playerLoan = getLoan(player);
@@ -120,6 +145,12 @@ public class LoanSystem {
 		return 0.00;
 	}
 	
+	/**
+	 * 
+	 * @param player
+	 * @param amount
+	 * @return
+	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public boolean addLoan(String player,double amount) {
 		if (!running) {
