@@ -6,6 +6,10 @@ import java.sql.SQLException;
 import dk.earthgame.TAT.BankAccount.BankAccount;
 
 public class Upgrade {
+	/**
+	 * SHOULD ONLY BE USED BY BANKACCOUNT
+	 * @since 0.5
+	 */
 	public Upgrade(BankAccount plugin,boolean UseMySQL) {
 		//Upgrade 0.3c
 		File Upgrade03c = new File(plugin.getDataFolder(), "SQLUpgrade03c");

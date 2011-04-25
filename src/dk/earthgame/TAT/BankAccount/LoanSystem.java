@@ -68,7 +68,7 @@ public class LoanSystem {
 			        pairs.getValue().runLoan();
 			        if (pairs.getValue().remaining <= 0) {
 			        	Loans.remove(pairs.getKey());
-			        	if (plugin.getSaved(pairs.getKey()).bounty > 0.00) {
+			        	if (plugin.getSaved(pairs.getKey()).getBounty() > 0.00) {
 			        		plugin.addTransaction(pairs.getKey(), "", TransactionTypes.LOAN_MISSING, pairs.getValue().remaining);
 			        	} else {
 			        		plugin.consoleInfo(pairs.getKey() + " paid a part of the loan back");

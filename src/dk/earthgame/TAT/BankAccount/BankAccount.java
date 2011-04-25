@@ -54,6 +54,7 @@ import org.anjocaido.groupmanager.GroupManager;
  * BankAccount for Bukkit
  * 
  * @author TAT
+ * @since 0.5
  */
 public class BankAccount extends JavaPlugin {
 	protected final Plugin thisPlugin = this;
@@ -354,7 +355,7 @@ public class BankAccount extends JavaPlugin {
 			public void onPlayerInteract(PlayerInteractEvent event) {
 				if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
 					UserSaves mySave = getSaved(event.getPlayer().getName());
-					if (event.getPlayer().getItemInHand().getTypeId() == areaWandId && mySave.selecting) {
+					if (event.getPlayer().getItemInHand().getTypeId() == areaWandId && mySave.isSelecting()) {
 						Location pos = event.getClickedBlock().getLocation();
 						if (mySave.setPosition(pos) == 2) {
 							event.getPlayer().sendMessage("ATM: Area selected, to confirm: /account setarea <areaname>");
@@ -375,11 +376,11 @@ public class BankAccount extends JavaPlugin {
 					Player player = (Player)defender;
 					if (player.getHealth() - event.getDamage() <= 0) {
 						if (attacker != null && attacker instanceof Player) {
-							double bounty = getSaved(((Player)attacker).getName()).bounty;
+							double bounty = getSaved(((Player)attacker).getName()).getBounty();
 							if (bounty > 0.00) {
 								Account attackerAccount = com.nijiko.coelho.iConomy.iConomy.getBank().getAccount(((Player)attacker).getName());
 								attackerAccount.add(bounty);
-								getSaved(((Player)attacker).getName()).bounty = 0.00;
+								getSaved(((Player)attacker).getName()).setBounty(0.00);
 							}
 						}
 					}
@@ -394,11 +395,11 @@ public class BankAccount extends JavaPlugin {
 					Player player = (Player)defender;
 					if (player.getHealth() - event.getDamage() <= 0) {
 						if (attacker != null && attacker instanceof Player) {
-							double bounty = getSaved(((Player)attacker).getName()).bounty;
+							double bounty = getSaved(((Player)attacker).getName()).getBounty();
 							if (bounty > 0.00) {
 								Account attackerAccount = com.nijiko.coelho.iConomy.iConomy.getBank().getAccount(((Player)attacker).getName());
 								attackerAccount.add(bounty);
-								getSaved(((Player)attacker).getName()).bounty = 0.00;
+								getSaved(((Player)attacker).getName()).setBounty(0.00);
 							}
 						}
 					}

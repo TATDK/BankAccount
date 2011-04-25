@@ -261,14 +261,14 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   					if (!plugin.LoanSystem.LoanActive) {
   						sender.sendMessage("ATM: Loans not activated");
   					}
-  					if (!plugin.LoanSystem.haveLoan(sendername) && plugin.getSaved(sendername).bounty == 0.00) {
+  					if (!plugin.LoanSystem.haveLoan(sendername) && plugin.getSaved(sendername).getBounty() == 0.00) {
   						plugin.addTransaction(sendername, null, TransactionTypes.LOAN_START, Double.parseDouble(args[1]));
   						if (plugin.LoanSystem.addLoan(sendername, Double.parseDouble(args[1]))) {
   							sender.sendMessage("ATM: " + ChatColor.GREEN + iConomy.getBank().format(Double.parseDouble(args[1])) + " loaned.");
   						} else {
   							sender.sendMessage("ATM: " + ChatColor.RED + "Couldn't create loan!");
   						}
-  					} else if (plugin.getSaved(sendername).bounty > 0.00) {
+  					} else if (plugin.getSaved(sendername).getBounty() > 0.00) {
   						sender.sendMessage("ATM: " + ChatColor.RED + "You have a bounty on your head!");
   					} else {
   						sender.sendMessage("ATM: " + ChatColor.RED + "You already have a loan, pay it first!");
@@ -342,11 +342,11 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   						return true;
   					} else {
   						UserSaves mySave = plugin.getSaved(sendername);
-  						if (mySave.selecting) {
-  							mySave.selecting = false;
+  						if (mySave.isSelecting()) {
+  							mySave.isSelecting(false);
 							sender.sendMessage("ATM: " + ChatColor.GREEN + "No longer selecting area");
 						} else {
-  							mySave.selecting = true;
+  							mySave.isSelecting(true);
 							sender.sendMessage("ATM: " + ChatColor.GREEN + "Selecting area active, send command again to deactivate");
 						}
   					}

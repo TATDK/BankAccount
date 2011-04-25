@@ -111,13 +111,16 @@ public class Loan {
 	void addBounty(double amount) {
 		FileReader fr;
 		try {
+			//Check if PvP is enabled
 			fr = new FileReader("server.properties");
 			BufferedReader br = new BufferedReader(fr);
 			String s;
 			while((s=br.readLine()) .indexOf("pvp")==-1);
 			if (s.split("=")[1].equalsIgnoreCase("true")) {
-				plugin.getSaved(player).bounty = amount;
+				//Set bounty
+				plugin.getSaved(player).setBounty(amount);
 			} else {
+				//Subtract the money and let the user be in dept
 				account.subtract(amount);
 			}
 			fr.close();

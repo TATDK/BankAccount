@@ -1,5 +1,11 @@
 package dk.earthgame.TAT.BankAccount.System;
 
+/**
+ * BankAccount permissionnodes
+ * 
+ * @author TAT
+ * @since 0.5
+ */
 public enum PermissionNodes {
 	ACCESS				("bankaccount.access"),		//Access to allow user to use BankAccount.
 													//Overrides all other Bankaccount permissions
@@ -15,9 +21,14 @@ public enum PermissionNodes {
 	EXTENDED			("bankaccount.extended"),	//Access to all commands except area commands
 	BASIC				("bankaccount.basic");		//Access the same as: open,user,deposit,withdraw
 	
-	private final String node;
+	private String node;
 	PermissionNodes(String node) {
 		this.node = node;
 	}
+	/**
+	 * Get the node inside the permissions plugin
+	 * 
+	 * @return Permissionnode (example: bankaccount.access)
+	 */
 	public String getNode() { return node; }
 };

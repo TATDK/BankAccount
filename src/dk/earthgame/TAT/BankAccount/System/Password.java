@@ -7,6 +7,11 @@ import java.sql.SQLException;
 
 import dk.earthgame.TAT.BankAccount.BankAccount;
 
+/**
+ * Class for encrypt of passwords
+ * 
+ * @author TAT
+ */
 public class Password {
 	private BankAccount plugin;
 	
@@ -14,6 +19,13 @@ public class Password {
 		plugin = instantate;
 	}
 	
+	/**
+	 * Check if a password match an account
+	 * 
+	 * @param accountname - Name of account
+	 * @param password - Password (both encrypted and not encrypted)
+	 * @return boolean
+	 */
 	public boolean passwordCheck(String accountname,String password) {
 		String CryptPassword = passwordCrypt(password);
 		try {
@@ -37,6 +49,12 @@ public class Password {
 		return false;
 	}
 	
+	/**
+	 * Encrypt password
+	 * 
+	 * @param password - String that must be encrypted
+	 * @return Encrypted password
+	 */
 	public String passwordCrypt(String password) {
 		byte[] temp = password.getBytes();
 		MessageDigest md;
@@ -47,11 +65,11 @@ public class Password {
 			password = bytesToHex(output);
 			return password;
 		} catch (NoSuchAlgorithmException e) {
-			plugin.consoleWarning("Error #21-1: Couldn't crypt password");
+			plugin.consoleWarning("Error #21-1: Couldn't encrypt password");
 			return "Error";
 		}
 	}
-
+	
 	private String bytesToHex(byte[] b) {
 		char hexDigit[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 		StringBuffer buf = new StringBuffer();
