@@ -31,6 +31,8 @@ public class LoanSystem {
 
 	/**
 	 * Start the automatic loan system
+	 * 
+	 * @since 0.5
 	 */
 	public void startupRunner() {
 		ResultSet rs;
@@ -83,6 +85,8 @@ public class LoanSystem {
 	
 	/**
 	 * Shutdown the automatic loan runner
+	 * 
+	 * @since 0.5
 	 */
 	public void shutdownRunner() {
 		if (JobId > 0) {
@@ -97,7 +101,8 @@ public class LoanSystem {
 	 * Check if the player have a loan
 	 * 
 	 * @param player - The username of the player
-	 * @return boolean
+	 * @since 0.5
+	 * @return boolean - If player have a loan
 	 */
 	public boolean haveLoan(String player) {
 		if (Loans.containsKey(player)) {
@@ -110,6 +115,7 @@ public class LoanSystem {
 	 * Get the loan of a player, returns null of none loan is found
 	 * 
 	 * @param player - The username of the player
+	 * @since 0.5
 	 * @return Loan
 	 */
 	public Loan getLoan(String player) {
@@ -124,6 +130,7 @@ public class LoanSystem {
 	 * 
 	 * @param player - The username of the player
 	 * @param amount - Amount money
+	 * @since 0.5
 	 * @return double - The amount that are removed from the loan
 	 */
 	public double payment(String player,double amount) {
@@ -146,10 +153,12 @@ public class LoanSystem {
 	}
 	
 	/**
+	 * Add a loan to a player
 	 * 
-	 * @param player
-	 * @param amount
-	 * @return
+	 * @param player - Name of the player
+	 * @param amount - Amount the loan should be on
+	 * @since 0.5
+	 * @return boolean - If the loan is successfully created
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public boolean addLoan(String player,double amount) {

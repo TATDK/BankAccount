@@ -336,7 +336,7 @@ public class BankAccount extends JavaPlugin {
 	 * 
 	 * @param player - The player
 	 * @param node - The PermissionNode (dk.earthgame.TAT.BankAccount.System.PermissionNodes)
-	 * @return boolean
+	 * @return boolean - If the player have the permission
 	 */
 	public boolean playerPermission(Player player,PermissionNodes node) {
 		return checkPermission(player, node, false);
@@ -564,6 +564,7 @@ public class BankAccount extends JavaPlugin {
 	 * @param account - Name of account
 	 * @param type - Type of transaction (dk.earthgame.TAT.BankAccount.System.TransactionTypes)
 	 * @param amount - amount of money the transaction (0.00 if money isn't a part of the transaction)
+	 * @since 0.5
 	 */
 	public void addTransaction(String player, String account, TransactionTypes type, Double amount) {
 		if (Transactions) {
@@ -585,6 +586,7 @@ public class BankAccount extends JavaPlugin {
 	 * Get the saved data of a player
 	 * 
 	 * @param player - The username of the player
+	 * @since 0.5
 	 * @return UserSaves - the saved data
 	 */
 	public UserSaves getSaved(String player) {
@@ -791,7 +793,7 @@ public class BankAccount extends JavaPlugin {
 	 * 
 	 * @since 0.5
 	 * @param accountname - The name of the account
-	 * @return boolean
+	 * @return boolean - If the account exists
 	 */
 	public boolean accountExists(String accountname) {
 		ResultSet rs;
@@ -880,7 +882,8 @@ public class BankAccount extends JavaPlugin {
 	 * 
 	 * @param accountname - The name of the account
 	 * @param player - Username of the players - Name of players seperated by comma (,)
-	 * @return boolean
+	 * @since 0.5
+	 * @return boolean - If the account is successfully created
 	 */
 	public boolean addAccount(String accountname,String players) {
 		try {
@@ -896,11 +899,13 @@ public class BankAccount extends JavaPlugin {
 	}
 	
 	/**
+	 * Do the player have access to an account
 	 * 
-	 * @param accountname
-	 * @param player - Username of the player
-	 * @param writeAccess
-	 * @return
+	 * @param accountname - Name of account
+	 * @param player - The player
+	 * @param writeAccess - Only look for owners
+	 * @since 0.5
+	 * @return boolean - If the player have access
 	 */
 	public boolean accessAccount(String accountname,Player player,boolean writeAccess) {
 		if (!accountExists(accountname)) {
@@ -950,11 +955,13 @@ public class BankAccount extends JavaPlugin {
 	}
 	
 	/**
+	 * Do the player have access to an account
 	 * 
-	 * @param accountname
-	 * @param player - Username of the player
-	 * @param writeAccess
-	 * @return
+	 * @param accountname - Name of account
+	 * @param player - Username of player
+	 * @param writeAccess - Only look for owners
+	 * @since 0.5
+	 * @return boolean - If the player have access
 	 */
 	public boolean accessAccount(String accountname,String player,boolean writeAccess) {
 		try {
@@ -990,24 +997,26 @@ public class BankAccount extends JavaPlugin {
 	}
 
 	/**
+	 * Add user to account
 	 * 
-	 * @param accountname
+	 * @param accountname - Name of account
 	 * @param player - Username of the player
-	 * @return
+	 * @since 0.5
+	 * @return boolean - If the user is successfully added
 	 */
 	public boolean addUser(String accountname,String player) {
 		try {
 			String newPlayers = player;
 			ResultSet rs;
-			rs = stmt.executeQuery("SELECT `players` FROM `" + SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
+			rs = stmt.executeQuery("SELECT `users` FROM `" + SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
 			while(rs.next()) {
-				String[] players = rs.getString("players").split(";");
+				String[] players = rs.getString("users").split(";");
 				for (String p : players) {
 					newPlayers += ";" + p;
 				}
 			}
 			try {
-				stmt.executeUpdate("UPDATE `" + SQL_account_table + "` SET `players` = '" + newPlayers + "' WHERE `accountname` = '" + accountname + "'");
+				stmt.executeUpdate("UPDATE `" + SQL_account_table + "` SET `users` = '" + newPlayers + "' WHERE `accountname` = '" + accountname + "'");
 				return true;
 			} catch(SQLException e) {
 				if (!e.getMessage().equalsIgnoreCase(null))
@@ -1025,18 +1034,20 @@ public class BankAccount extends JavaPlugin {
 	}
 	
 	/**
+	 * Remove an user from an account
 	 * 
-	 * @param accountname
+	 * @param accountname - Name of account
 	 * @param player - Username of the player
-	 * @return
+	 * @since 0.5
+	 * @return boolean - If the user is successfully removed
 	 */
 	public boolean removeUser(String accountname,String player) {
 		try {
 			String newPlayers = "";
 			ResultSet rs;
-			rs = stmt.executeQuery("SELECT `players` FROM `" + SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
+			rs = stmt.executeQuery("SELECT `users` FROM `" + SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
 			while(rs.next()) {
-				String[] players = rs.getString("players").split(";");
+				String[] players = rs.getString("users").split(";");
 				for (String p : players) {
 					if (!p.equalsIgnoreCase(player)) {
 						if (!newPlayers.equalsIgnoreCase("")) {
@@ -1047,7 +1058,7 @@ public class BankAccount extends JavaPlugin {
 				}
 			}
 			try {
-				stmt.executeUpdate("UPDATE `" + SQL_account_table + "` SET `players` = '" + newPlayers + "' WHERE `accountname` = '" + accountname + "'");
+				stmt.executeUpdate("UPDATE `" + SQL_account_table + "` SET `users` = '" + newPlayers + "' WHERE `accountname` = '" + accountname + "'");
 				return true;
 			} catch(SQLException e) {
 				if (!e.getMessage().equalsIgnoreCase(null))
@@ -1065,10 +1076,12 @@ public class BankAccount extends JavaPlugin {
 	}
 
 	/**
+	 * Set the password for an account
 	 * 
-	 * @param accountname
-	 * @param password
-	 * @return
+	 * @param accountname - Name of account
+	 * @param password - The new password (Must be encrypted!)
+	 * @since 0.5
+	 * @return boolean - If the password is successfully set
 	 */
 	public boolean setPassword(String accountname,String password) {
 		try {
@@ -1084,13 +1097,15 @@ public class BankAccount extends JavaPlugin {
 	}
 
 	/**
+	 * Send action to the ATM
 	 * 
-	 * @param accountname
+	 * @param accountname - Name of account
 	 * @param player - Username of the player
-	 * @param type
-	 * @param amount
-	 * @param password
-	 * @return
+	 * @param type - Type of action
+	 * @param amount - Amount money
+	 * @param password - Password
+	 * @since 0.5
+	 * @return boolean - If the action is run successfully
 	 */
 	public boolean ATM(String accountname,String player,String type,Double amount,String password) {
 		try {
@@ -1147,11 +1162,13 @@ public class BankAccount extends JavaPlugin {
 	}
 	
 	/**
+	 * Close an account
 	 * 
-	 * @param accountname
+	 * @param accountname - Name of account
 	 * @param player - Username of the player
-	 * @param password
-	 * @return
+	 * @param password - Password
+	 * @since 0.5
+	 * @return boolean - If the account is successfully closed
 	 */
 	public boolean closeAccount(String accountname,String player,String password) {
 		if (PasswordSystem.passwordCheck(accountname, password)) {
@@ -1176,9 +1193,11 @@ public class BankAccount extends JavaPlugin {
 	}
 	
 	/**
+	 * Get the users of an account
 	 * 
-	 * @param accountname
-	 * @return
+	 * @param accountname - Name of account
+	 * @since 0.5
+	 * @return String of users (seperated by comma and space(, ))
 	 */
 	public String getUsers(String accountname) {
 		try {
@@ -1207,9 +1226,11 @@ public class BankAccount extends JavaPlugin {
 	}
 	
 	/**
+	 * Get the balance of an account
 	 * 
-	 * @param accountname
-	 * @return
+	 * @param accountname - Name of account
+	 * @since 0.5
+	 * @return double - Amount of money on account
 	 */
 	public double getBalance(String accountname) {
 		try {
@@ -1230,10 +1251,11 @@ public class BankAccount extends JavaPlugin {
 	}
 	
 	/**
-	 * 
-	 * @param balance
-	 * @param accountname
-	 * @return
+	 * Set the balance of an account
+	 * @param balance - New balance
+	 * @param accountname - Name of account
+	 * @since 0.5
+	 * @return boolean - If the account balance is successfully changed
 	 */
 	public boolean setBalance(double balance,String accountname) {
 		try {
@@ -1249,10 +1271,12 @@ public class BankAccount extends JavaPlugin {
 	}
 	
 	/**
+	 * Add money to an account
 	 * 
-	 * @param amount
-	 * @param accountname
-	 * @return
+	 * @param amount - Amount of money that shall be added
+	 * @param accountname - Name of account
+	 * @since 0.5
+	 * @return boolean - If the money is successfully added
 	 */
 	public boolean add(double amount,String accountname) {
 		double temp = getBalance(accountname);
@@ -1270,10 +1294,12 @@ public class BankAccount extends JavaPlugin {
 	}
 	
 	/**
+	 * Subtract money from an account
 	 * 
-	 * @param amount
-	 * @param accountname
-	 * @return
+	 * @param amount - Amount of money that shall be subtracted
+	 * @param accountname - Name of account
+	 * @since 0.5
+	 * @return boolean - If the money is successfully subtracted
 	 */
 	public boolean subtract(double amount,String accountname) {
 		double temp = getBalance(accountname);
@@ -1292,7 +1318,11 @@ public class BankAccount extends JavaPlugin {
 	
 	//AREAS
 	/**
+	 * Does an area exists
 	 * 
+	 * @param name - Name of area
+	 * @since 0.5
+	 * @return boolean - If the area exists
 	 */
 	public boolean areaExists(String name) {
 		ResultSet rs;
@@ -1330,10 +1360,12 @@ public class BankAccount extends JavaPlugin {
 	}
 	
 	/**
+	 * Are the position inside an area
 	 * 
-	 * @param world
-	 * @param pos
-	 * @return
+	 * @param world - Name of world
+	 * @param pos - Position
+	 * @since 0.5
+	 * @return boolean - If the position is inside an area
 	 */
 	public boolean inArea(String world,Location pos) {
 		try {
@@ -1366,12 +1398,14 @@ public class BankAccount extends JavaPlugin {
 	}
 	
 	/**
+	 * Add an area
 	 * 
-	 * @param name
-	 * @param pos1
-	 * @param pos2
-	 * @param world
-	 * @return
+	 * @param name - Name of area
+	 * @param pos1 - Position 1
+	 * @param pos2 - Position 2
+	 * @param world - Name of world
+	 * @since 0.5
+	 * @return boolean - If the area is successfully added
 	 */
 	public boolean setArea(String name,Location pos1,Location pos2,String world) {
 		if (areaExists(name)) {
@@ -1390,9 +1424,11 @@ public class BankAccount extends JavaPlugin {
 	}
 
 	/**
+	 * Remove an area
 	 * 
-	 * @param name
-	 * @return
+	 * @param name - Name of area
+	 * @since 0.5
+	 * @return boolean - If the area is successfully removed
 	 */
 	public boolean removeArea(String name) {
 		try {
