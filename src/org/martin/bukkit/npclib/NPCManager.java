@@ -15,57 +15,61 @@ import org.bukkit.plugin.java.JavaPlugin;
  */
 public class NPCManager {
 
-    private HashMap<String, NPCEntity> npcs = new HashMap<String, NPCEntity>();
-    private BServer server;
-    @SuppressWarnings("unused")
+	private HashMap<String, NPCEntity> npcs = new HashMap<String, NPCEntity>();
+	private BServer server;
+	@SuppressWarnings("unused")
 	private JavaPlugin plugin;
 
-    public NPCManager(JavaPlugin plugin) {
-        this.plugin = plugin;
-        server = BServer.getInstance(plugin);
-    }
+	public NPCManager(JavaPlugin plugin) {
+		this.plugin = plugin;
+		server = BServer.getInstance(plugin);
+	}
 
-    /**
-     * Spawn NPC
-     * 
-     * @param name - Name of NPC
-     * @param l - Location to spawn
-     * @return NPCEntity of the new NPC
-     */
-    public NPCEntity spawnNPC(String name, Location l) {
-        BWorld world = new BWorld(l.getWorld());
-        NPCEntity npcEntity = new NPCEntity(server.getMCServer(), world.getWorldServer(), name, new ItemInWorldManager(world.getWorldServer()));
-        npcEntity.setPosition(l.getBlockX(), l.getBlockY(), l.getBlockZ());
-        world.getWorldServer().getChunkAt(l.getWorld().getChunkAt(l).getX(), l.getWorld().getChunkAt(l).getZ()).a(npcEntity);
-        //world.getWorldServer().manager.addPlayer(npcEntity);
-        //server.getEntityTracker().a(npcEntity);
-        //server.getEntityTracker().trackPlayer(npcEntity);
-        world.getWorldServer().addEntity(npcEntity); //the right way
-        npcs.put(name, npcEntity);
-        return npcEntity;
-    }
+	/**
+	 * Spawn NPC
+	 * 
+	 * @param name - Name of NPC
+	 * @param l - Location to spawn
+	 * @return NPCEntity of the new NPC
+	 */
+	public NPCEntity spawnNPC(String name, Location l) {
+		BWorld world = new BWorld(l.getWorld());
+		NPCEntity npcEntity = new NPCEntity(server.getMCServer(), world.getWorldServer(), name, new ItemInWorldManager(world.getWorldServer()));
+		npcEntity.setPositionRotation(l.getBlockX(), l.getBlockY(), l.getBlockZ(), l.getYaw(), l.getPitch());
+		world.getWorldServer().getChunkAt(l.getWorld().getChunkAt(l).getX(), l.getWorld().getChunkAt(l).getZ()).a(npcEntity);
+		//world.getWorldServer().manager.addPlayer(npcEntity);
+		//server.getEntityTracker().a(npcEntity);
+		//server.getEntityTracker().trackPlayer(npcEntity);
+		world.getWorldServer().addEntity(npcEntity); //the right way
+		npcs.put(name, npcEntity);
+		return npcEntity;
+	}
 
-    /**
-     * Despawn NPC
-     * 
-     * @param id - Name of NPC
-     */
-    public void despawn(String id) {
-        NPCEntity npc = npcs.get(id);
-        if (npc != null) {
-            npcs.remove(id);
-            try {
-                npc.world.removeEntity(npc);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
+	/**
+	 * Despawn NPC
+	 * 
+	 * @param id - Name of NPC
+	 */
+	public void despawn(String id) {
+		NPCEntity npc = npcs.get(id);
+		if (npc != null) {
+			npcs.remove(id);
+			try {
+				npc.world.removeEntity(npc);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
 
-    public void moveNPC(String npcName, Location l) {
-        NPCEntity npc = npcs.get(npcName);
-        if (npc != null) {
-            npc.move(l.getX(), l.getY(), l.getZ());
-        }
-    }
+	public void moveNPC(String npcName, Location l) {
+		NPCEntity npc = npcs.get(npcName);
+		if (npc != null) {
+			npc.move(l.getX(), l.getY(), l.getZ());
+		}
+	}
+	
+	public NPCEntity getNPC(String name){
+		return npcs.get(name);
+	}
 }
