@@ -397,8 +397,15 @@ public class BankAccountCommandExecutor implements CommandExecutor {
 		return false;
 	}
 	
-	public void showHelp(CommandSender sender, int Page) {
-		Player player = (Player)sender;
+	/**
+	 * Show help to a player
+	 * 
+	 * @param player - The player
+	 * @param Page - Page number
+	 * @since 0.5
+	 * @see showHelp(CommandSender sender, int page);
+	 */
+	public void showHelp(Player player, int page) {
 		List<String> commands = new ArrayList<String>();
 		if (plugin.playerPermission(player, PermissionNodes.EXTENDED) || plugin.playerPermission(player, PermissionNodes.ADMIN)) {
 			commands.add(CommandList.OPEN.getDescription());
@@ -474,16 +481,16 @@ public class BankAccountCommandExecutor implements CommandExecutor {
 		
 		int pages = (int)Math.max(1, Math.ceil(commands.size()/7)+1);
 		//Only show pages that exists
-		if (Page > pages) {
-			Page = pages;
-		} else if (Page < 0) {
-			Page = 1;
+		if (page > pages) {
+			page = pages;
+		} else if (page < 0) {
+			page = 1;
 		}
-		player.sendMessage(ChatColor.DARK_GREEN + "Bank Account Help - Page " + Page + " of " + pages);
+		player.sendMessage(ChatColor.DARK_GREEN + "Bank Account Help - Page " + page + " of " + pages);
 		player.sendMessage(ChatColor.DARK_GREEN + "This is used mainly to shared bank accounts");
 		player.sendMessage(ChatColor.GOLD + "/account help [page]");
 		if (commands.size() > 7) {
-			int start = (Page-1)*7;
+			int start = (page-1)*7;
 			int temp = 0;
 			for (String command : commands) {
 				temp++;
@@ -496,5 +503,18 @@ public class BankAccountCommandExecutor implements CommandExecutor {
 				player.sendMessage(ChatColor.GOLD + "/account " + command);
 			}
 		}
+	}
+	
+	/**
+	 * Show help to a CommandSender
+	 * 
+	 * @param sender - The sender of command
+	 * @param page - Page number
+	 * @since 0.5
+	 * @see showHelp(Player player, int page);
+	 */
+	public void showHelp(CommandSender sender, int page) {
+		//Just convert the CommandSender to Player and use showHelp(Player,int);
+		showHelp((Player)sender,page);
 	}
 }
