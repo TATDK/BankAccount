@@ -71,6 +71,8 @@ public class BankAccount extends JavaPlugin {
 	private int areaWandId;
 	LoanSystem LoanSystem = new LoanSystem(this);
 	Password PasswordSystem = new Password(this);
+	BankAccountCommandExecutor cmdExecutor = new BankAccountCommandExecutor(this);
+	BankAccountDisabled disabledExecutor = new BankAccountDisabled(this);
 	//MySQL
 	private boolean UseMySQL = false;
 	private String MySQL_host;
@@ -274,7 +276,7 @@ public class BankAccount extends JavaPlugin {
 	/**
 	 * Output Info to log on behalf of BankAccount
 	 * 
-	 * @since 1.0
+	 * @since 0.5
 	 * @param message
 	 */
 	public void consoleInfo(String message) {
@@ -284,7 +286,7 @@ public class BankAccount extends JavaPlugin {
 	/**
 	 * Output Warning to log on behalf of BankAccount
 	 * 
-	 * @since 1.0
+	 * @since 0.5
 	 * @param message
 	 */
 	public void consoleWarning(String message) {
@@ -343,7 +345,8 @@ public class BankAccount extends JavaPlugin {
 		getDataFolder().mkdir();
 		
 		// Register our events
-		getCommand("account").setExecutor(new BankAccountCommandExecutor(this));
+		getCommand("test").setExecutor(cmdExecutor);
+		getCommand("account").setExecutor(cmdExecutor);
 		getCommand("account").setUsage("/account help - Show help to BankAccount");
 		
 		PlayerListener rightClickListener = new PlayerListener() {
@@ -548,7 +551,7 @@ public class BankAccount extends JavaPlugin {
 			this.getServer().getScheduler().cancelTask(interestJobId);
 		}
 		interestJobId = 0;
-		getCommand("account").setExecutor(new BankAccountDisabled(this));
+		getCommand("account").setExecutor(disabledExecutor);
 		getCommand("account").setUsage(ChatColor.RED + "BankAccount is disabled");
 		log.info(pdfFile.getName() + " is disabled!" );
 	}
@@ -785,7 +788,7 @@ public class BankAccount extends JavaPlugin {
 	/**
 	 * Check if an account exists
 	 * 
-	 * @since 1.0
+	 * @since 0.5
 	 * @param accountname - The name of the account
 	 * @return boolean
 	 */
@@ -820,9 +823,9 @@ public class BankAccount extends JavaPlugin {
 	/**
 	 * List of accounts, the user have access to
 	 * 
-	 * @since 1.0
+	 * @since 0.5
 	 * @param player - Username of the player
-	 * @return List<String>
+	 * @return List of accounts
 	 */
 	public List<String> accountList(String player) {
 		List<String> accounts = new ArrayList<String>();
@@ -847,9 +850,9 @@ public class BankAccount extends JavaPlugin {
 	/**
 	 * List of accounts, the user have access to
 	 * 
-	 * @since 1.0
-	 * @param player - Username of the player
-	 * @return List<String>
+	 * @since 0.5
+	 * @param player
+	 * @return List of accounts
 	 */
 	public List<String> accountList(Player player) {
 		List<String> accounts = new ArrayList<String>();
