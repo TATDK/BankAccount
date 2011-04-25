@@ -236,7 +236,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   						}
   						if (plugin.ATM(args[1], sendername, "withdraw", Double.parseDouble(args[2]), password)) {
   							plugin.addTransaction(sendername, args[1], TransactionTypes.WITHDRAW, Double.parseDouble(args[2]));
-  							sender.sendMessage("ATM: " + ChatColor.GREEN + iConomy.getBank().format(Double.parseDouble(args[2])) + " " + iConomy.getBank().getCurrency() + " withdrawed from " + args[1]);
+  							sender.sendMessage("ATM: " + ChatColor.GREEN + iConomy.getBank().format(Double.parseDouble(args[2])) + " withdrawed from " + args[1]);
   						} else {
   							sender.sendMessage("ATM: " + ChatColor.RED + "Couldn't withdraw, are you sure you have enough money on account?");
   						}
