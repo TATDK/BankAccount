@@ -8,10 +8,10 @@
 #SQL Settings
 #    Transaction: true = save transactions in table // false = don't save transactions
 #    MySQL: true = database (MySQL) // false = flatfile (SQLite)
-#    Host: [ONLY MySQL] Server IP or address to MySQL server (Same as Minecraft server: localhost)
-#    Port: [ONLY MySQL] Server port to MySQL server (Default: 3306)
-#    User: [ONLY MySQL] Username to MySQL
-#    Pass: [ONLY MySQL] Password to MySQL
+#    Host:     [ONLY MySQL] Server IP or address to MySQL server (Same as Minecraft server: localhost)
+#    Port:     [ONLY MySQL] Server port to MySQL server (Default: 3306)
+#    User:     [ONLY MySQL] Username to MySQL
+#    Pass:     [ONLY MySQL] Password to MySQL
 #    Database: [ONLY MySQL] Database where the data must be saved
 ##
 SQL-info:
@@ -52,11 +52,13 @@ Permissions:
 #Config: Areas
 #Doing: Is it possible to use commands global or in specific areas (example: banks or trade areas)?
 #    Active: true = specific areas // false = global
-#    AreaWandId: 339 (Paper) // Other item ID
+#    AreaWandId:    [Require areas enabled]  339 (Paper) // Other item ID
+#    MultipleBanks: [Require areas enabled]  true = there is multiple banks // false = there is only one bank
 ##
 Areas:
     Active: true
     AreaWandId: 339
+    MultipleBanks: false
 
 ##
 #Interest settings

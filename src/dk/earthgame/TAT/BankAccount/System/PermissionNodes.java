@@ -10,6 +10,7 @@ public enum PermissionNodes {
 	ACCESS				("bankaccount.access"),		//Access to allow user to use BankAccount.
 													//Overrides all other Bankaccount permissions
 	ADMIN				("bankaccount.admin"),		//Access to all commands and accounts
+	AREA				("bankaccount.area"),		//Access to area commands
 	OPEN				("bankaccount.open"),		//Access to open own accounts + show balance
 	USER				("bankaccount.user"),		//Access to add/remove users on own accounts
 	CLOSE				("bankaccount.close"),		//Access to close own accounts

@@ -69,7 +69,8 @@ public class BankAccount extends JavaPlugin {
 	private int interestJobId;
 	private int checkJobId;
 	private HashMap<String,UserSaves> UserSaves = new HashMap<String,UserSaves>();
-	private int areaWandId;
+	private int AreaWandId;
+	private boolean MultiBanks;
 	LoanSystem LoanSystem = new LoanSystem(this);
 	Password PasswordSystem = new Password(this);
 	BankAccountCommandExecutor cmdExecutor = new BankAccountCommandExecutor(this);
@@ -88,6 +89,7 @@ public class BankAccount extends JavaPlugin {
 	String SQL_area_table;
 	String SQL_loan_table;
 	String SQL_transaction_table;
+	String SQL_banks_table;
 	//iConomy
 	public iConomy iConomy;
 	//Permissions
@@ -346,7 +348,6 @@ public class BankAccount extends JavaPlugin {
 		getDataFolder().mkdir();
 		
 		// Register our events
-		getCommand("test").setExecutor(cmdExecutor);
 		getCommand("account").setExecutor(cmdExecutor);
 		getCommand("account").setUsage("/account help - Show help to BankAccount");
 		
@@ -355,7 +356,7 @@ public class BankAccount extends JavaPlugin {
 			public void onPlayerInteract(PlayerInteractEvent event) {
 				if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
 					UserSaves mySave = getSaved(event.getPlayer().getName());
-					if (event.getPlayer().getItemInHand().getTypeId() == areaWandId && mySave.isSelecting()) {
+					if (event.getPlayer().getItemInHand().getTypeId() == AreaWandId && mySave.isSelecting()) {
 						Location pos = event.getClickedBlock().getLocation();
 						if (mySave.setPosition(pos) == 2) {
 							event.getPlayer().sendMessage("ATM: Area selected, to confirm: /account setarea <areaname>");
@@ -616,6 +617,7 @@ public class BankAccount extends JavaPlugin {
 		SQL_area_table = config.getString("SQL-tables.Area","bankareas");
 		SQL_loan_table = config.getString("SQL-tables.Loan","bankloans");
 		SQL_transaction_table = config.getString("SQL-tables.Transaction","banktransactions");
+		SQL_banks_table = config.getString("SQL-tables.Banks","banks");
 		//Permissions
 		UseOP = config.getBoolean("Permissions.OP",true);
 		UsePermissions = config.getBoolean("Permissions.Permissions",false);
@@ -627,7 +629,8 @@ public class BankAccount extends JavaPlugin {
 		interestTime = config.getInt("Interest.Time", 0);
 		//Area
 		Areas = config.getBoolean("Areas.Active",false);
-		areaWandId = config.getInt("Areas.AreaWandid",339);
+		AreaWandId = config.getInt("Areas.AreaWandid",339);
+		MultiBanks = config.getBoolean("Areas.MultipleBanks", false);
 		//Loan
 		LoanSystem.LoanActive = config.getBoolean("Loan.Active", false);
 		LoanSystem.Fixed_rate = config.getDouble("Loan.Fixed-rate", 0.00);
@@ -660,11 +663,12 @@ public class BankAccount extends JavaPlugin {
 					stmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_READ_ONLY);
 					consoleInfo("Connected to SQLite");
 				}
+				boolean checkAccount = false;
+				boolean checkArea = false;
+				boolean checkLoan = false;
+				boolean checkTransaction = false;
+				boolean checkBanks = false;
 				try {
-					boolean checkAccount = false;
-					boolean checkArea = false;
-					boolean checkLoan = false;
-					boolean checkTransaction = false;
 					ResultSet tables = con.getMetaData().getTables(null, null, null, null);
 					while (tables.next()) {
 						String tablename = tables.getString("TABLE_NAME");
@@ -676,8 +680,15 @@ public class BankAccount extends JavaPlugin {
 							checkLoan = true;
 						} else if (tablename.equalsIgnoreCase(SQL_transaction_table)) {
 							checkTransaction = true;
+						} else if (tablename.equalsIgnoreCase(SQL_banks_table)) {
+							checkBanks = true;
 						}
 					}
+				} catch (SQLException e3) {
+					consoleWarning("Couldn't get tables existing! Running as if all exists");
+					consoleWarning(e3.toString());
+				}
+				try {
 					if (!checkAccount) {
 						//ACCOUNT TABLE
 						String query = "CREATE TABLE IF NOT EXISTS `" + SQL_account_table + "` (`accountname` VARCHAR( 255 ) NOT NULL , `owners` LONGTEXT NOT NULL, `users` LONGTEXT NOT NULL, `password` VARCHAR( 255 ) NULL DEFAULT '', `amount` DOUBLE( 255,2 ) NOT NULL DEFAULT '0')";
@@ -687,7 +698,7 @@ public class BankAccount extends JavaPlugin {
 						}
 						stmt.execute(query);
 					}
-					if (!checkArea) {
+					if (!checkArea && Areas) {
 						//AREA TABLE
 						String query = "CREATE TABLE IF NOT EXISTS `" + SQL_area_table + "` (`areaname` VARCHAR( 255 ) NOT NULL , `world` VARCHAR( 255 ) NOT NULL , `x1` INT( 255 ) NOT NULL , `y1` INT( 255 ) NOT NULL , `z1` INT( 255 ) NOT NULL , `x2` INT( 255 ) NOT NULL , `y2` INT( 255 ) NOT NULL , `z2` INT( 255 ) NOT NULL)";
 						if (UseMySQL) {
@@ -696,7 +707,7 @@ public class BankAccount extends JavaPlugin {
 						}
 						stmt.execute(query);
 					}
-					if (!checkLoan) {
+					if (!checkLoan && LoanSystem.LoanActive) {
 						//LOAN TABLE
 						String query = "CREATE TABLE IF NOT EXISTS `" + SQL_loan_table + "` (`player` VARCHAR( 255 ) NOT NULL, `totalamount` DOUBLE( 255,2 ) NOT NULL, `remaining` DOUBLE( 255,2 ) NOT NULL, `timepayment` INT( 255 ) NOT NULL, `timeleft` INT( 255 ) NOT NULL, `part` INT( 255 ) NOT NULL, `parts` INT( 255 ) NOT NULL)";
 						if (UseMySQL) {
@@ -705,7 +716,7 @@ public class BankAccount extends JavaPlugin {
 						}
 						stmt.execute(query);
 					}
-					if (!checkTransaction) {
+					if (!checkTransaction && Transactions) {
 						//TRANSACTION TABLE
 						String query = "CREATE TABLE IF NOT EXISTS `" + SQL_transaction_table + "` (`player` VARCHAR( 255 ) NOT NULL, `account` VARCHAR( 255 ) NULL, `type` INT( 255 ) NOT NULL, `amount` DOUBLE( 255,2 ) NULL, `time` INT( 255 ) NOT NULL)";
 						if (UseMySQL) {
@@ -714,12 +725,45 @@ public class BankAccount extends JavaPlugin {
 						}
 						stmt.execute(query);
 					}
+					if (!checkBanks && MultiBanks) {
+						//BANKS TABLE
+						String query = "";
+						if (UseMySQL) {
+							consoleWarning("Created table " + SQL_banks_table);
+							query = "";
+						}
+						stmt.execute(query);
+					}
 					
 					//Run upgrades of SQL tables
 					new Upgrade(this, UseMySQL);
 				} catch (SQLException e3) {
-					consoleWarning("Failed to find and create table " + SQL_account_table);
-					consoleWarning("Failed to find and create table " + SQL_area_table);
+					if (!checkAccount) {
+						consoleWarning("Failed to find and create table " + SQL_account_table);
+					}
+					if (!checkArea && Areas) {
+						consoleWarning("Failed to find and create table " + SQL_area_table);
+						consoleInfo("Disabled areas!");
+						Areas = false;
+					}
+					if (!checkLoan && LoanSystem.LoanActive) {
+						consoleWarning("Failed to find and create table " + SQL_loan_table);
+						consoleInfo("Disabled loans!");
+						LoanSystem.LoanActive = false;
+						if (LoanSystem.running) {
+							LoanSystem.shutdownRunner();
+						}
+					}
+					if (!checkTransaction && Transactions) {
+						consoleWarning("Failed to find and create table " + SQL_transaction_table);
+						consoleInfo("Disabled transactions!");
+						Transactions = false;
+					}
+					if (!checkBanks && MultiBanks) {
+						consoleWarning("Failed to find and create table " + SQL_banks_table);
+						consoleInfo("Disabled multiple banks!");
+						MultiBanks = false;
+					}
 					consoleWarning(e3.toString());
 					consoleInfo("Shuting down");
 					this.getServer().getPluginManager().disablePlugin(this);

@@ -20,8 +20,8 @@ public enum CommandList {
 	LOAN				("loan","loan [amount]",true),
 	PAY					("pay","pay <amount>",true),
 	SELECT				("select","select",false),
-	SETAREA				("setarea","setarea <areaname>",false),
-	REMOVEAREA			("removearea","removearea <areaname>",false);
+	SETAREA				("setarea","setarea <areaname> [bankgroup]",false),
+	REMOVEAREA			("removearea","removearea <areaname> [bankgroup]",false);
 
 	private String command;
 	private String description;

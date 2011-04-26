@@ -114,6 +114,7 @@ public class NPCManager {
 
 	/**
 	 * Move NPC to new location with new rotation
+	 * 
 	 * @param NPCname - Name of NPC
 	 * @param l - New location
 	 * @see moveNPCStatic(String NPCname, Location l);
@@ -127,6 +128,7 @@ public class NPCManager {
 	
 	/**
 	 * Move NPC to new location
+	 * 
 	 * @param NPCname - Name of NPC
 	 * @param l - New location
 	 * @see moveNPC(String NPCname, Location l);
@@ -140,6 +142,7 @@ public class NPCManager {
 	
 	/**
 	 * Get NPCEntity
+	 * 
 	 * @param id - ID of NPC
 	 * @return NPCEntity of NPC - If not found: returns null
 	 */
@@ -147,6 +150,13 @@ public class NPCManager {
 		return npcs.get(id);
 	}
 	
+	/**
+	 * Get list of NPCs with the name
+	 * 
+	 * @param name - Name of NPC(s)
+	 * @since 0.5
+	 * @return List of NPCs
+	 */
 	public List<NPCEntity> getNPCsByName(String name) {
 		List<NPCEntity> ret = new ArrayList<NPCEntity>();
 		Collection<NPCEntity> i = npcs.values();
@@ -156,6 +166,13 @@ public class NPCManager {
 		return ret;
 	}
 	
+	/**
+	 * Rename a NPC
+	 * 
+	 * @param id - ID of NPC
+	 * @param name - New name of NPC
+	 * @since 0.5
+	 */
 	public void rename(String id, String name) {
 		if (name.length() > 16) { // Check and nag if name is too long, spawn NPC anyway with shortened name.
 			String tmp = name.substring(0, 16);
