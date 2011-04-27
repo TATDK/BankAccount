@@ -115,12 +115,12 @@ public class NPCManager {
 	/**
 	 * Move NPC to new location with new rotation
 	 * 
-	 * @param NPCname - Name of NPC
+	 * @param NPCname - ID of NPC
 	 * @param l - New location
 	 * @see moveNPCStatic(String NPCname, Location l);
 	 */
-	public void moveNPC(String NPCname, Location l) {
-		NPCEntity npc = npcs.get(NPCname);
+	public void moveNPC(String id, Location l) {
+		NPCEntity npc = npcs.get(id);
 		if (npc != null) {
 			npc.setPositionRotation(l.getX(), l.getY(), l.getZ(), l.getYaw(), l.getPitch());
 		}
@@ -136,7 +136,7 @@ public class NPCManager {
 	public void moveNPCStatic(String NPCname, Location l) {
 		NPCEntity npc = npcs.get(NPCname);
 		if (npc != null) {
-			npc.move(l.getX(), l.getY(), l.getZ());
+			npc.setPosition(l.getX(), l.getY(), l.getZ());
 		}
 	}
 	
@@ -161,9 +161,20 @@ public class NPCManager {
 		List<NPCEntity> ret = new ArrayList<NPCEntity>();
 		Collection<NPCEntity> i = npcs.values();
 		for (NPCEntity e : i) {
-			ret.add(e);
+			if (e.getName().equalsIgnoreCase(name)) {
+				ret.add(e);
+			}
 		}
 		return ret;
+	}
+	
+	/**
+	 * Get list of all NPCs
+	 * 
+	 * @return List of NPCs
+	 */
+	public List<NPCEntity> getNPCs() {
+		return new ArrayList<NPCEntity>(npcs.values());
 	}
 	
 	/**

@@ -21,6 +21,7 @@ public class BPlayer {
 	private EntityPlayer ePlayer;
 	//private EntityHuman hPlayer;
 	//private PlayerManager pManager;
+	
 	public BPlayer(Player player) {
 		try {
 			//this.player = player;
@@ -33,13 +34,21 @@ public class BPlayer {
 		}
 	}
 
+	/**
+	 * Open small virtual chest
+	 * 
+	 * @param chest - The chest you want to open
+	 */
 	public void openVirtualChest(TileEntityChest chest) {
 		ePlayer.a(chest);
 	}
 
+	/**
+	 * Open large virtual chest
+	 * 
+	 * @param lChest - The chest you want to open
+	 */
 	public void openVirtualChest(InventoryLargeChest lChest) {
 		ePlayer.a(lChest);
 	}
-
-	
 }

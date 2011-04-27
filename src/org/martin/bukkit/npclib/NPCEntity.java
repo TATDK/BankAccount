@@ -46,7 +46,7 @@ public class NPCEntity extends EntityPlayer {
 		this.b.tracker.a(this, new Packet18ArmAnimation(this, 1));
 	}
 
-	public void actAsHurt(){
+	public void actAsHurt() {
 		this.b.tracker.a(this, new Packet18ArmAnimation(this, 2));
 	}
 
@@ -114,8 +114,8 @@ public class NPCEntity extends EntityPlayer {
 		if (s == null) {
 			this.inventory.setItem(0, new ItemStack(Item.byId[m.getId()]));
 		} else {
-			for(int i = 0 ; i < this.inventory.getContents().length ; i++){
-				if(this.inventory.getContents()[i] == s){
+			for(int i = 0 ; i < this.inventory.getContents().length ; i++) {
+				if(this.inventory.getContents()[i] == s) {
 					this.inventory.setItem(i, new ItemStack(Item.byId[m.getId()]));
 					break;
 				}
@@ -127,7 +127,7 @@ public class NPCEntity extends EntityPlayer {
 		return name;
 	}
 	
-	void setName(String name){
+	void setName(String name) {
 		this.name = name;
 	}
 }

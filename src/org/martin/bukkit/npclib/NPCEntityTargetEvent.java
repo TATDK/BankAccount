@@ -26,8 +26,7 @@ public class NPCEntityTargetEvent extends EntityTargetEvent {
      * Get reason for the event to happen
      * @return NPCTargetReason
      */
-    public NPCTargetReason getNPCReason()
-    {
+    public NPCTargetReason getNPCReason() {
         return this.reason;
     }
 
