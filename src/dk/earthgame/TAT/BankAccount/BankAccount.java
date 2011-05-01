@@ -296,7 +296,7 @@ public class BankAccount extends JavaPlugin {
 		log.warning("[" + pdfFile.getName() + "] " + message);
 	}
 
-	boolean checkPermission(Player player,PermissionNodes node,boolean extraLookup) {
+	private boolean checkPermission(Player player,PermissionNodes node,boolean extraLookup) {
 		if (player != null) {
 			if (UsePermissions) {
 				if (Permissions.has(player, node.getNode())) {
@@ -338,6 +338,7 @@ public class BankAccount extends JavaPlugin {
 	 * 
 	 * @param player - The player
 	 * @param node - The PermissionNode (dk.earthgame.TAT.BankAccount.System.PermissionNodes)
+	 * @since 0.5
 	 * @return boolean - If the player have the permission
 	 */
 	public boolean playerPermission(Player player,PermissionNodes node) {
@@ -496,7 +497,7 @@ public class BankAccount extends JavaPlugin {
 		}
 		
 		/*
-		 * Check if iConomy isn't hooked up 1 minute after startup of BankAccount
+		 * Check if iConomy isn't hooked up 20 seconds after startup of BankAccount
 		 */
 		checkJobId = this.getServer().getScheduler().scheduleSyncDelayedTask(thisPlugin, new Runnable() {
 			public void run() {
@@ -507,7 +508,7 @@ public class BankAccount extends JavaPlugin {
 					checkJobId = 0;
 				}
 			}
-		}, 20*60);
+		}, 20*20);
 
 		createDefaultConfiguration();
 		loadConfiguration();
