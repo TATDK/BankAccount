@@ -48,7 +48,7 @@ public class Upgrade {
 					plugin.consoleInfo("Tables upgraded to v.0.5");
 				} else {
 					//TODO: Setup SQLite Update
-					plugin.consoleInfo("SQLUpgrade05 is not for SQLite");
+					plugin.consoleInfo("SQLUpgrade05 is not ready for SQLite");
 				}
 				if (Upgrade05.delete()) {
 					plugin.consoleInfo("SQLUpgrade05 deleted");

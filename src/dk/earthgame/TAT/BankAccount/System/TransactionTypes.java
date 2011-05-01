@@ -21,7 +21,9 @@ public enum TransactionTypes {
 	LOAN_PAID			(12),//Loan finished and paid
 	LOAN_MISSING		(13),//Loan could not finish, missing money
 	BOUNTY_START		(14),//Bounty on user started
-	BOUNTY_END			(15);//Bounty on user ended
+	BOUNTY_END			(15),//Bounty on user ended
+	OWNER_ADD			(16), //Owner added
+	OWNER_REMOVE		(17); //Owner removed
 	
 	private int code;
 	TransactionTypes(int code) {
