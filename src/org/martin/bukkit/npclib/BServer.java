@@ -14,7 +14,7 @@ import net.minecraft.server.WorldServer;
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.CraftServer;
-import org.bukkit.plugin.java.JavaPlugin;
+import dk.earthgame.TAT.BankAccount.BankAccount;
 
 /**
  * Server hacks for Bukkit
@@ -26,8 +26,7 @@ public class BServer {
     private CraftServer cServer;
     private Server server;
     private HashMap<String, BWorld> worlds = new HashMap<String, BWorld>();
-    private BServer(JavaPlugin plugin) {
-        //Getting neede structures
+    private BServer(BankAccount plugin) {
         server = plugin.getServer();
         try {
             cServer = (CraftServer) server;
@@ -35,11 +34,9 @@ public class BServer {
         } catch (Exception ex) {
             Logger.getLogger("Minecraft").log(Level.SEVERE, null, ex);
         }
-        //end
     }
 
     private BServer(Server server) {
-        //Getting neede structures
         this.server = server;
         try {
             cServer = (CraftServer) server;
@@ -47,7 +44,6 @@ public class BServer {
         } catch (Exception ex) {
             Logger.getLogger("Minecraft").log(Level.SEVERE, null, ex);
         }
-        //end
     }
 
     public void disablePlugins() {
@@ -113,7 +109,7 @@ public class BServer {
         return w;
     }
 
-    public static BServer getInstance(JavaPlugin pl) {
+    public static BServer getInstance(BankAccount pl) {
         if(ins == null) {
             ins = new BServer(pl);
         }

@@ -18,7 +18,7 @@ import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
+import dk.earthgame.TAT.BankAccount.BankAccount;
 
 /**
  *
@@ -88,7 +88,7 @@ public class BWorld {
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public void removeEntity(String name, final Player player, JavaPlugin plugin) {
+	public void removeEntity(String name, final Player player, BankAccount plugin) {
 		server.getServer().getScheduler().callSyncMethod(plugin, new Callable() {
 
 			public Object call() throws Exception {

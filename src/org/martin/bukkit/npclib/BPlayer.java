@@ -17,18 +17,12 @@ import org.bukkit.entity.Player;
 public class BPlayer {
 
 	private CraftPlayer cPlayer;
-	//private Player player;
 	private EntityPlayer ePlayer;
-	//private EntityHuman hPlayer;
-	//private PlayerManager pManager;
 	
 	public BPlayer(Player player) {
 		try {
-			//this.player = player;
 			cPlayer = (CraftPlayer) player;
 			ePlayer = cPlayer.getHandle();
-			//hPlayer = (EntityHuman) ePlayer;
-			//pManager = BServer.getInstance(player.getServer()).getWorld(player.getWorld().getName()).getPlayerManager();
 		} catch (Exception ex) {
 			Logger.getLogger("Minecraft").log(Level.SEVERE, null, ex);
 		}
