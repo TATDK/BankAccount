@@ -30,7 +30,8 @@ public class BServer {
         server = plugin.getServer();
         try {
             cServer = (CraftServer) server;
-            mcServer = cServer.getServer();
+            if (cServer != null)
+            	mcServer = cServer.getServer();
         } catch (Exception ex) {
             Logger.getLogger("Minecraft").log(Level.SEVERE, null, ex);
         }

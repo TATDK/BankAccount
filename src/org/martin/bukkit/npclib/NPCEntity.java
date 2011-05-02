@@ -1,5 +1,8 @@
 package org.martin.bukkit.npclib;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import net.minecraft.server.Entity;
 import net.minecraft.server.EntityHuman;
 import net.minecraft.server.EntityLiving;
@@ -13,9 +16,13 @@ import net.minecraft.server.NetworkManager;
 import net.minecraft.server.Packet18ArmAnimation;
 import net.minecraft.server.World;
 import net.minecraft.server.WorldServer;
+
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.event.entity.EntityTargetEvent;
+import org.martin.bukkit.npclib.NPCPath.Node;
 
 /**
  *
@@ -26,6 +33,46 @@ public class NPCEntity extends EntityPlayer {
 	private int lastTargetId;
 	private long lastBounceTick;
 	private int lastBounceId;
+	private NPCPath path;
+	private Node last;
+	private Timer t = new Timer();
+	private Location end;
+	private int maxIter;
+	
+	public void pathFindTo(Location l, int maxIterations) {
+		path = new NPCPath(getBukkitEntity().getLocation(), l, maxIterations);
+		end = l;
+		maxIter = maxIterations;
+		t.schedule(new movePath(), 300);
+	}
+	
+	public class movePath extends TimerTask {
+		@Override
+		public void run() {
+			if (path != null) {
+				Node n = path.getNextNode();
+				Block b = null;
+				float angle = yaw;
+				float look = pitch;
+				if (n != null) {
+					if (last == null || path.checkPath(n, last, true)) {
+						b = n.b;
+						if (last != null) {
+							angle = ((float) Math.toDegrees(Math.atan2(last.b.getX() - b.getX(), last.b.getZ() - b.getZ())));
+							look = (float) (Math.toDegrees(Math.asin(last.b.getY() - b.getY())) / 2);
+						}
+						setPositionRotation(b.getX() + 0.5, b.getY(), b.getZ() + 0.5, angle, look);
+						t.schedule(new movePath(), 300);
+					} else {
+						pathFindTo(end, maxIter);
+					}
+				} else if (last != null) {
+					setPositionRotation(end.getX(), end.getY(), end.getZ(), end.getYaw(), end.getPitch());
+				}
+				last = n;
+			}
+		}
+	}
 
 	public NPCEntity(MinecraftServer minecraftserver, World world, String s, ItemInWorldManager iteminworldmanager) {
 		super(minecraftserver, world, s, iteminworldmanager);

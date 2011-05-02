@@ -12,6 +12,8 @@ import net.minecraft.server.ItemInWorldManager;
 import net.minecraft.server.WorldServer;
 
 import org.bukkit.Location;
+import org.bukkit.entity.HumanEntity;
+
 import dk.earthgame.TAT.BankAccount.BankAccount;
 
 /**
@@ -111,6 +113,23 @@ public class NPCManager {
 			npcs.remove(n);
 		}
 	}
+	
+	public void pathFindNPC(String id, Location l) {
+		pathFindNPC(id, l, 1500);
+	}
+	
+	public void pathFindNPC(String id, Location l, int maxIterations) {
+		NPCEntity npc = npcs.get(id);
+		if (npc != null) {
+			if (l.getWorld() == npc.getBukkitEntity().getWorld()) {
+				npc.pathFindTo(l, maxIterations);
+			} else {
+				String n = npc.name;
+				despawnById(id);
+				spawnNPC(n, l, id);
+			}
+		}
+	}
 
 	/**
 	 * Move NPC to new location with new rotation
@@ -175,6 +194,17 @@ public class NPCManager {
 	 */
 	public List<NPCEntity> getNPCs() {
 		return new ArrayList<NPCEntity>(npcs.values());
+	}
+	
+	public String getNPCIdFromEntity(org.bukkit.entity.Entity e) {
+		if (e instanceof HumanEntity) {
+			for (String i : npcs.keySet()) {
+				if (npcs.get(i).getBukkitEntity().getEntityId() == ((HumanEntity) e).getEntityId()) {
+					return i;
+				}
+			}
+		}
+		return null;
 	}
 	
 	/**
