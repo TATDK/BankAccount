@@ -43,12 +43,19 @@ public class Upgrade {
 		if (Upgrade05.exists()) {
 			try {
 				if (UseMySQL) {
+					//MySQL
 					String query = "ALTER TABLE `" + plugin.SQL_account_table + "` CHANGE  `players`  `owners` LONGTEXT NOT NULL";
 					plugin.stmt.execute(query);
-					plugin.consoleInfo("Tables upgraded to v.0.5");
+					query = "ALTER TABLE  `" + plugin.SQL_account_table + "` ADD  `users` LONGTEXT NOT NULL AFTER  `owners`";
+					plugin.stmt.execute(query);
+					plugin.consoleInfo("MySQL Tables upgraded to v.0.5");
 				} else {
-					//TODO: Setup SQLite Update
-					plugin.consoleInfo("SQLUpgrade05 is not ready for SQLite");
+					//SQLite
+					String query = "ALTER TABLE `" + plugin.SQL_account_table + "` ADD  `owners` LONGTEXT NOT NULL";
+					plugin.stmt.execute(query);
+					query = "ALTER TABLE  `" + plugin.SQL_account_table + "` ADD  `users` LONGTEXT NOT NULL";
+					plugin.stmt.execute(query);
+					plugin.consoleInfo("SQLite Tables upgraded to v.0.5");
 				}
 				if (Upgrade05.delete()) {
 					plugin.consoleInfo("SQLUpgrade05 deleted");
