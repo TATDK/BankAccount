@@ -12,7 +12,7 @@ public enum PermissionNodes {
 	ADMIN				("bankaccount.admin"),		//Access to all commands and accounts
 	AREA				("bankaccount.area"),		//Access to area commands
 	OPEN				("bankaccount.open"),		//Access to open own accounts + show balance
-	USER				("bankaccount.user"),		//Access to add/remove users on own accounts
+	USER				("bankaccount.user"),		//Access to add/remove users/owners on own accounts
 	CLOSE				("bankaccount.close"),		//Access to close own accounts
 	DEPOSIT				("bankaccount.deposit"),	//Access to deposit to own accounts
 	WITHDRAW			("bankaccount.withdraw"),	//Access to withdraw from own accounts
