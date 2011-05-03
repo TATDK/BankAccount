@@ -197,8 +197,11 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   					if (!plugin.accountExists(args[1])) {
   						sender.sendMessage("ATM: " + ChatColor.RED + "Account not found");
   					} else if (plugin.accessAccount(args[1], (Player)sender, false) || plugin.DepositAll) {
-  						String password = "";
-  						if (plugin.ATM(args[1], sendername, "deposit", Double.parseDouble(args[2]), password)) {
+  						if (Double.parseDouble(args[2]) <= 0.00) {
+  							sender.sendMessage("ATM: " + ChatColor.RED + "Please enter value higher than 0");
+  							return true;
+  						}
+  						if (plugin.ATM(args[1], sendername, "deposit", Double.parseDouble(args[2]), "")) {
   							plugin.addTransaction(sendername, args[1], TransactionTypes.DEPOSIT, Double.parseDouble(args[2]));
   							sender.sendMessage("ATM: " + ChatColor.GREEN + iConomy.getBank().format(Double.parseDouble(args[2])) + " added to " + args[1]);
   						} else {
@@ -214,6 +217,10 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   						return true;
   					}
   					if (plugin.accessAccount(args[1], (Player)sender, true)) {
+  						if (Double.parseDouble(args[2]) <= 0.00) {
+  							sender.sendMessage("ATM: " + ChatColor.RED + "Please enter value higher than 0");
+  							return true;
+  						}
   						String password = "";
   						if (args.length >= 4) {
   							password = args[3];
@@ -234,6 +241,10 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   						return true;
   					}
   					if (plugin.accessAccount(args[1], (Player)sender, true)) {
+  						if (Double.parseDouble(args[3]) <= 0.00) {
+  							sender.sendMessage("ATM: " + ChatColor.RED + "Please enter value higher than 0");
+  							return true;
+  						}
   						if (plugin.accountExists(args[2])) {
 							String password = "";
 							if (args.length >= 5) {
