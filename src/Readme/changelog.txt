@@ -2,7 +2,7 @@ Plugin: BankAccount
 Author: TAT
 CHANGELOG
 
-0.5DEV
+0.5
 Fixed basic permissionnode
 Fixed not showing all commands in help
 Fixed lookup for access when using SuperAdmin

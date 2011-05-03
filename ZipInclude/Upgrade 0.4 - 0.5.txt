@@ -1,0 +1,7 @@
+*****************************
+     UPGRADE 0.4 => 0.5
+*****************************
+Add a new file "SQLUpgrade05" in /plugins/BankAccount
+It doesn't need any content, it just need to exists
+Then run/restart the server, the server will now update your MySQL or SQLite to v.0.5
+The server will try to delete the file after upgrade, if it isn't deleted, please do this yourself.
