@@ -9,6 +9,7 @@ Fixed lookup for access when using SuperAdmin
 Added command to list accounts
 Added setting for let players deposit to all accounts
 Added API informations
+Added NPClib for future NPC support
 Added account access
 - Owners: All access
 - Users: Deposit, balance and info only
@@ -18,6 +19,7 @@ Cleanup in config to make it (hopefully) more simple
 - SQL-tables grouped
 - Permissions grouped
 - Global replaced by Areas
+Updated to CraftBukkit #740 (Hopefully)
 
 0.4
 Added loan

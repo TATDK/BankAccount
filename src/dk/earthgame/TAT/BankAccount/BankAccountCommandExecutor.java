@@ -161,6 +161,34 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   					} else {
   						sender.sendMessage("ATM: " + ChatColor.RED + "You don't have access to this account!");
   					}
+//ADDOWNER
+  				} else if (args[0].equalsIgnoreCase("addowner") && args.length >= 3) {
+  					if (!plugin.accountExists(args[1])) {
+  						sender.sendMessage("ATM: " + ChatColor.RED + "Account not found");
+  					} else if (plugin.accessAccount(args[1], (Player)sender, true)) {
+  						if (plugin.addOwner(args[1], args[2])) {
+  							plugin.addTransaction(sendername, args[1], TransactionTypes.OWNER_ADD, 0.00);
+  							sender.sendMessage("ATM: " + ChatColor.GREEN + args[2] + " added to account");
+  						} else {
+  							sender.sendMessage("ATM: " + ChatColor.RED + "Something went wrong");
+  						}
+  					} else {
+  						sender.sendMessage("ATM: " + ChatColor.RED + "You don't have access to this account!");
+  					}
+//REMOVEOWNER
+  				} else if (args[0].equalsIgnoreCase("removeowner") && args.length >= 3) {
+  					if (!plugin.accountExists(args[1])) {
+  						sender.sendMessage("ATM: " + ChatColor.RED + "Account not found");
+  					} else if (plugin.accessAccount(args[1], (Player)sender, true)) {
+  						if (plugin.removeOwner(args[1], args[2])) {
+  							plugin.addTransaction(sendername, args[1], TransactionTypes.OWNER_REMOVE, 0.00);
+  							sender.sendMessage("ATM: " + ChatColor.GREEN + args[2] + " removed from account");
+  						} else {
+  							sender.sendMessage("ATM: " + ChatColor.RED + "Something went wrong");
+  						}
+  					} else {
+  						sender.sendMessage("ATM: " + ChatColor.RED + "You don't have access to this account!");
+  					}
 //PASSWORD
   				} else if (args[0].equalsIgnoreCase("password") && args.length >= 2) {
   					if (!plugin.playerPermission((Player)sender,PermissionNodes.PASSWORD)) {

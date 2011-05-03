@@ -15,3 +15,5 @@ Number		Description
 13			Loan couldn't be paid
 14			Bounty started
 15			Bounty ended and paid to killer
+16			Add owner to account
+17			Add owner to account

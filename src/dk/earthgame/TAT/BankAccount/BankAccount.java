@@ -296,7 +296,7 @@ public class BankAccount extends JavaPlugin {
 		log.warning("[" + pdfFile.getName() + "] " + message);
 	}
 
-	boolean checkPermission(Player player,PermissionNodes node,boolean extraLookup) {
+	private boolean checkPermission(Player player,PermissionNodes node,boolean extraLookup) {
 		if (player != null) {
 			if (UsePermissions) {
 				if (Permissions.has(player, node.getNode())) {
@@ -338,6 +338,7 @@ public class BankAccount extends JavaPlugin {
 	 * 
 	 * @param player - The player
 	 * @param node - The PermissionNode (dk.earthgame.TAT.BankAccount.System.PermissionNodes)
+	 * @since 0.5
 	 * @return boolean - If the player have the permission
 	 */
 	public boolean playerPermission(Player player,PermissionNodes node) {
@@ -496,7 +497,7 @@ public class BankAccount extends JavaPlugin {
 		}
 		
 		/*
-		 * Check if iConomy isn't hooked up 1 minute after startup of BankAccount
+		 * Check if iConomy isn't hooked up 20 seconds after startup of BankAccount
 		 */
 		checkJobId = this.getServer().getScheduler().scheduleSyncDelayedTask(thisPlugin, new Runnable() {
 			public void run() {
@@ -507,7 +508,7 @@ public class BankAccount extends JavaPlugin {
 					checkJobId = 0;
 				}
 			}
-		}, 20*60);
+		}, 20*20);
 
 		createDefaultConfiguration();
 		loadConfiguration();
@@ -1046,6 +1047,7 @@ public class BankAccount extends JavaPlugin {
 	 * @param accountname - Name of account
 	 * @param player - Username of the player
 	 * @since 0.5
+	 * @see addOwner(String accountname,String player)
 	 * @return boolean - If the user is successfully added
 	 */
 	public boolean addUser(String accountname,String player) {
@@ -1083,6 +1085,7 @@ public class BankAccount extends JavaPlugin {
 	 * @param accountname - Name of account
 	 * @param player - Username of the player
 	 * @since 0.5
+	 * @see removeOwner(String accountname,String player)
 	 * @return boolean - If the user is successfully removed
 	 */
 	public boolean removeUser(String accountname,String player) {
@@ -1115,6 +1118,87 @@ public class BankAccount extends JavaPlugin {
 				consoleWarning("Error #05-2: " + e.getMessage());
 			else
 				consoleWarning("Error #05-1: " + e.getErrorCode() + " - " + e.getSQLState());
+		}
+		return false;
+	}
+	
+	/**
+	 * Add owner to account
+	 * 
+	 * @param accountname - Name of account
+	 * @param player - Username of the player
+	 * @since 0.5
+	 * @see addUser(String accountname,String player)
+	 * @return boolean - If the owner is successfully added
+	 */
+	public boolean addOwner(String accountname,String player) {
+		try {
+			String newPlayers = player;
+			ResultSet rs;
+			rs = stmt.executeQuery("SELECT `owners` FROM `" + SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
+			while(rs.next()) {
+				String[] players = rs.getString("owners").split(";");
+				for (String p : players) {
+					newPlayers += ";" + p;
+				}
+			}
+			try {
+				stmt.executeUpdate("UPDATE `" + SQL_account_table + "` SET `owners` = '" + newPlayers + "' WHERE `accountname` = '" + accountname + "'");
+				return true;
+			} catch(SQLException e) {
+				if (!e.getMessage().equalsIgnoreCase(null))
+					consoleWarning("Error #xx-4: " + e.getMessage());
+				else
+					consoleWarning("Error #xx-3: " + e.getErrorCode() + " - " + e.getSQLState());
+			}
+		} catch(SQLException e) {
+			if (!e.getMessage().equalsIgnoreCase(null))
+				consoleWarning("Error #xx-2: " + e.getMessage());
+			else
+				consoleWarning("Error #xx-1: " + e.getErrorCode() + " - " + e.getSQLState());
+		}
+		return false;
+	}
+	
+	/**
+	 * Remove an owner from an account
+	 * 
+	 * @param accountname - Name of account
+	 * @param player - Username of the player
+	 * @since 0.5
+	 * @see removeUser(String accountname,String player)
+	 * @return boolean - If the owner is successfully removed
+	 */
+	public boolean removeOwner(String accountname,String player) {
+		try {
+			String newPlayers = "";
+			ResultSet rs;
+			rs = stmt.executeQuery("SELECT `owners` FROM `" + SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
+			while(rs.next()) {
+				String[] players = rs.getString("owners").split(";");
+				for (String p : players) {
+					if (!p.equalsIgnoreCase(player)) {
+						if (!newPlayers.equalsIgnoreCase("")) {
+							newPlayers += ";";
+						}
+						newPlayers += p;	
+					}
+				}
+			}
+			try {
+				stmt.executeUpdate("UPDATE `" + SQL_account_table + "` SET `owners` = '" + newPlayers + "' WHERE `accountname` = '" + accountname + "'");
+				return true;
+			} catch(SQLException e) {
+				if (!e.getMessage().equalsIgnoreCase(null))
+					consoleWarning("Error #xx-4: " + e.getMessage());
+				else
+					consoleWarning("Error #xx-3: " + e.getErrorCode() + " - " + e.getSQLState());
+			}
+		} catch(SQLException e) {
+			if (!e.getMessage().equalsIgnoreCase(null))
+				consoleWarning("Error #xx-2: " + e.getMessage());
+			else
+				consoleWarning("Error #xx-1: " + e.getErrorCode() + " - " + e.getSQLState());
 		}
 		return false;
 	}
