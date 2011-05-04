@@ -104,7 +104,8 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   					} else {
   						if (plugin.accessAccount(args[1], (Player)sender, false)) {
   							sender.sendMessage("ATM: Balance of " + args[1] + ": " + ChatColor.GREEN + iConomy.getBank().format(plugin.getBalance(args[1])));
-  							sender.sendMessage(ChatColor.WHITE + "Players: " + ChatColor.GREEN + plugin.getUsers(args[1]));
+  							sender.sendMessage(ChatColor.WHITE + "Owners: " + ChatColor.GREEN + plugin.getOwners(args[1]));
+  							sender.sendMessage(ChatColor.WHITE + "Users: " + ChatColor.GREEN + plugin.getUsers(args[1]));
   						} else {
   							sender.sendMessage("ATM: " + ChatColor.RED + "You don't have access to this account!");
   						}

@@ -695,7 +695,7 @@ public class BankAccount extends JavaPlugin {
 						String query = "CREATE TABLE IF NOT EXISTS `" + SQL_account_table + "` (`accountname` VARCHAR( 255 ) NOT NULL , `owners` LONGTEXT NOT NULL, `users` LONGTEXT NOT NULL, `password` VARCHAR( 255 ) NULL DEFAULT '', `amount` DOUBLE( 255,2 ) NOT NULL DEFAULT '0')";
 						if (UseMySQL) {
 							consoleWarning("Created table " + SQL_account_table);
-							query = "CREATE TABLE IF NOT EXISTS `" + SQL_account_table + "` (`id` INT( 255 ) NOT NULL AUTO_INCREMENT PRIMARY KEY , `accountname` VARCHAR( 255 ) NOT NULL , `players` LONGTEXT NOT NULL, `password` VARCHAR( 255 ) NULL DEFAULT '', `amount` DOUBLE( 255,2 ) NOT NULL DEFAULT '0')";
+							query = "CREATE TABLE IF NOT EXISTS `" + SQL_account_table + "` (`id` INT( 255 ) NOT NULL AUTO_INCREMENT PRIMARY KEY , `accountname` VARCHAR( 255 ) NOT NULL , `owners` LONGTEXT NOT NULL, `users` LONGTEXT NOT NULL, `password` VARCHAR( 255 ) NULL DEFAULT '', `amount` DOUBLE( 255,2 ) NOT NULL DEFAULT '0')";
 						}
 						stmt.execute(query);
 					}
@@ -879,7 +879,7 @@ public class BankAccount extends JavaPlugin {
 		List<String> accounts = new ArrayList<String>();
 		ResultSet rs;
 		try {
-			rs = stmt.executeQuery("SELECT `accountname` FROM `" + SQL_account_table + "` WHERE `players` LIKE '%" + player + "%'");
+			rs = stmt.executeQuery("SELECT `accountname` FROM `" + SQL_account_table + "` WHERE `owners` LIKE '%" + player + "%' OR `users` LIKE '%" + player + "%'");
 			while (rs.next()) {
 				//Make sure it's not just a part of the name
 				if (accessAccount(rs.getString("accountname"),player,false)) {
@@ -906,7 +906,7 @@ public class BankAccount extends JavaPlugin {
 		List<String> accounts = new ArrayList<String>();
 		ResultSet rs;
 		try {
-			rs = stmt.executeQuery("SELECT `accountname` FROM `" + SQL_account_table + "` WHERE `players` LIKE '%" + player + "%'");
+			rs = stmt.executeQuery("SELECT `accountname` FROM `" + SQL_account_table + "` WHERE `owners` LIKE '%" + player + "%' OR `users` LIKE '%" + player + "%'");
 			while (rs.next()) {
 				//Make sure it's not just a part of the name
 				if (accessAccount(rs.getString("accountname"),player,false)) {
@@ -932,7 +932,7 @@ public class BankAccount extends JavaPlugin {
 	 */
 	public boolean addAccount(String accountname,String players) {
 		try {
-			stmt.executeUpdate("INSERT INTO `" + SQL_account_table + "` (`accountname`,`players`) VALUES ('" + accountname + "','" + players + "')");
+			stmt.executeUpdate("INSERT INTO `" + SQL_account_table + "` (`accountname`,`owners`) VALUES ('" + accountname + "','" + players + "')");
 			return true;
 		} catch(SQLException e) {
 			if (!e.getMessage().equalsIgnoreCase(null))
@@ -1331,14 +1331,14 @@ public class BankAccount extends JavaPlugin {
 		try {
 			String output = "";
 			ResultSet rs;
-			rs = stmt.executeQuery("SELECT `players` FROM `" + SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
+			rs = stmt.executeQuery("SELECT `users` FROM `" + SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
 			while(rs.next()) {
-				String[] players = rs.getString("players").split(";");
-				for (String p : players) {
+				String[] users = rs.getString("users").split(";");
+				for (String user : users) {
 					if (!output.equalsIgnoreCase("")) {
 						output += ", ";
 					}
-					output += p;	
+					output += user;	
 				}
 			}
 			return output;
@@ -1350,7 +1350,40 @@ public class BankAccount extends JavaPlugin {
 		} catch(Exception e) {
 			consoleWarning("Error #09-1: " + e.toString());
 		}
-		return "Error loading players";
+		return "Error loading users";
+	}
+	
+	/**
+	 * Get the owners of an account
+	 * 
+	 * @param accountname - Name of account
+	 * @since 0.5
+	 * @return String of owners (seperated by comma and space(, ))
+	 */
+	public String getOwners(String accountname) {
+		try {
+			String output = "";
+			ResultSet rs;
+			rs = stmt.executeQuery("SELECT `owners` FROM `" + SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
+			while(rs.next()) {
+				String[] owners = rs.getString("owners").split(";");
+				for (String owner : owners) {
+					if (!output.equalsIgnoreCase("")) {
+						output += ", ";
+					}
+					output += owner;	
+				}
+			}
+			return output;
+		} catch (SQLException e1) {
+			if (!e1.getMessage().equalsIgnoreCase(null))
+				consoleWarning("Error #09-3: " + e1.getMessage());
+			else
+				consoleWarning("Error #09-2: " + e1.getErrorCode() + " - " + e1.getSQLState());
+		} catch(Exception e) {
+			consoleWarning("Error #09-1: " + e.toString());
+		}
+		return "Error loading owners";
 	}
 	
 	/**
