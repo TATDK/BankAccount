@@ -826,6 +826,7 @@ public class BankAccount extends JavaPlugin {
 					accounts.add(rs.getString("accountname"));
 				}
 			}
+			rs.close();
 		} catch (SQLException e) {
 			if (!e.getMessage().equalsIgnoreCase(null))
 				consoleWarning("Error #22-2: " + e.getMessage());
@@ -839,29 +840,11 @@ public class BankAccount extends JavaPlugin {
 	 * List of accounts, the user have access to
 	 * 
 	 * @since 0.5
-	 * @param player
+	 * @param player - The player
 	 * @return List of accounts
 	 */
 	public List<String> accountList(Player player) {
-		List<String> accounts = new ArrayList<String>();
-		ResultSet rs;
-		
-		try {
-			rs = stmt.executeQuery("SELECT `accountname` FROM `" + SQL_account_table + "` WHERE `owners` LIKE '%" + player.getName() + "%' OR `users` LIKE '%" + player.getName() + "%'");
-			
-			while (rs.next()) {
-				//Make sure it's not just a part of the name
-				if (accessAccount(rs.getString("accountname"),player,false)) {
-					accounts.add(rs.getString("accountname"));
-				}
-			}
-		} catch (SQLException e) {
-			if (!e.getMessage().equalsIgnoreCase(null))
-				consoleWarning("Error #22-2: " + e.getMessage());
-			else
-				consoleWarning("Error #22-1: " + e.getErrorCode() + " - " + e.getSQLState());
-		}
-		return accounts;
+		return accountList(player.getName());
 	}
 	
 	/**
