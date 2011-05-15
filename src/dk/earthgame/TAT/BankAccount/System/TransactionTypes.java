@@ -31,6 +31,7 @@ public enum TransactionTypes {
 	}
 	/**
 	 * Get the transaction type number used in the database
+	 * @since 0.5
 	 * @return Transaction type number
 	 */
 	public int get() { return code; }

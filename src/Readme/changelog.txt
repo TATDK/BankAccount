@@ -2,6 +2,17 @@ Plugin: BankAccount
 Author: TAT
 CHANGELOG
 
+0.5.1DEV
+Added permissionsnode for list command (Included in basic permission)
+Added possibility to disable interest and loan debug output
+Changed to use Register
+- Added support for iConomy 4/5, BOSEconomy and Essentials Economy
+Updated to CraftBukkit #766
+API: Added support for Player player in LoanSystem
+
+CREDIT: Thanks to TrainYourBrain for helping out in my silent time
+        http://forums.bukkit.org/members/trainyourbrain.69207/
+
 0.5
 Fixed basic permissionnode
 Fixed not showing all commands in help

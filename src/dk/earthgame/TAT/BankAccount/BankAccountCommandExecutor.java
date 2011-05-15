@@ -9,8 +9,6 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.nijiko.coelho.iConomy.iConomy;
-
 import dk.earthgame.TAT.BankAccount.System.CommandList;
 import dk.earthgame.TAT.BankAccount.System.PermissionNodes;
 import dk.earthgame.TAT.BankAccount.System.TransactionTypes;
@@ -33,13 +31,12 @@ public class BankAccountCommandExecutor implements CommandExecutor {
 		
 		String sendername = ((Player)sender).getName();
 		if (label.equalsIgnoreCase("account")) {
-			
 			//Do the player have access to use BankAccount
 			if (!plugin.playerPermission((Player)sender,PermissionNodes.ACCESS)) {
 				sender.sendMessage(ChatColor.DARK_RED + "You don't have access to use BankAccount");
 				return true;
 			}
-			
+
 			//Are you in an area? (If areas are enabled)
 	  		if (plugin.Areas) {
 	  			CommandList foundCommand = CommandList.valueOf(args[0].toUpperCase());
@@ -50,14 +47,15 @@ public class BankAccountCommandExecutor implements CommandExecutor {
 	  				}
 	  			}
   			}
-  			
+
 	  		if (args.length > 0) {
 //OPEN
   				if (args[0].equalsIgnoreCase("open") && args.length >= 2) {
   					if (!plugin.playerPermission((Player)sender,PermissionNodes.OPEN)) {
-  						sender.sendMessage("You don't have access to open an account");
+  						sender.sendMessage("You don't have permission to use this command");
   						return true;
   					}
+  					
   					if (plugin.stringWidth(args[1]) > 150) {
   						sender.sendMessage("ATM: " + ChatColor.RED + "Accountname to long");
   					}
@@ -88,22 +86,32 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   					}
 //BALANCE
   				} else if (args[0].equalsIgnoreCase("balance") && args.length >= 2) {
+  					if (!plugin.playerPermission((Player)sender,PermissionNodes.OPEN)) {
+  						sender.sendMessage("You don't have permission to use this command");
+  						return true;
+  					}
+  					
   					if (!plugin.accountExists(args[1])) {
   						sender.sendMessage("ATM: " + ChatColor.RED + "Account not found");
   					} else {
   						if (plugin.accessAccount(args[1], (Player)sender, false)) {
-  							sender.sendMessage("ATM: Balance of " + args[1] + ": " + ChatColor.GREEN + iConomy.getBank().format(plugin.getBalance(args[1])));
+  							sender.sendMessage("ATM: Balance of " + args[1] + ": " + ChatColor.GREEN + plugin.Method.format(plugin.getBalance(args[1])));
   						} else {
   							sender.sendMessage("ATM: " + ChatColor.RED + "You don't have access to this account!");
   						}
   					}
 //INFO
   				} else if (args[0].equalsIgnoreCase("info") && args.length >= 2) {
+  					if (!plugin.playerPermission((Player)sender,PermissionNodes.OPEN)) {
+  						sender.sendMessage("You don't have permission to use this command");
+  						return true;
+  					}
+  					
   					if (!plugin.accountExists(args[1])) {
   						sender.sendMessage("ATM: " + ChatColor.RED + "Account not found");
   					} else {
   						if (plugin.accessAccount(args[1], (Player)sender, false)) {
-  							sender.sendMessage("ATM: Balance of " + args[1] + ": " + ChatColor.GREEN + iConomy.getBank().format(plugin.getBalance(args[1])));
+  							sender.sendMessage("ATM: Balance of " + args[1] + ": " + ChatColor.GREEN + plugin.Method.format(plugin.getBalance(args[1])));
   							sender.sendMessage(ChatColor.WHITE + "Owners: " + ChatColor.GREEN + plugin.getOwners(args[1]));
   							sender.sendMessage(ChatColor.WHITE + "Users: " + ChatColor.GREEN + plugin.getUsers(args[1]));
   						} else {
@@ -112,6 +120,11 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   					}
 //LIST
   				} else if (args[0].equalsIgnoreCase("list")) {
+  					if (!plugin.playerPermission((Player)sender,PermissionNodes.LIST)) {
+  						sender.sendMessage("You don't have permission to use this command");
+  						return true;
+  					}
+  					
   					List<String> accounts = plugin.accountList((Player)sender);
   					int tmpWidth = 0;
   					String output = "";
@@ -136,6 +149,11 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   					}
 //ADDUSER
   				} else if (args[0].equalsIgnoreCase("adduser") && args.length >= 3) {
+  					if (!plugin.playerPermission((Player)sender,PermissionNodes.USER)) {
+  						sender.sendMessage("You don't have permission to use this command");
+  						return true;
+  					}
+  					
   					if (!plugin.accountExists(args[1])) {
   						sender.sendMessage("ATM: " + ChatColor.RED + "Account not found");
   					} else if (plugin.accessAccount(args[1], (Player)sender, true)) {
@@ -150,6 +168,11 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   					}
 //REMOVEUSER
   				} else if (args[0].equalsIgnoreCase("removeuser") && args.length >= 3) {
+  					if (!plugin.playerPermission((Player)sender,PermissionNodes.USER)) {
+  						sender.sendMessage("You don't have permission to use this command");
+  						return true;
+  					}
+  					
   					if (!plugin.accountExists(args[1])) {
   						sender.sendMessage("ATM: " + ChatColor.RED + "Account not found");
   					} else if (plugin.accessAccount(args[1], (Player)sender, true)) {
@@ -164,6 +187,11 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   					}
 //ADDOWNER
   				} else if (args[0].equalsIgnoreCase("addowner") && args.length >= 3) {
+  					if (!plugin.playerPermission((Player)sender,PermissionNodes.USER)) {
+  						sender.sendMessage("You don't have permission to use this command");
+  						return true;
+  					}
+  					
   					if (!plugin.accountExists(args[1])) {
   						sender.sendMessage("ATM: " + ChatColor.RED + "Account not found");
   					} else if (plugin.accessAccount(args[1], (Player)sender, true)) {
@@ -178,6 +206,11 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   					}
 //REMOVEOWNER
   				} else if (args[0].equalsIgnoreCase("removeowner") && args.length >= 3) {
+  					if (!plugin.playerPermission((Player)sender,PermissionNodes.USER)) {
+  						sender.sendMessage("You don't have permission to use this command");
+  						return true;
+  					}
+  					
   					if (!plugin.accountExists(args[1])) {
   						sender.sendMessage("ATM: " + ChatColor.RED + "Account not found");
   					} else if (plugin.accessAccount(args[1], (Player)sender, true)) {
@@ -193,9 +226,10 @@ public class BankAccountCommandExecutor implements CommandExecutor {
 //PASSWORD
   				} else if (args[0].equalsIgnoreCase("password") && args.length >= 2) {
   					if (!plugin.playerPermission((Player)sender,PermissionNodes.PASSWORD)) {
-  						sender.sendMessage("You don't have access to set password");
+  						sender.sendMessage("You don't have permission to use this command");
   						return true;
   					}
+  					
   					if (!plugin.accountExists(args[1])) {
   						sender.sendMessage("ATM: " + ChatColor.RED + "Account not found");
   					} else if (plugin.accessAccount(args[1], (Player)sender, true)) {
@@ -220,9 +254,10 @@ public class BankAccountCommandExecutor implements CommandExecutor {
 //DEPOSIT
   				} else if (args[0].equalsIgnoreCase("deposit") && args.length >= 3) {
   					if (!plugin.playerPermission((Player)sender,PermissionNodes.DEPOSIT)) {
-  						sender.sendMessage("You don't have access to deposit");
+  						sender.sendMessage("You don't have permission to use this command");
   						return true;
   					}
+  					
   					if (!plugin.accountExists(args[1])) {
   						sender.sendMessage("ATM: " + ChatColor.RED + "Account not found");
   					} else if (plugin.accessAccount(args[1], (Player)sender, false) || plugin.DepositAll) {
@@ -232,7 +267,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   						}
   						if (plugin.ATM(args[1], sendername, "deposit", Double.parseDouble(args[2]), "")) {
   							plugin.addTransaction(sendername, args[1], TransactionTypes.DEPOSIT, Double.parseDouble(args[2]));
-  							sender.sendMessage("ATM: " + ChatColor.GREEN + iConomy.getBank().format(Double.parseDouble(args[2])) + " added to " + args[1]);
+  							sender.sendMessage("ATM: " + ChatColor.GREEN + plugin.Method.format(Double.parseDouble(args[2])) + " added to " + args[1]);
   						} else {
   							sender.sendMessage("ATM: " + ChatColor.RED + "Couldn't deposit, are you sure you have enough money?");
   						}
@@ -242,9 +277,10 @@ public class BankAccountCommandExecutor implements CommandExecutor {
 //WITHDRAW
   				} else if (args[0].equalsIgnoreCase("withdraw") && args.length >= 3) {
   					if (!plugin.playerPermission((Player)sender,PermissionNodes.WITHDRAW)) {
-  						sender.sendMessage("You don't have access to open an account");
+  						sender.sendMessage("You don't have permission to use this command");
   						return true;
   					}
+  					
   					if (plugin.accessAccount(args[1], (Player)sender, true)) {
   						if (Double.parseDouble(args[2]) <= 0.00) {
   							sender.sendMessage("ATM: " + ChatColor.RED + "Please enter value higher than 0");
@@ -256,7 +292,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   						}
   						if (plugin.ATM(args[1], sendername, "withdraw", Double.parseDouble(args[2]), password)) {
   							plugin.addTransaction(sendername, args[1], TransactionTypes.WITHDRAW, Double.parseDouble(args[2]));
-  							sender.sendMessage("ATM: " + ChatColor.GREEN + iConomy.getBank().format(Double.parseDouble(args[2])) + " withdrawed from " + args[1]);
+  							sender.sendMessage("ATM: " + ChatColor.GREEN + plugin.Method.format(Double.parseDouble(args[2])) + " withdrawed from " + args[1]);
   						} else {
   							sender.sendMessage("ATM: " + ChatColor.RED + "Couldn't withdraw, are you sure you have enough money on account?");
   						}
@@ -266,9 +302,10 @@ public class BankAccountCommandExecutor implements CommandExecutor {
 //TRANSFER
   				} else if (args[0].equalsIgnoreCase("transfer") && args.length >= 4) {
   					if (!plugin.playerPermission((Player)sender,PermissionNodes.TRANSFER)) {
-  						sender.sendMessage("You don't have access to transfer");
+  						sender.sendMessage("You don't have permission to use this command");
   						return true;
   					}
+  					
   					if (plugin.accessAccount(args[1], (Player)sender, true)) {
   						if (Double.parseDouble(args[3]) <= 0.00) {
   							sender.sendMessage("ATM: " + ChatColor.RED + "Please enter value higher than 0");
@@ -282,7 +319,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
 							if (plugin.ATM(args[1], args[2], "transfer", Double.parseDouble(args[3]), password)) {
 								plugin.addTransaction(sendername, args[1], TransactionTypes.TRANSFER_WITHDRAW, Double.parseDouble(args[3]));
 								plugin.addTransaction("SYSTEM", args[2], TransactionTypes.TRANSFER_DEPOSIT, Double.parseDouble(args[3]));
-								sender.sendMessage("ATM: " + ChatColor.GREEN + iConomy.getBank().format(Double.parseDouble(args[3])) + " transfered from " + args[1] + " to " + args[2]);
+								sender.sendMessage("ATM: " + ChatColor.GREEN + plugin.Method.format(Double.parseDouble(args[3])) + " transfered from " + args[1] + " to " + args[2]);
 							} else {
 								sender.sendMessage("ATM: " + ChatColor.RED + "Couldn't transfer, are you sure you have enough money on account?");
 							}
@@ -295,16 +332,17 @@ public class BankAccountCommandExecutor implements CommandExecutor {
 //LOAN - CREATE
   				} else if (args[0].equalsIgnoreCase("loan") && args.length >= 2) {
   					if (!plugin.playerPermission((Player)sender,PermissionNodes.LOAN)) {
-  						sender.sendMessage("You don't have access to loan");
+  						sender.sendMessage("You don't have permission to use this command");
   						return true;
   					}
+  					
   					if (!plugin.LoanSystem.LoanActive) {
   						sender.sendMessage("ATM: Loans not activated");
   					}
   					if (!plugin.LoanSystem.haveLoan(sendername) && plugin.getSaved(sendername).getBounty() == 0.00) {
   						plugin.addTransaction(sendername, null, TransactionTypes.LOAN_START, Double.parseDouble(args[1]));
   						if (plugin.LoanSystem.addLoan(sendername, Double.parseDouble(args[1]))) {
-  							sender.sendMessage("ATM: " + ChatColor.GREEN + iConomy.getBank().format(Double.parseDouble(args[1])) + " loaned.");
+  							sender.sendMessage("ATM: " + ChatColor.GREEN + plugin.Method.format(Double.parseDouble(args[1])) + " loaned.");
   						} else {
   							sender.sendMessage("ATM: " + ChatColor.RED + "Couldn't create loan!");
   						}
@@ -316,26 +354,28 @@ public class BankAccountCommandExecutor implements CommandExecutor {
 //LOAN - STATUS
   				} else if (args[0].equalsIgnoreCase("loan") && args.length == 1) {
   					if (!plugin.playerPermission((Player)sender,PermissionNodes.LOAN)) {
-  						sender.sendMessage("You don't have access to have loan");
+  						sender.sendMessage("You don't have permission to use this command");
   						return true;
   					}
+  					
   					if (!plugin.LoanSystem.LoanActive) {
   						sender.sendMessage("ATM: Loans not activated");
   					}
   					if (plugin.LoanSystem.haveLoan(sendername)) {
   						Loan playerLoan = plugin.LoanSystem.getLoan(sendername);
   						sender.sendMessage("ATM: " + ChatColor.GREEN + "Found loan.");
-  						sender.sendMessage(ChatColor.GOLD + "Amount+rates: " + ChatColor.WHITE + iConomy.getBank().format(playerLoan.totalamount));
-  						sender.sendMessage(ChatColor.GOLD + "Remaining: " + ChatColor.WHITE + iConomy.getBank().format(playerLoan.remaining));
+  						sender.sendMessage(ChatColor.GOLD + "Amount+rates: " + ChatColor.WHITE + plugin.Method.format(playerLoan.totalamount));
+  						sender.sendMessage(ChatColor.GOLD + "Remaining: " + ChatColor.WHITE + plugin.Method.format(playerLoan.remaining));
   					} else {
   						sender.sendMessage("ATM: " + ChatColor.RED + "You don't have a loan.");
   					}
 //PAY
   				} else if (args[0].equalsIgnoreCase("pay") && args.length >= 2) {
   					if (!plugin.playerPermission((Player)sender,PermissionNodes.LOAN)) {
-  						sender.sendMessage("You don't have access to have loan");
+  						sender.sendMessage("You don't have permission to use this command");
   						return true;
   					}
+  					
   					if (!plugin.LoanSystem.LoanActive) {
   						sender.sendMessage("ATM: Loans not activated");
   					}
@@ -343,7 +383,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   						double paid = plugin.LoanSystem.payment(sendername, Double.parseDouble(args[1]));
   						if (paid > 0.00) {
   							plugin.addTransaction(sendername, null, TransactionTypes.LOAN_PAYMENT, paid);
-  							sender.sendMessage("ATM: " + ChatColor.GREEN + iConomy.getBank().format(paid) + " paid off your loan.");
+  							sender.sendMessage("ATM: " + ChatColor.GREEN + plugin.Method.format(paid) + " paid off your loan.");
   						} else {
   							sender.sendMessage("ATM: " + ChatColor.RED + "Couldn't pay!");
   						}
@@ -353,9 +393,10 @@ public class BankAccountCommandExecutor implements CommandExecutor {
 //CLOSE
   				} else if (args[0].equalsIgnoreCase("close") && args.length >= 2) {
   					if (!plugin.playerPermission((Player)sender,PermissionNodes.CLOSE)) {
-  						sender.sendMessage("You don't have access to close an account");
+  						sender.sendMessage("You don't have permission to use this command");
   						return true;
   					}
+  					
   					if (plugin.accessAccount(args[1], (Player)sender, true)) {
   						String password = "";
   						if (args.length >= 3) {
@@ -365,7 +406,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   						if (plugin.closeAccount(args[1], sendername, password)) {
   							if (money > 0) {
   								plugin.addTransaction(sendername, args[1], TransactionTypes.WITHDRAW, money);
-  								sender.sendMessage("ATM: " + iConomy.getBank().format(money) + " withdrawed");
+  								sender.sendMessage("ATM: " + plugin.Method.format(money) + " withdrawed");
   							}
   							plugin.addTransaction(sendername, args[1], TransactionTypes.CLOSE, 0.00);
   							sender.sendMessage("ATM: Account closed");
@@ -378,7 +419,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
 //SELECT
   				} else if (args[0].equalsIgnoreCase("select")) {
   					if (!plugin.playerPermission((Player)sender,PermissionNodes.ADMIN)) {
-  						sender.sendMessage("You don't have access to select areas");
+  						sender.sendMessage("You don't have permission to use this command");
   						return true;
   					} else {
   						UserSaves mySave = plugin.getSaved(sendername);
@@ -393,7 +434,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
 //SETAREA
   				} else if (args[0].equalsIgnoreCase("setarea") && args.length >= 2) {
   					if (!plugin.playerPermission((Player)sender,PermissionNodes.ADMIN)) {
-  						sender.sendMessage("You don't have access to add areas");
+  						sender.sendMessage("You don't have permission to use this command");
   						return true;
   					} else {
   						UserSaves mySave = plugin.getSaved(sendername);
@@ -410,7 +451,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
 //REMOVEAREA
   				} else if (args[0].equalsIgnoreCase("removearea") && args.length >= 2) {
   					if (!plugin.playerPermission((Player)sender,PermissionNodes.ADMIN)) {
-  						sender.sendMessage("You don't have access to remove areas");
+  						sender.sendMessage("You don't have permission to use this command");
   						return true;
   					} else {
   						if (plugin.removeArea(args[1])) {
@@ -451,9 +492,12 @@ public class BankAccountCommandExecutor implements CommandExecutor {
 			commands.add(CommandList.OPEN.getDescription());
 			commands.add(CommandList.INFO.getDescription());
 			commands.add(CommandList.BALANCE.getDescription());
+			commands.add(CommandList.LIST.getDescription());
 			commands.add(CommandList.DEPOSIT.getDescription());
 			commands.add(CommandList.WITHDRAW.getDescription());
 			commands.add(CommandList.TRANSFER.getDescription());
+			commands.add(CommandList.ADDOWNER.getDescription());
+			commands.add(CommandList.REMOVEOWNER.getDescription());
 			commands.add(CommandList.ADDUSER.getDescription());
 			commands.add(CommandList.REMOVEUSER.getDescription());
 			commands.add(CommandList.PASSWORD.getDescription());
@@ -469,6 +513,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
 			commands.add(CommandList.OPEN.getDescription());
 			commands.add(CommandList.INFO.getDescription());
 			commands.add(CommandList.BALANCE.getDescription());
+			commands.add(CommandList.LIST.getDescription());
 			commands.add(CommandList.DEPOSIT.getDescription());
 			commands.add(CommandList.WITHDRAW.getDescription());
 			if (plugin.playerPermission(player, PermissionNodes.TRANSFER)) {
@@ -477,6 +522,8 @@ public class BankAccountCommandExecutor implements CommandExecutor {
 			if (plugin.playerPermission(player, PermissionNodes.USER)) {
 				commands.add(CommandList.ADDUSER.getDescription());
 				commands.add(CommandList.REMOVEUSER.getDescription());
+				commands.add(CommandList.ADDOWNER.getDescription());
+				commands.add(CommandList.REMOVEOWNER.getDescription());
 			}
 			if (plugin.playerPermission(player, PermissionNodes.PASSWORD)) {
 				commands.add(CommandList.PASSWORD.getDescription());
@@ -494,6 +541,9 @@ public class BankAccountCommandExecutor implements CommandExecutor {
 				commands.add(CommandList.INFO.getDescription());
 				commands.add(CommandList.BALANCE.getDescription());
 			}
+			if (plugin.playerPermission(player, PermissionNodes.LIST)) {
+				commands.add(CommandList.LIST.getDescription());
+			}
 			if (plugin.playerPermission(player, PermissionNodes.DEPOSIT)) {
 				commands.add(CommandList.DEPOSIT.getDescription());
 			}
@@ -506,6 +556,8 @@ public class BankAccountCommandExecutor implements CommandExecutor {
 			if (plugin.playerPermission(player, PermissionNodes.USER)) {
 				commands.add(CommandList.ADDUSER.getDescription());
 				commands.add(CommandList.REMOVEUSER.getDescription());
+				commands.add(CommandList.ADDOWNER.getDescription());
+				commands.add(CommandList.REMOVEOWNER.getDescription());
 			}
 			if (plugin.playerPermission(player, PermissionNodes.PASSWORD)) {
 				commands.add(CommandList.PASSWORD.getDescription());
@@ -548,13 +600,10 @@ public class BankAccountCommandExecutor implements CommandExecutor {
 	/**
 	 * Show help to a CommandSender
 	 * 
-	 * @param sender - The sender of command
+	 * @param sender - The CommandSender (Player)
 	 * @param page - Page number
 	 * @since 0.5
 	 * @see showHelp(Player player, int page);
 	 */
-	public void showHelp(CommandSender sender, int page) {
-		//Just convert the CommandSender to Player and use showHelp(Player,int);
-		showHelp((Player)sender,page);
-	}
+	public void showHelp(CommandSender sender, int page) { showHelp((Player)sender,page); }
 }

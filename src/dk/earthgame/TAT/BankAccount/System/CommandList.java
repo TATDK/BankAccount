@@ -9,7 +9,10 @@ package dk.earthgame.TAT.BankAccount.System;
 public enum CommandList {
 	OPEN				("open","open <accountname> [players]",true),
 	INFO				("info","info <accountname>",true),
+	LIST				("list","list",true),
 	BALANCE				("balance","balance <accountname>",true),
+	ADDOWNER			("addowner","addowner <accountname> <player>",true),
+	REMOVEOWNER			("removeowner","removeowner <accountname> <player>",true),
 	DEPOSIT				("deposit","deposit <accountname> <amount>",true),
 	WITHDRAW			("withdraw","withdraw <accountname> <amount> [password]",true),
 	TRANSFER			("transfer","transfer <from account> <to account> <amount> [password]",true),
@@ -21,7 +24,8 @@ public enum CommandList {
 	PAY					("pay","pay <amount>",true),
 	SELECT				("select","select",false),
 	SETAREA				("setarea","setarea <areaname> [bankgroup]",false),
-	REMOVEAREA			("removearea","removearea <areaname> [bankgroup]",false);
+	REMOVEAREA			("removearea","removearea <areaname> [bankgroup]",false),
+	HELP				("help", "help", false);
 
 	private String command;
 	private String description;
@@ -33,14 +37,12 @@ public enum CommandList {
 	}
 	/**
 	 * Get the command in simplest form
-	 * 
 	 * @since 0.5
 	 * @return Command (example: loan)
 	 */
 	public String getCommand() { return command; }
 	/**
 	 * Get the description of command
-	 * 
 	 * @since 0.5
 	 * @return Description (example: loan [amount])
 	 */
@@ -48,7 +50,6 @@ public enum CommandList {
 	/**
 	 * Check if the command needs to be sent inside area.
 	 * Only if areas are enabled
-	 * 
 	 * @since 0.5
 	 * @return boolean
 	 */

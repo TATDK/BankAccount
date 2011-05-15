@@ -41,3 +41,6 @@ Loan:
     Max-amount: 200
     Payment-time: 60
     Payment-parts: 3
+Debug:
+    Loan: true
+    Interest: true

@@ -21,7 +21,7 @@ public class BankAccountNPC extends EntityListener {
 		if (event.getEntity() instanceof NPCEntity) {
 			if (event.getDamager() instanceof Player) {
 				NPCEntity npc = (NPCEntity)event.getEntity();
-				Player p = (Player) event.getDamager();
+				Player p = (Player)event.getDamager();
 				p.sendMessage("<" + npc.getName() + "> Don't hit me so much :P");
 
 				//NpcSpawner.RemoveBasicHumanNpc(npc);

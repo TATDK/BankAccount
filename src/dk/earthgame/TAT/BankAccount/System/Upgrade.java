@@ -62,9 +62,9 @@ public class Upgrade {
 				plugin.consoleInfo("MySQL Tables upgraded to v.0.5");
 			} else {
 				//SQLite
-				String query = "ALTER TABLE `" + plugin.SQL_account_table + "` ADD  `owners` LONGTEXT NOT NULL";
+				String query = "ALTER TABLE `" + plugin.SQL_account_table + "` ADD  `owners` LONGTEXT NOT NULL DEFAULT ''";
 				plugin.stmt.execute(query);
-				query = "ALTER TABLE  `" + plugin.SQL_account_table + "` ADD  `users` LONGTEXT NOT NULL";
+				query = "ALTER TABLE  `" + plugin.SQL_account_table + "` ADD  `users` LONGTEXT NOT NULL DEFAULT ''";
 				plugin.stmt.execute(query);
 				plugin.consoleInfo("SQLite Tables upgraded to v.0.5");
 			}

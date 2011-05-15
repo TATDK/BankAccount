@@ -5,12 +5,13 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
-import com.nijiko.coelho.iConomy.system.Account;
+import com.nijikokun.register.payment.Method.MethodAccount;
 
 import dk.earthgame.TAT.BankAccount.System.TransactionTypes;
-
 
 public class LoanSystem {
 	private BankAccount plugin;
@@ -63,7 +64,8 @@ public class LoanSystem {
 		JobId = ((Plugin)plugin).getServer().getScheduler().scheduleSyncRepeatingTask((Plugin)plugin, new Runnable() {
 			@SuppressWarnings({ "unchecked", "rawtypes" })
 			public void run() {
-				plugin.consoleInfo("Loan start");
+				if (plugin.Debug_Loan)
+					plugin.consoleInfo("Loan start");
 				Iterator it = Loans.entrySet().iterator();
 				while (it.hasNext()) {
 			        Map.Entry<String,Loan> pairs = (Map.Entry<String,Loan>)it.next();
@@ -73,12 +75,14 @@ public class LoanSystem {
 			        	if (plugin.getSaved(pairs.getKey()).getBounty() > 0.00) {
 			        		plugin.addTransaction(pairs.getKey(), "", TransactionTypes.LOAN_MISSING, pairs.getValue().remaining);
 			        	} else {
-			        		plugin.consoleInfo(pairs.getKey() + " paid a part of the loan back");
+			        		if (plugin.Debug_Loan)
+			        			plugin.consoleInfo(pairs.getKey() + " paid a part of the loan back");
 			        		plugin.addTransaction(pairs.getKey(), "", TransactionTypes.LOAN_PAID, 0.00);
 			        	}
 			        }
 			    }
-				plugin.consoleInfo("Loan stop");
+				if (plugin.Debug_Loan)
+					plugin.consoleInfo("Loan stop");
 			}
 		}, 0, runTime*20*60);
 	}
@@ -136,12 +140,12 @@ public class LoanSystem {
 	public double payment(String player,double amount) {
 		if (haveLoan(player)) {
 			Loan playerLoan = getLoan(player);
-			Account iConomyAccount = com.nijiko.coelho.iConomy.iConomy.getBank().getAccount(player);
+			MethodAccount economyAccount = plugin.Method.getAccount(player);
 			if (playerLoan.remaining < amount) {
 				amount = playerLoan.remaining;
 			}
-			if (iConomyAccount.hasEnough(amount)) {
-				iConomyAccount.subtract(amount);
+			if (economyAccount.hasEnough(amount)) {
+				economyAccount.subtract(amount);
 				playerLoan.manualPayment(amount);
 				if (playerLoan.remaining <= 0.00) {
 					Loans.remove(player);
@@ -165,8 +169,8 @@ public class LoanSystem {
 		if (!running) {
 			return false;
 		}
-		Account iConomyAccount = com.nijiko.coelho.iConomy.iConomy.getBank().getAccount(player);
-		if (!iConomyAccount.isNegative() && amount <= Max_amount) {
+		MethodAccount economyAccount = plugin.Method.getAccount(player);
+		if (!economyAccount.isNegative() && amount <= Max_amount) {
 			try {
 				double rate = 0.00;
 				if (Fixed_rate == 0.00) {
@@ -183,7 +187,7 @@ public class LoanSystem {
 				double totalamount = amount*(1+rate);
 				plugin.stmt.executeUpdate("INSERT INTO `" + plugin.SQL_loan_table + "` (`player`,`totalamount`,`remaining`,`parts`,`part`,`timeleft`,`timepayment`) VALUES ('" + player + "','" + totalamount + "','" + totalamount + "','" + PaymentParts + "','0','" + (PaymentTime/PaymentParts) + "','" + PaymentTime + "')");
 				Loans.put(player, new Loan(plugin, this, player,totalamount,totalamount,(PaymentTime/PaymentParts)*60,(PaymentTime/PaymentParts)*60, 0, PaymentParts));
-				iConomyAccount.add(amount);
+				economyAccount.add(amount);
 				return true;
 			} catch(SQLException e) {
 				if (!e.getMessage().equalsIgnoreCase(null))
@@ -195,4 +199,44 @@ public class LoanSystem {
 		}
 		return false;
 	}
+	
+	//API for the people that wants to use Player player instead of String player
+	
+	/**
+	 * Check if the player have a loan
+	 * 
+	 * @param player - The player
+	 * @since 0.5.1
+	 * @return boolean - If player have a loan
+	 */
+	public boolean haveLoan(Player player) { return haveLoan(player.getName()); }
+	
+	/**
+	 * Get the loan of a player, returns null of none loan is found
+	 * 
+	 * @param player - The player
+	 * @since 0.5.1
+	 * @return Loan
+	 */
+	public Loan getLoan(Player player) { return getLoan(player.getName()); }
+	
+	/**
+	 * Run a payment of a loan
+	 * 
+	 * @param player - The player
+	 * @param amount - Amount money
+	 * @since 0.5.1
+	 * @return double - The amount that are removed from the loan
+	 */
+	public double payment(Player player,double amount) { return payment(player.getName(),amount); }
+	
+	/**
+	 * Add a loan to a player
+	 * 
+	 * @param player - The player
+	 * @param amount - Amount the loan should be on
+	 * @since 0.5.1
+	 * @return boolean - If the loan is successfully created
+	 */
+	public boolean addLoan(Player player,double amount) { return addLoan(player.getName(),amount); }
 }

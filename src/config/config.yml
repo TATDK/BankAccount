@@ -96,3 +96,17 @@ Loan:
     Max-amount: 200
     Payment-time: 60
     Payment-parts: 3
+
+##
+#Debug Output settings
+#    Loan: true = show informations from loan system // false = don't show informations from loan system
+#        Example: "[BankAccount] Loan start
+#                  [BankAccount] TAT paid a part of the loan back
+#                  [BankAccount] Loan stop"
+#    Interest: true = show informations from interest system // false = don't show informations from interest system
+#        Example: "[BankAccount] Running interest system
+#                  [BankAccount] Total given 0.00 Dollars in interest"
+##
+Debug:
+    Loan: true
+    Interest: true

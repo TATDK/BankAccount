@@ -9,8 +9,7 @@ import java.sql.SQLException;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
-import com.nijiko.coelho.iConomy.iConomy;
-import com.nijiko.coelho.iConomy.system.Account;
+import com.nijikokun.register.payment.Method.MethodAccount;
 
 import dk.earthgame.TAT.BankAccount.System.TransactionTypes;
 
@@ -19,7 +18,7 @@ public class Loan {
 	private BankAccount plugin;
 	private LoanSystem system;
 	private String player;
-	private Account account;
+	private MethodAccount account;
 	public double totalamount; //Amount + rates
 	public double remaining; //Amount that needs to be paid
 	private int timeleft; //Time to next payment
@@ -38,7 +37,7 @@ public class Loan {
 		this.part = part;
 		this.parts = parts;
 		
-		this.account = iConomy.getBank().getAccount(player);
+		this.account = plugin.Method.getAccount(player);
 	}
 	
 	void runLoan() {
@@ -96,7 +95,7 @@ public class Loan {
 		remaining -= subtract;
 		
 		if (online) {
-			messageTo.sendMessage("ATM: " + ChatColor.GREEN + iConomy.getBank().format(subtract) + " paid off your loan.");
+			messageTo.sendMessage("ATM: " + ChatColor.GREEN + plugin.Method.format(subtract) + " paid off your loan.");
 			if (remaining <= 0) {
 				messageTo.sendMessage("ATM: " + ChatColor.GREEN + "Your loan is fully paid off.");
 			}
