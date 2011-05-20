@@ -30,6 +30,7 @@ Areas:
 Interest:
     Time: 5
     Amount: 0.1
+    Offline-amount: 0.05
 Loan:
     Active: false
     Fixed-rate: 0.00
@@ -41,6 +42,16 @@ Loan:
     Max-amount: 200
     Payment-time: 60
     Payment-parts: 3
+Fee:
+    Mode: None
+    Percentage: 0
+    Static: 0
+StartAmount:
+    Active: false
+    Fee: false
+    Static: 0
+Account:
+    MaxAmount: 0
 Debug:
     Loan: true
     Interest: true

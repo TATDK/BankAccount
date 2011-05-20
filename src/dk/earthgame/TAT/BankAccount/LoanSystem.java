@@ -38,7 +38,7 @@ public class LoanSystem {
 	public void startupRunner() {
 		ResultSet rs;
 		try {
-			rs = plugin.stmt.executeQuery("SELECT `player`,`totalamount`,`remaining`,`part`,`parts`,`timeleft`,`timepayment` FROM `" + plugin.SQL_loan_table + "`");
+			rs = plugin.settings.stmt.executeQuery("SELECT `player`,`totalamount`,`remaining`,`part`,`parts`,`timeleft`,`timepayment` FROM `" + plugin.settings.SQL_loan_table + "`");
 			while (rs.next()) {
 				String player = rs.getString("player");
 				double totalamount = rs.getDouble("totalamount");
@@ -64,7 +64,7 @@ public class LoanSystem {
 		JobId = ((Plugin)plugin).getServer().getScheduler().scheduleSyncRepeatingTask((Plugin)plugin, new Runnable() {
 			@SuppressWarnings({ "unchecked", "rawtypes" })
 			public void run() {
-				if (plugin.Debug_Loan)
+				if (plugin.settings.Debug_Loan)
 					plugin.consoleInfo("Loan start");
 				Iterator it = Loans.entrySet().iterator();
 				while (it.hasNext()) {
@@ -75,13 +75,13 @@ public class LoanSystem {
 			        	if (plugin.getSaved(pairs.getKey()).getBounty() > 0.00) {
 			        		plugin.addTransaction(pairs.getKey(), "", TransactionTypes.LOAN_MISSING, pairs.getValue().remaining);
 			        	} else {
-			        		if (plugin.Debug_Loan)
+			        		if (plugin.settings.Debug_Loan)
 			        			plugin.consoleInfo(pairs.getKey() + " paid a part of the loan back");
 			        		plugin.addTransaction(pairs.getKey(), "", TransactionTypes.LOAN_PAID, 0.00);
 			        	}
 			        }
 			    }
-				if (plugin.Debug_Loan)
+				if (plugin.settings.Debug_Loan)
 					plugin.consoleInfo("Loan stop");
 			}
 		}, 0, runTime*20*60);
@@ -185,7 +185,7 @@ public class LoanSystem {
 					rate = Fixed_rate;
 				}
 				double totalamount = amount*(1+rate);
-				plugin.stmt.executeUpdate("INSERT INTO `" + plugin.SQL_loan_table + "` (`player`,`totalamount`,`remaining`,`parts`,`part`,`timeleft`,`timepayment`) VALUES ('" + player + "','" + totalamount + "','" + totalamount + "','" + PaymentParts + "','0','" + (PaymentTime/PaymentParts) + "','" + PaymentTime + "')");
+				plugin.settings.stmt.executeUpdate("INSERT INTO `" + plugin.settings.SQL_loan_table + "` (`player`,`totalamount`,`remaining`,`parts`,`part`,`timeleft`,`timepayment`) VALUES ('" + player + "','" + totalamount + "','" + totalamount + "','" + PaymentParts + "','0','" + (PaymentTime/PaymentParts) + "','" + PaymentTime + "')");
 				Loans.put(player, new Loan(plugin, this, player,totalamount,totalamount,(PaymentTime/PaymentParts)*60,(PaymentTime/PaymentParts)*60, 0, PaymentParts));
 				economyAccount.add(amount);
 				return true;

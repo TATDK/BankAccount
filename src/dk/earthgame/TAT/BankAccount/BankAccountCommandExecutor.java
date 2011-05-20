@@ -38,7 +38,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
 			}
 
 			//Are you in an area? (If areas are enabled)
-	  		if (plugin.Areas) {
+	  		if (plugin.settings.Areas) {
 	  			CommandList foundCommand = CommandList.valueOf(args[0].toUpperCase());
 	  			if (foundCommand != null) {
 	  				if (foundCommand.getRequireArea() && !plugin.inArea(((Player)sender).getWorld().getName(), ((Player)sender).getLocation())) {
@@ -69,7 +69,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   								players += ";" + args[i-1];
   							}
   						}
-  						if (plugin.addAccount(args[1], players)) {
+  						if (plugin.openAccount(args[1], players, sendername)) {
   							plugin.addTransaction(sendername, args[1], TransactionTypes.OPEN, 0.00);
   							sender.sendMessage("ATM: " + ChatColor.GREEN + args[1] + " created");
   							players = "";
@@ -261,7 +261,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   					
   					if (!plugin.accountExists(args[1])) {
   						sender.sendMessage("ATM: " + ChatColor.RED + "Account not found");
-  					} else if (plugin.accessAccount(args[1], (Player)sender, false) || plugin.DepositAll) {
+  					} else if (plugin.accessAccount(args[1], (Player)sender, false) || plugin.settings.DepositAll) {
   						if (Double.parseDouble(args[2]) <= 0.00) {
   							sender.sendMessage("ATM: " + ChatColor.RED + "Please enter value higher than 0");
   							return true;
@@ -270,6 +270,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   							plugin.addTransaction(sendername, args[1], TransactionTypes.DEPOSIT, Double.parseDouble(args[2]));
   							sender.sendMessage("ATM: " + ChatColor.GREEN + plugin.Method.format(Double.parseDouble(args[2])) + " added to " + args[1]);
   						} else {
+							plugin.addTransaction(sendername, args[1], TransactionTypes.TRANSACTION_CANCELED, Double.parseDouble(args[2]));
   							sender.sendMessage("ATM: " + ChatColor.RED + "Couldn't deposit, are you sure you have enough money?");
   						}
   					} else {
@@ -322,6 +323,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
 								plugin.addTransaction("SYSTEM", args[2], TransactionTypes.TRANSFER_DEPOSIT, Double.parseDouble(args[3]));
 								sender.sendMessage("ATM: " + ChatColor.GREEN + plugin.Method.format(Double.parseDouble(args[3])) + " transfered from " + args[1] + " to " + args[2]);
 							} else {
+								plugin.addTransaction(sendername, args[1], TransactionTypes.TRANSACTION_CANCELED, Double.parseDouble(args[3]));
 								sender.sendMessage("ATM: " + ChatColor.RED + "Couldn't transfer, are you sure you have enough money on account?");
 							}
   						} else {

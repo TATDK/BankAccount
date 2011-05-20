@@ -62,12 +62,14 @@ Areas:
 
 ##
 #Interest settings
-#    Time is in minutes
-#    Amount is % of account balance added to every account
+#    Time: Minutes between updates
+#    Amount: % of account balance added to every account
+#    Offline-amount: % of account balance added to every account when player is offline
 ##
 Interest:
     Time: 5
     Amount: 0.1
+    Offline-amount: 0.05
 
 ##
 #Loan settings
@@ -96,6 +98,37 @@ Loan:
     Max-amount: 200
     Payment-time: 60
     Payment-parts: 3
+
+##
+#Fee settings
+#Fee on opening account
+#    Mode: Percentage/Static/Smart1/Smart2/None (Smart1: First percentage then static / Smart2: First static then percentage)
+#    Percentage: % of money
+#    Static: static amount of money
+##
+Fee:
+    Mode: None
+    Percentage: 0
+    Static: 0
+
+##
+#Start amount settings
+#Set startup amount of money on accounts on opening
+#    Active: true = activate // false = deactivate
+#    Fee: % of opening fee
+#    Static: static amount of money
+##
+StartAmount:
+    Active: false
+    Fee: 0
+    Static: 0
+
+##
+#Account settings
+#    MaxAmount: 0 = no limit // > 0 = maximum amount of money on account
+##
+Account:
+    MaxAmount: 0
 
 ##
 #Debug Output settings

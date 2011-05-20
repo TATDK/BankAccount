@@ -1,8 +1,6 @@
 package dk.earthgame.TAT.BankAccount;
 
 import java.io.*;
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -10,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 
 import org.bukkit.ChatColor;
@@ -31,18 +28,14 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
-import org.bukkit.util.config.Configuration;
-//import org.martin.bukkit.npclib.NPCManager;
-
 import com.nijikokun.register.payment.Method;
 import com.nijikokun.register.payment.Method.MethodAccount;
-import com.nijiko.permissions.PermissionHandler;
 import com.nijikokun.bukkit.Permissions.Permissions;
 
+import dk.earthgame.TAT.BankAccount.Settings.FeeModes;
 import dk.earthgame.TAT.BankAccount.System.Password;
 import dk.earthgame.TAT.BankAccount.System.PermissionNodes;
 import dk.earthgame.TAT.BankAccount.System.TransactionTypes;
-import dk.earthgame.TAT.BankAccount.System.Upgrade;
 import dk.earthgame.TAT.BankAccount.System.UserSaves;
 
 import org.anjocaido.groupmanager.GroupManager;
@@ -59,51 +52,16 @@ public class BankAccount extends JavaPlugin {
 	protected final Logger log = Logger.getLogger("Minecraft");
 	private PluginDescriptionFile pdfFile;
 	HashMap<String, Integer> fontWidth = new HashMap<String, Integer>();
-	private File myFolder;
-	Configuration config;
-	private int interestTime;
-	private double interestAmount;
-	private int interestJobId;
-	int checkJobId;
+	File myFolder;
 	private HashMap<String,UserSaves> UserSaves = new HashMap<String,UserSaves>();
-	private int AreaWandId;
-	private boolean MultiBanks;
 	LoanSystem LoanSystem = new LoanSystem(this);
 	Password PasswordSystem = new Password(this);
 	BankAccountCommandExecutor cmdExecutor = new BankAccountCommandExecutor(this);
 	BankAccountDisabled disabledExecutor = new BankAccountDisabled();
 	BAPluginListener pluginListener = new BAPluginListener(this);
-	//MySQL
-	private boolean UseMySQL = false;
-	private String MySQL_host;
-	private String MySQL_port;
-	private String MySQL_username;
-	private String MySQL_password;
-	private String MySQL_database;
-	//SQL
-	public Connection con;
-	public java.sql.Statement stmt;
-	public String SQL_account_table;
-	String SQL_area_table;
-	String SQL_loan_table;
-	String SQL_transaction_table;
-	String SQL_banks_table;
-	//economy
+	public Settings settings = new Settings(this);
+	//Economy
 	public Method Method = null;
-	//Permissions
-	private boolean UseOP;
-	PermissionHandler Permissions = null;
-	boolean UsePermissions;
-	GroupManager GroupManager = null;
-	boolean UseGroupManager;
-	boolean Areas;
-	private boolean SuperAdmins;
-	boolean DepositAll;
-	//Transaction
-	public boolean Transactions;
-	//Debug messages
-	boolean Debug_Loan;
-	boolean Debug_Interest;
 	//NPC
 	//NPCManager m = new NPCManager(this);
 
@@ -225,56 +183,110 @@ public class BankAccount extends JavaPlugin {
 		if (LoanSystem.LoanActive && !LoanSystem.running) {
 			LoanSystem.startupRunner();
 		}
-		if (interestTime > 0) {
-			if (interestJobId > 0) {
-				getServer().getScheduler().cancelTask(interestJobId);
+		if (settings.interestTime > 0) {
+			if (settings.interestJobId > 0) {
+				getServer().getScheduler().cancelTask(settings.interestJobId);
 			}
-			interestJobId = getServer().getScheduler().scheduleSyncRepeatingTask(thisPlugin, new Runnable() {
+			settings.interestJobId = getServer().getScheduler().scheduleSyncRepeatingTask(thisPlugin, new Runnable() {
 				public void run() {
-					if (Debug_Interest)
+					if (settings.Debug_Interest)
 						consoleInfo("Running interest system");
 														
-					Double totalGiven = 0.00;
+					double totalGiven = 0.00;
 					try {
-						if (UseMySQL) {
+						if (settings.UseMySQL) {
 							//MySQL
-							ResultSet accounts = stmt.executeQuery("SELECT `id`, `amount` FROM `" + SQL_account_table + "`");
+							ResultSet accounts = settings.stmt.executeQuery("SELECT `id`, `amount`, `owners` FROM `" + settings.SQL_account_table + "`");
 							while (accounts.next()) {
-								Double accountbalance = accounts.getDouble("amount");
-								totalGiven += accountbalance*(interestAmount/100);
-								accountbalance *= 1+(interestAmount/100);
+								double accountbalance = accounts.getDouble("amount");
+								String[] owners = accounts.getString("owners").split(";");
+								boolean online = false;
+								if (owners.length > 1) {
+									for (String o : owners) {
+										if (getServer().getPlayer(o) != null) {
+											if (getServer().getPlayer(o).isOnline()) {
+												online = true;
+											}
+										}
+									}
+								} else {
+									if (getServer().getPlayer(owners[0]) != null) {
+										if (getServer().getPlayer(owners[0]).isOnline()) {
+											online = true;
+										}
+									}
+								}
+								double interest;
+								if (online)
+									interest = settings.interestAmount;
+								else
+									interest = settings.interestOfflineAmount;
+								if (settings.MaxAmount > 0 && ((accountbalance *= 1+(interest/100)) > settings.MaxAmount)) {
+									totalGiven += (settings.MaxAmount-accountbalance);
+									accountbalance = settings.MaxAmount;
+								} else {
+									totalGiven += accountbalance*(interest/100);
+									accountbalance *= 1+(interest/100);
+								}
 								accounts.updateDouble("amount", accountbalance);
 								accounts.updateRow();
 							}
 							accounts.close();
 						} else {
 							//SQLite
-							PreparedStatement prep = con.prepareStatement("UPDATE `" + SQL_account_table + "` SET `amount` = ? WHERE `accountname` = ?");
-							ResultSet accounts = stmt.executeQuery("SELECT `accountname`, `amount` FROM `" + SQL_account_table + "`");
+							PreparedStatement prep = settings.con.prepareStatement("UPDATE `" + settings.SQL_account_table + "` SET `amount` = ? WHERE `accountname` = ?");
+							ResultSet accounts = settings.stmt.executeQuery("SELECT `accountname`, `amount`, `owners` FROM `" + settings.SQL_account_table + "`");
 							while (accounts.next()) {
 								String accountname = accounts.getString("accountname");
-								Double accountbalance = accounts.getDouble("amount");
-								totalGiven += accountbalance*(interestAmount/100);
-								accountbalance *= 1+(interestAmount/100);
+								double accountbalance = accounts.getDouble("amount");
+								String[] owners = accounts.getString("owners").split(";");
+								boolean online = false;
+								if (owners.length > 1) {
+									for (String o : owners) {
+										if (getServer().getPlayer(o) != null) {
+											if (getServer().getPlayer(o).isOnline()) {
+												online = true;
+											}
+										}
+									}
+								} else {
+									if (getServer().getPlayer(owners[0]) != null) {
+										if (getServer().getPlayer(owners[0]).isOnline()) {
+											online = true;
+										}
+									}
+								}
+								double interest;
+								if (online)
+									interest = settings.interestAmount;
+								else
+									interest = settings.interestOfflineAmount;
+								if (settings.MaxAmount > 0 && ((accountbalance *= 1+(interest/100)) > settings.MaxAmount)) {
+									totalGiven += (settings.MaxAmount-accountbalance);
+									accountbalance = settings.MaxAmount;
+								} else {
+									totalGiven += accountbalance*(interest/100);
+									accountbalance *= 1+(interest/100);
+								}
 								prep.setDouble(1, accountbalance);
 								prep.setString(2, accountname);
 								prep.addBatch();
 							}
 							accounts.close();
-							con.setAutoCommit(false);
+							settings.con.setAutoCommit(false);
 							prep.executeBatch();
-							con.commit();
-							con.setAutoCommit(true);
+							settings.con.commit();
+							settings.con.setAutoCommit(true);
 						}
 					} catch (SQLException e) {
 						consoleWarning("Couldn't execute interest");
 						consoleInfo(e.toString());
 					}
-					if (Debug_Interest)
+					if (settings.Debug_Interest)
 						consoleInfo("Total given " + Method.format(totalGiven) + " in interest");
 				}
-			}, interestTime*20*60, interestTime*20*60);
-			consoleInfo("Running interest every " + interestTime + " minutes by " + interestAmount + "%");
+			}, settings.interestTime*20*60, settings.interestTime*20*60);
+			consoleInfo("Running interest every " + settings.interestTime + " minutes by " + settings.interestAmount + "%");
 		}
 		consoleInfo("Established connection with economy!");
 	}
@@ -301,17 +313,17 @@ public class BankAccount extends JavaPlugin {
 
 	private boolean checkPermission(Player player,PermissionNodes node,boolean extraLookup) {
 		if (player != null) {
-			if (UsePermissions) {
-				if (Permissions.has(player, node.getNode())) {
+			if (settings.UsePermissions) {
+				if (settings.Permissions.has(player, node.getNode())) {
 					return true;
 				}
 			}
-			if (UseGroupManager) {
-				if (GroupManager.getWorldsHolder().getWorldPermissions(player).has(player, node.getNode())) {
+			if (settings.UseGroupManager) {
+				if (settings.GroupManager.getWorldsHolder().getWorldPermissions(player).has(player, node.getNode())) {
 					return true;
 				}
 			}
-			if (UseOP) {
+			if (settings.UseOP) {
 				if (player.isOp()) {
 					return true;
 				}
@@ -360,7 +372,7 @@ public class BankAccount extends JavaPlugin {
 			public void onPlayerInteract(PlayerInteractEvent event) {
 				if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
 					UserSaves mySave = getSaved(event.getPlayer().getName());
-					if (event.getPlayer().getItemInHand().getTypeId() == AreaWandId && mySave.isSelecting()) {
+					if (event.getPlayer().getItemInHand().getTypeId() == settings.AreaWandId && mySave.isSelecting()) {
 						Location pos = event.getClickedBlock().getLocation();
 						if (mySave.setPosition(pos) == 2) {
 							event.getPlayer().sendMessage("ATM: Area selected, to confirm: /account setarea <areaname>");
@@ -445,19 +457,19 @@ public class BankAccount extends JavaPlugin {
 		/*
 		 * Check if economy isn't hooked up 20 seconds after startup of BankAccount
 		 */
-		checkJobId = this.getServer().getScheduler().scheduleSyncDelayedTask(thisPlugin, new Runnable() {
+		settings.checkJobId = this.getServer().getScheduler().scheduleSyncDelayedTask(thisPlugin, new Runnable() {
 			public void run() {
 				if (!pluginListener.Methods.hasMethod()) {
 					//Shutdown if economy isn't found
 					consoleWarning("Stopping BankAccount - Reason: Missing economy plugin!");
 					getServer().getPluginManager().disablePlugin(thisPlugin);
-					checkJobId = 0;
+					settings.checkJobId = 0;
 				}
 			}
 		}, 20*20);
 
-		createDefaultConfiguration();
-		loadConfiguration();
+		settings.createDefaultConfiguration();
+		settings.loadConfiguration();
 		loadFontWidth();
 		
 		/*
@@ -466,20 +478,20 @@ public class BankAccount extends JavaPlugin {
 		 * 
 		 * Used if BankAccount is started after one of the third-part plugins
 		 */
-		if (Permissions == null && UsePermissions) {
+		if (settings.Permissions == null && settings.UsePermissions) {
 			Plugin test = getServer().getPluginManager().getPlugin("Permissions");
 			if (test != null) {
 				if (test.isEnabled()) {
-					Permissions = ((Permissions)test).getHandler();
+					settings.Permissions = ((Permissions)test).getHandler();
 					consoleInfo("Established connection with Permissions!");
 				}
 			}
 		}
-		if (GroupManager == null && UseGroupManager) {
+		if (settings.GroupManager == null && settings.UseGroupManager) {
 			Plugin test = getServer().getPluginManager().getPlugin("GroupManager");
 			if (test != null) {
 				if (test.isEnabled()) {
-					GroupManager = (GroupManager)test;
+					settings.GroupManager = (GroupManager)test;
 					consoleInfo("Established connection with GroupManager!");
 				}
 			}
@@ -487,10 +499,10 @@ public class BankAccount extends JavaPlugin {
 	}
 
 	public void onDisable() {
-		if (interestJobId > 0) {
-			this.getServer().getScheduler().cancelTask(interestJobId);
+		if (settings.interestJobId > 0) {
+			this.getServer().getScheduler().cancelTask(settings.interestJobId);
 		}
-		interestJobId = 0;
+		settings.interestJobId = 0;
 		getCommand("account").setExecutor(disabledExecutor);
 		getCommand("account").setUsage(ChatColor.RED + "BankAccount is disabled");
 		log.info(pdfFile.getName() + " is disabled!" );
@@ -506,10 +518,10 @@ public class BankAccount extends JavaPlugin {
 	 * @since 0.5
 	 */
 	public void addTransaction(String player, String account, TransactionTypes type, Double amount) {
-		if (Transactions) {
+		if (settings.Transactions) {
 			try {
 				int time = Math.round(new Date().getTime()/1000);
-				stmt.executeUpdate("INSERT INTO `" + SQL_transaction_table + "` (`player`,`account`,`type`,`amount`,`time`) VALUES ('" + player + "','" + account + "','" + type.get() + "','" + amount + "','" + time +"')");
+				settings.stmt.executeUpdate("INSERT INTO `" + settings.SQL_transaction_table + "` (`player`,`account`,`type`,`amount`,`time`) VALUES ('" + player + "','" + account + "','" + type.get() + "','" + amount + "','" + time +"')");
 			} catch(SQLException e) {
 				if (!e.getMessage().equalsIgnoreCase(null))
 					consoleWarning("Error #16-2: " + e.getMessage());
@@ -538,239 +550,7 @@ public class BankAccount extends JavaPlugin {
 		return save;
 	}
 	
-	@SuppressWarnings("unchecked")
-	private boolean loadConfiguration() {
-		config = new Configuration(new File(this.getDataFolder(), "config.yml"));
-		config.load();
-		//SQL
-		Transactions = config.getBoolean("SQL-info.Transactions", false);
-		UseMySQL = config.getBoolean("SQL-info.MySQL", false);
-		MySQL_host = config.getString("SQL-info.Host","localhost");
-		MySQL_port = config.getString("SQL-info.Port","3306");
-		MySQL_username = config.getString("SQL-info.User","root");
-		MySQL_password = config.getString("SQL-info.Pass","");
-		MySQL_database = config.getString("SQL-info.Database","minecraft");
-		//SQL TABLES
-		SQL_account_table = config.getString("SQL-tables.Account","bankaccounts");
-		SQL_area_table = config.getString("SQL-tables.Area","bankareas");
-		SQL_loan_table = config.getString("SQL-tables.Loan","bankloans");
-		SQL_transaction_table = config.getString("SQL-tables.Transaction","banktransactions");
-		SQL_banks_table = config.getString("SQL-tables.Banks","banks");
-		//Permissions
-		UseOP = config.getBoolean("Permissions.OP",true);
-		UsePermissions = config.getBoolean("Permissions.Permissions",false);
-		UseGroupManager = config.getBoolean("Permissions.GroupManager",false);
-		SuperAdmins = config.getBoolean("Permissions.SuperAdmins", false);
-		DepositAll = config.getBoolean("Permissions.DepositAll", false);
-		//Interest
-		interestAmount = config.getDouble("Interest.Amount", 0);
-		interestTime = config.getInt("Interest.Time", 0);
-		//Area
-		Areas = config.getBoolean("Areas.Active",false);
-		AreaWandId = config.getInt("Areas.AreaWandid",339);
-		MultiBanks = config.getBoolean("Areas.MultipleBanks", false);
-		//Loan
-		LoanSystem.LoanActive = config.getBoolean("Loan.Active", false);
-		LoanSystem.Fixed_rate = config.getDouble("Loan.Fixed-rate", 0.00);
-		LoanSystem.Rates = (Map<Double, Double>)config.getProperty("Loan.Rate");
-		LoanSystem.Max_amount = config.getDouble("Loan.Max-amount", 200.00);
-		LoanSystem.PaymentTime = config.getInt("Loan.Payment-time", 60);
-		LoanSystem.PaymentParts = config.getInt("Loan.Payment-parts", 3);
-		//Debug
-		Debug_Interest = config.getBoolean("Debug.Interest", true);
-		Debug_Loan = config.getBoolean("Debug.Loan", true);
-		
-		consoleInfo("Properties Loaded");
-		try {
-			if (UseMySQL) {
-				Class.forName("com.mysql.jdbc.Driver");
-			} else {
-				Class.forName("org.sqlite.JDBC");
-			}
-		} catch (ClassNotFoundException e2) {
-			e2.printStackTrace();
-		}
-		try {
-			if (UseMySQL) {
-				con = DriverManager.getConnection("jdbc:mysql://" + MySQL_host + ":" + MySQL_port + "/" + MySQL_database, MySQL_username, MySQL_password);
-			} else {
-				con = DriverManager.getConnection("jdbc:sqlite:" + myFolder.getAbsolutePath() + "/BankAccount.db");
-			}
-			try {
-				if (UseMySQL) {
-					stmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_UPDATABLE);
-					consoleInfo("Connected to MySQL");
-				} else {
-					stmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_READ_ONLY);
-					consoleInfo("Connected to SQLite");
-				}
-				boolean checkAccount = false;
-				boolean checkArea = false;
-				boolean checkLoan = false;
-				boolean checkTransaction = false;
-				boolean checkBanks = false;
-				try {
-					ResultSet tables = con.getMetaData().getTables(null, null, null, null);
-					while (tables.next()) {
-						String tablename = tables.getString("TABLE_NAME");
-						if (tablename.equalsIgnoreCase(SQL_account_table)) {
-							checkAccount = true;
-						} else if (tablename.equalsIgnoreCase(SQL_area_table)) {
-							checkArea = true;
-						} else if (tablename.equalsIgnoreCase(SQL_loan_table)) {
-							checkLoan = true;
-						} else if (tablename.equalsIgnoreCase(SQL_transaction_table)) {
-							checkTransaction = true;
-						} else if (tablename.equalsIgnoreCase(SQL_banks_table)) {
-							checkBanks = true;
-						}
-					}
-				} catch (SQLException e3) {
-					consoleWarning("Couldn't get tables existing! Running as if all exists");
-					consoleWarning(e3.toString());
-				}
-				try {
-					if (!checkAccount) {
-						//ACCOUNT TABLE
-						String query = "CREATE TABLE IF NOT EXISTS `" + SQL_account_table + "` (`accountname` VARCHAR( 255 ) NOT NULL , `owners` LONGTEXT NOT NULL, `users` LONGTEXT NOT NULL, `password` VARCHAR( 255 ) NULL DEFAULT '', `amount` DOUBLE( 255,2 ) NOT NULL DEFAULT '0')";
-						if (UseMySQL) {
-							consoleWarning("Created table " + SQL_account_table);
-							query = "CREATE TABLE IF NOT EXISTS `" + SQL_account_table + "` (`id` INT( 255 ) NOT NULL AUTO_INCREMENT PRIMARY KEY , `accountname` VARCHAR( 255 ) NOT NULL , `owners` LONGTEXT NOT NULL, `users` LONGTEXT NOT NULL, `password` VARCHAR( 255 ) NULL DEFAULT '', `amount` DOUBLE( 255,2 ) NOT NULL DEFAULT '0')";
-						}
-						stmt.execute(query);
-					}
-					if (!checkArea && Areas) {
-						//AREA TABLE
-						String query = "CREATE TABLE IF NOT EXISTS `" + SQL_area_table + "` (`areaname` VARCHAR( 255 ) NOT NULL , `world` VARCHAR( 255 ) NOT NULL , `x1` INT( 255 ) NOT NULL , `y1` INT( 255 ) NOT NULL , `z1` INT( 255 ) NOT NULL , `x2` INT( 255 ) NOT NULL , `y2` INT( 255 ) NOT NULL , `z2` INT( 255 ) NOT NULL)";
-						if (UseMySQL) {
-							consoleWarning("Created table " + SQL_area_table);
-							query = "CREATE TABLE IF NOT EXISTS `" + SQL_area_table + "` (`id` INT( 255 ) NOT NULL AUTO_INCREMENT PRIMARY KEY , `areaname` VARCHAR( 255 ) NOT NULL , `world` VARCHAR( 255 ) NOT NULL , `x1` INT( 255 ) NOT NULL , `y1` INT( 255 ) NOT NULL , `z1` INT( 255 ) NOT NULL , `x2` INT( 255 ) NOT NULL , `y2` INT( 255 ) NOT NULL , `z2` INT( 255 ) NOT NULL)";
-						}
-						stmt.execute(query);
-					}
-					if (!checkLoan && LoanSystem.LoanActive) {
-						//LOAN TABLE
-						String query = "CREATE TABLE IF NOT EXISTS `" + SQL_loan_table + "` (`player` VARCHAR( 255 ) NOT NULL, `totalamount` DOUBLE( 255,2 ) NOT NULL, `remaining` DOUBLE( 255,2 ) NOT NULL, `timepayment` INT( 255 ) NOT NULL, `timeleft` INT( 255 ) NOT NULL, `part` INT( 255 ) NOT NULL, `parts` INT( 255 ) NOT NULL)";
-						if (UseMySQL) {
-							consoleWarning("Created table " + SQL_loan_table);
-							query = "CREATE TABLE IF NOT EXISTS `" + SQL_loan_table + "` (`id` INT( 255 ) NOT NULL AUTO_INCREMENT PRIMARY KEY, `player` VARCHAR( 255 ) NOT NULL, `totalamount` DOUBLE( 255,2 ) NOT NULL, `timeleft` INT( 255 ) NOT NULL, `part` INT( 255 ) NOT NULL, `parts` INT( 255 ) NOT NULL)";
-						}
-						stmt.execute(query);
-					}
-					if (!checkTransaction && Transactions) {
-						//TRANSACTION TABLE
-						String query = "CREATE TABLE IF NOT EXISTS `" + SQL_transaction_table + "` (`player` VARCHAR( 255 ) NOT NULL, `account` VARCHAR( 255 ) NULL, `type` INT( 255 ) NOT NULL, `amount` DOUBLE( 255,2 ) NULL, `time` INT( 255 ) NOT NULL)";
-						if (UseMySQL) {
-							consoleWarning("Created table " + SQL_transaction_table);
-							query = "CREATE TABLE IF NOT EXISTS `" + SQL_transaction_table + "` (`id` INT( 255 ) NOT NULL AUTO_INCREMENT PRIMARY KEY , `player` VARCHAR( 255 ) NOT NULL, `account` VARCHAR( 255 ) NULL, `type` INT( 255 ) NOT NULL, `amount` DOUBLE( 255,2 ) NULL, `time` INT( 255 ) NOT NULL)";
-						}
-						stmt.execute(query);
-					}
-					if (!checkBanks && MultiBanks) {
-						//BANKS TABLE
-						String query = "";
-						if (UseMySQL) {
-							consoleWarning("Created table " + SQL_banks_table);
-							query = "";
-						}
-						stmt.execute(query);
-					}
-					
-					//Run upgrades of SQL tables
-					new Upgrade(this, UseMySQL);
-				} catch (SQLException e3) {
-					if (!checkAccount) {
-						consoleWarning("Failed to find and create table " + SQL_account_table);
-					}
-					if (!checkArea && Areas) {
-						consoleWarning("Failed to find and create table " + SQL_area_table);
-						consoleInfo("Disabled areas!");
-						Areas = false;
-					}
-					if (!checkLoan && LoanSystem.LoanActive) {
-						consoleWarning("Failed to find and create table " + SQL_loan_table);
-						consoleInfo("Disabled loans!");
-						LoanSystem.LoanActive = false;
-						if (LoanSystem.running) {
-							LoanSystem.shutdownRunner();
-						}
-					}
-					if (!checkTransaction && Transactions) {
-						consoleWarning("Failed to find and create table " + SQL_transaction_table);
-						consoleInfo("Disabled transactions!");
-						Transactions = false;
-					}
-					if (!checkBanks && MultiBanks) {
-						consoleWarning("Failed to find and create table " + SQL_banks_table);
-						consoleInfo("Disabled multiple banks!");
-						MultiBanks = false;
-					}
-					consoleWarning(e3.toString());
-					consoleInfo("Shuting down");
-					this.getServer().getPluginManager().disablePlugin(this);
-					return false;
-				}
-			} catch (SQLException e2) {
-				if (UseMySQL) {
-					consoleWarning("Failed to connect to MySQL");
-				} else {
-					consoleWarning("Failed to connect to SQLite");
-				}
-				consoleWarning(e2.toString());
-				consoleInfo("Shuting down");
-				this.getServer().getPluginManager().disablePlugin(this);
-				return false;
-			}
-		} catch (SQLException e1) {
-			if (UseMySQL) {
-				consoleWarning("Failed to connect to MySQL");
-			} else {
-				consoleWarning("Failed to connect to SQLite");
-			}
-			consoleWarning(e1.toString());
-			consoleInfo("Shuting down");
-			this.getServer().getPluginManager().disablePlugin(this);
-			return false;
-		}
-		return true;
-	}
 	
-	private void createDefaultConfiguration() {
-		String name = "config.yml";
-		File actual = new File(getDataFolder(), name);
-		if (!actual.exists()) {
-			InputStream input = BankAccount.class.getResourceAsStream("/config/" + name);
-			if (input != null) {
-				FileOutputStream output = null;
-
-				try {
-					output = new FileOutputStream(actual);
-					byte[] buf = new byte[8192];
-					int length = 0;
-					while ((length = input.read(buf)) > 0) {
-						output.write(buf, 0, length);
-					}
-					
-					consoleInfo("Default config file created!");
-				} catch (IOException e) {
-					e.printStackTrace();
-					consoleInfo("Error creating config file!");
-				} finally {
-					try {
-						if (input != null)
-							input.close();
-					} catch (IOException e) {}
-
-					try {
-						if (output != null)
-							output.close();
-					} catch (IOException e) {}
-				}
-			}
-		} else {
-			consoleInfo("Config file found!");
-		}
-	}
 	
 	//ATM / ACCOUNTS
 	/**
@@ -784,13 +564,13 @@ public class BankAccount extends JavaPlugin {
 		ResultSet rs;
 		int id = 0;
 		try {
-			if (UseMySQL) {
-				rs = stmt.executeQuery("SELECT `id` FROM `" + SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
+			if (settings.UseMySQL) {
+				rs = settings.stmt.executeQuery("SELECT `id` FROM `" + settings.SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
 			} else {
-				rs = stmt.executeQuery("SELECT `rowid` FROM `" + SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
+				rs = settings.stmt.executeQuery("SELECT `rowid` FROM `" + settings.SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
 			}
 			while (rs.next()) {
-				if (UseMySQL) {
+				if (settings.UseMySQL) {
 					id = rs.getInt("id");
 				} else {
 					id = rs.getInt("rowid");
@@ -813,13 +593,14 @@ public class BankAccount extends JavaPlugin {
 	 * 
 	 * @since 0.5
 	 * @param player - Username of the player
-	 * @return List of accounts
+	 * @param Offline 
+	 * @return List of accounts 
 	 */
 	public List<String> accountList(String player) {
 		List<String> accounts = new ArrayList<String>();
 		ResultSet rs;
 		try {
-			rs = stmt.executeQuery("SELECT `accountname` FROM `" + SQL_account_table + "` WHERE `owners` LIKE '%" + player + "%' OR `users` LIKE '%" + player + "%'");
+			rs = settings.stmt.executeQuery("SELECT `accountname` FROM `" + settings.SQL_account_table + "` WHERE `owners` LIKE '%" + player + "%' OR `users` LIKE '%" + player + "%'");
 			while (rs.next()) {
 				//Make sure it's not just a part of the name
 				if (accessAccount(rs.getString("accountname"),player,false)) {
@@ -848,16 +629,78 @@ public class BankAccount extends JavaPlugin {
 	}
 	
 	/**
-	 * Add an new account
+	 * Add a new account
 	 * 
 	 * @param accountname - The name of the account
 	 * @param player - Username of the players - Name of players seperated by comma (,)
 	 * @since 0.5
 	 * @return boolean - If the account is successfully created
+	 * @deprecated
+	 * @see openAccount(String accountname,String players)
 	 */
 	public boolean addAccount(String accountname,String players) {
+		return openAccount(accountname, players, "");
+	}
+	
+	/**
+	 * Open a new account
+	 * 
+	 * @param accountname - The name of the account
+	 * @param player - Username of the players - Name of players seperated by comma (,)
+	 * @since 0.5.1
+	 * @return boolean - If the account is successfully created
+	 */
+	public boolean openAccount(String accountname,String players,String commandsender) {
+		double feePaid = 0;
+		if (settings.Fee_Mode != FeeModes.NONE) {
+			MethodAccount account = Method.getAccount(commandsender);
+			double balance = account.balance();
+			switch (settings.Fee_Mode) {
+			case PERCENTAGE:
+				feePaid = balance*(settings.Fee_Percentage/100);
+				account.subtract(balance*(settings.Fee_Percentage/100));
+				break;
+			case STATIC:
+				feePaid = settings.Fee_Static;
+				if (account.hasEnough(settings.Fee_Static)) {
+					account.subtract(settings.Fee_Static);
+				} else {
+					return false;
+				}
+				break;
+			case SMART1:
+				feePaid = balance*(settings.Fee_Percentage/100);
+				balance -= balance*(settings.Fee_Percentage/100);
+				if (balance >= settings.Fee_Static) {
+					feePaid += settings.Fee_Static;
+					balance -= settings.Fee_Static;
+					account.set(balance);
+				} else {
+					return false;
+				}
+				break;
+			case SMART2:
+				if (balance >= settings.Fee_Static) {
+					feePaid = settings.Fee_Static;
+					balance -= settings.Fee_Static;
+					account.set(balance);
+				} else {
+					return false;
+				}
+				feePaid += balance*(settings.Fee_Percentage/100);
+				balance -= balance*(settings.Fee_Percentage/100);
+				break;
+			}
+		}
+		
+		double StartAmount = 0;
+		if (settings.StartAmount_Active) {
+			StartAmount += feePaid*settings.StartAmount_Fee;
+			StartAmount += settings.StartAmount_Static;
+		}
+		
 		try {
-			stmt.executeUpdate("INSERT INTO `" + SQL_account_table + "` (`accountname`,`owners`,`users`) VALUES ('" + accountname + "','" + players + "','')");
+			settings.stmt.executeUpdate("INSERT INTO `" + settings.SQL_account_table + "` (`accountname`,`owners`,`user`,`amount`) VALUES ('" + accountname + "','" + players + "','','" + StartAmount + "')");
 			return true;
 		} catch(SQLException e) {
 			if (!e.getMessage().equalsIgnoreCase(null))
@@ -882,7 +725,7 @@ public class BankAccount extends JavaPlugin {
 			//There is no spoon... I mean account
 			return false;
 		}
-		if (SuperAdmins && playerPermission(player, PermissionNodes.ADMIN)) {
+		if (settings.SuperAdmins && playerPermission(player, PermissionNodes.ADMIN)) {
 			//Ta ta taaa da.. SuperAdmin!
 			return true;
 		}
@@ -894,7 +737,7 @@ public class BankAccount extends JavaPlugin {
 				coloum = "users`, `owners";
 			}
 			ResultSet rs;
-			rs = stmt.executeQuery("SELECT `" + coloum + "` FROM `" + SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
+			rs = settings.stmt.executeQuery("SELECT `" + coloum + "` FROM `" + settings.SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
 			while(rs.next()) {
 				//Owners
 				String[] owners = rs.getString("owners").split(";");
@@ -936,7 +779,7 @@ public class BankAccount extends JavaPlugin {
 	public boolean accessAccount(String accountname,String player,boolean writeAccess) {
 		try {
 			ResultSet rs;
-			rs = stmt.executeQuery("SELECT `users`, `owners` FROM `" + SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
+			rs = settings.stmt.executeQuery("SELECT `users`, `owners` FROM `" + settings.SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
 			while(rs.next()) {
 				//Owners
 				String[] owners = rs.getString("owners").split(";");
@@ -979,7 +822,7 @@ public class BankAccount extends JavaPlugin {
 		try {
 			String newPlayers = player;
 			ResultSet rs;
-			rs = stmt.executeQuery("SELECT `users` FROM `" + SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
+			rs = settings.stmt.executeQuery("SELECT `users` FROM `" + settings.SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
 			while(rs.next()) {
 				String[] players = rs.getString("users").split(";");
 				for (String p : players) {
@@ -987,7 +830,7 @@ public class BankAccount extends JavaPlugin {
 				}
 			}
 			try {
-				stmt.executeUpdate("UPDATE `" + SQL_account_table + "` SET `users` = '" + newPlayers + "' WHERE `accountname` = '" + accountname + "'");
+				settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `users` = '" + newPlayers + "' WHERE `accountname` = '" + accountname + "'");
 				return true;
 			} catch(SQLException e) {
 				if (!e.getMessage().equalsIgnoreCase(null))
@@ -1017,7 +860,7 @@ public class BankAccount extends JavaPlugin {
 		try {
 			String newPlayers = "";
 			ResultSet rs;
-			rs = stmt.executeQuery("SELECT `users` FROM `" + SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
+			rs = settings.stmt.executeQuery("SELECT `users` FROM `" + settings.SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
 			while(rs.next()) {
 				String[] players = rs.getString("users").split(";");
 				for (String p : players) {
@@ -1030,7 +873,7 @@ public class BankAccount extends JavaPlugin {
 				}
 			}
 			try {
-				stmt.executeUpdate("UPDATE `" + SQL_account_table + "` SET `users` = '" + newPlayers + "' WHERE `accountname` = '" + accountname + "'");
+				settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `users` = '" + newPlayers + "' WHERE `accountname` = '" + accountname + "'");
 				return true;
 			} catch(SQLException e) {
 				if (!e.getMessage().equalsIgnoreCase(null))
@@ -1060,7 +903,7 @@ public class BankAccount extends JavaPlugin {
 		try {
 			String newPlayers = player;
 			ResultSet rs;
-			rs = stmt.executeQuery("SELECT `owners` FROM `" + SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
+			rs = settings.stmt.executeQuery("SELECT `owners` FROM `" + settings.SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
 			while(rs.next()) {
 				String[] players = rs.getString("owners").split(";");
 				for (String p : players) {
@@ -1068,7 +911,7 @@ public class BankAccount extends JavaPlugin {
 				}
 			}
 			try {
-				stmt.executeUpdate("UPDATE `" + SQL_account_table + "` SET `owners` = '" + newPlayers + "' WHERE `accountname` = '" + accountname + "'");
+				settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `owners` = '" + newPlayers + "' WHERE `accountname` = '" + accountname + "'");
 				return true;
 			} catch(SQLException e) {
 				if (!e.getMessage().equalsIgnoreCase(null))
@@ -1098,7 +941,7 @@ public class BankAccount extends JavaPlugin {
 		try {
 			String newPlayers = "";
 			ResultSet rs;
-			rs = stmt.executeQuery("SELECT `owners` FROM `" + SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
+			rs = settings.stmt.executeQuery("SELECT `owners` FROM `" + settings.SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
 			while(rs.next()) {
 				String[] players = rs.getString("owners").split(";");
 				for (String p : players) {
@@ -1111,7 +954,7 @@ public class BankAccount extends JavaPlugin {
 				}
 			}
 			try {
-				stmt.executeUpdate("UPDATE `" + SQL_account_table + "` SET `owners` = '" + newPlayers + "' WHERE `accountname` = '" + accountname + "'");
+				settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `owners` = '" + newPlayers + "' WHERE `accountname` = '" + accountname + "'");
 				return true;
 			} catch(SQLException e) {
 				if (!e.getMessage().equalsIgnoreCase(null))
@@ -1138,7 +981,7 @@ public class BankAccount extends JavaPlugin {
 	 */
 	public boolean setPassword(String accountname,String password) {
 		try {
-			stmt.executeUpdate("UPDATE `" + SQL_account_table + "` SET `password` = '" + password + "' WHERE `accountname` = '" + accountname + "'");
+			settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `password` = '" + password + "' WHERE `accountname` = '" + accountname + "'");
 			return true;
 		} catch(SQLException e) {
 			if (!e.getMessage().equalsIgnoreCase(null))
@@ -1165,9 +1008,12 @@ public class BankAccount extends JavaPlugin {
 			double account = getBalance(accountname);
 			MethodAccount economyAccount = Method.getAccount(player);
 			if (type == "deposit") {
-				if (economyAccount.hasEnough(amount)) {
+				if (settings.MaxAmount > 0 && (account+amount) > settings.MaxAmount) {
+					//Cancel the transaction
+					return false;
+				} else if (economyAccount.hasEnough(amount)) {
 					account += amount;
-					stmt.executeUpdate("UPDATE `" + SQL_account_table + "` SET `amount` = '" + account + "' WHERE `accountname` = '" + accountname + "'");
+					settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `amount` = '" + account + "' WHERE `accountname` = '" + accountname + "'");
 					economyAccount.subtract(amount);
 					return true;
 				} else {
@@ -1177,7 +1023,7 @@ public class BankAccount extends JavaPlugin {
 				if (PasswordSystem.passwordCheck(accountname, password)) {
 					if ((account - amount) >= 0) {
 						account -= amount;
-						stmt.executeUpdate("UPDATE `" + SQL_account_table + "` SET `amount` = '" + account + "' WHERE `accountname` = '" + accountname + "'");
+						settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `amount` = '" + account + "' WHERE `accountname` = '" + accountname + "'");
 						economyAccount.add(amount);
 						return true;
 					} else {
@@ -1190,11 +1036,14 @@ public class BankAccount extends JavaPlugin {
 				if (PasswordSystem.passwordCheck(accountname, password)) {
 					//Player = receiver account
 					double receiver_account = getBalance(player);
-					if ((account - amount) >= 0) {
+					if (settings.MaxAmount > 0 && (receiver_account+amount) > settings.MaxAmount) {
+						//Cancel the transaction
+						return false;
+					} else if ((account - amount) >= 0) {
 						account -= amount;
 						receiver_account += amount;
-						stmt.executeUpdate("UPDATE `" + SQL_account_table + "` SET `amount` = '" + account + "' WHERE `accountname` = '" + accountname + "'");
-						stmt.executeUpdate("UPDATE `" + SQL_account_table + "` SET `amount` = '" + receiver_account + "' WHERE `accountname` = '" + player + "'");
+						settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `amount` = '" + account + "' WHERE `accountname` = '" + accountname + "'");
+						settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `amount` = '" + receiver_account + "' WHERE `accountname` = '" + player + "'");
 						return true;
 					} else {
 						return false;
@@ -1228,7 +1077,7 @@ public class BankAccount extends JavaPlugin {
 			try {
 				MethodAccount economyAccount = Method.getAccount(player);
 				double accountBalance = getBalance(accountname);
-				stmt.executeUpdate("DELETE FROM `" + SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
+				settings.stmt.executeUpdate("DELETE FROM `" + settings.SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
 				economyAccount.add(accountBalance);
 				return true;
 			} catch(SQLException e) {
@@ -1256,7 +1105,7 @@ public class BankAccount extends JavaPlugin {
 		try {
 			String output = "";
 			ResultSet rs;
-			rs = stmt.executeQuery("SELECT `users` FROM `" + SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
+			rs = settings.stmt.executeQuery("SELECT `users` FROM `" + settings.SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
 			while(rs.next()) {
 				String[] users = rs.getString("users").split(";");
 				for (String user : users) {
@@ -1289,7 +1138,7 @@ public class BankAccount extends JavaPlugin {
 		try {
 			String output = "";
 			ResultSet rs;
-			rs = stmt.executeQuery("SELECT `owners` FROM `" + SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
+			rs = settings.stmt.executeQuery("SELECT `owners` FROM `" + settings.SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
 			while(rs.next()) {
 				String[] owners = rs.getString("owners").split(";");
 				for (String owner : owners) {
@@ -1321,7 +1170,7 @@ public class BankAccount extends JavaPlugin {
 	public double getBalance(String accountname) {
 		try {
 			ResultSet rs;
-			rs = stmt.executeQuery("SELECT `amount` FROM `" + SQL_account_table + "` WHERE `accountname` = '" + accountname +"'");
+			rs = settings.stmt.executeQuery("SELECT `amount` FROM `" + settings.SQL_account_table + "` WHERE `accountname` = '" + accountname +"'");
 			while (rs.next()) {
 				return rs.getDouble("amount");
 			}
@@ -1345,7 +1194,7 @@ public class BankAccount extends JavaPlugin {
 	 */
 	public boolean setBalance(double balance,String accountname) {
 		try {
-			stmt.executeUpdate("UPDATE `" + SQL_account_table + "` SET `amount` = '" + balance + "' WHERE `accountname` = '" + accountname + "'");
+			settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `amount` = '" + balance + "' WHERE `accountname` = '" + accountname + "'");
 			return true;
 		} catch (SQLException e) {
 			if (!e.getMessage().equalsIgnoreCase(null))
@@ -1368,7 +1217,7 @@ public class BankAccount extends JavaPlugin {
 		double temp = getBalance(accountname);
 		temp += amount;
 		try {
-			stmt.executeUpdate("UPDATE `" + SQL_account_table + "` SET `amount` = '" + temp + "' WHERE `accountname` = '" + accountname + "'");
+			settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `amount` = '" + temp + "' WHERE `accountname` = '" + accountname + "'");
 			return true;
 		} catch (SQLException e) {
 			if (!e.getMessage().equalsIgnoreCase(null))
@@ -1391,7 +1240,7 @@ public class BankAccount extends JavaPlugin {
 		double temp = getBalance(accountname);
 		temp -= amount;
 		try {
-			stmt.executeUpdate("UPDATE `" + SQL_account_table + "` SET `amount` = '" + temp + "' WHERE `accountname` = '" + accountname + "'");
+			settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `amount` = '" + temp + "' WHERE `accountname` = '" + accountname + "'");
 			return true;
 		} catch (SQLException e) {
 			if (!e.getMessage().equalsIgnoreCase(null))
@@ -1414,14 +1263,14 @@ public class BankAccount extends JavaPlugin {
 		ResultSet rs;
 		int id = 0;
 		try {
-			if (UseMySQL) {
-				rs = stmt.executeQuery("SELECT `id` FROM `" + SQL_area_table + "` WHERE `areaname` = '" + name + "'");
+			if (settings.UseMySQL) {
+				rs = settings.stmt.executeQuery("SELECT `id` FROM `" + settings.SQL_area_table + "` WHERE `areaname` = '" + name + "'");
 			} else {
-				rs = stmt.executeQuery("SELECT `rowid` FROM `" + SQL_area_table + "` WHERE `areaname` = '" + name + "'");
+				rs = settings.stmt.executeQuery("SELECT `rowid` FROM `" + settings.SQL_area_table + "` WHERE `areaname` = '" + name + "'");
 			}
 			try {
 				while (rs.next()) {
-					if (UseMySQL) {
+					if (settings.UseMySQL) {
 						id = rs.getInt("id");
 					} else {
 						id = rs.getInt("rowid");
@@ -1455,7 +1304,7 @@ public class BankAccount extends JavaPlugin {
 	 */
 	public boolean inArea(String world,Location pos) {
 		try {
-			ResultSet rs = stmt.executeQuery("SELECT `x1`,`y1`,`z1`,`x2`,`y2`,`z2` FROM `" + SQL_area_table + "` WHERE `world` = '" + world + "'");
+			ResultSet rs = settings.stmt.executeQuery("SELECT `x1`,`y1`,`z1`,`x2`,`y2`,`z2` FROM `" + settings.SQL_area_table + "` WHERE `world` = '" + world + "'");
 			while (rs.next()) {
 				Vector min = new Vector(
 					Math.min(rs.getInt("x1"), rs.getInt("x2")),
@@ -1498,7 +1347,7 @@ public class BankAccount extends JavaPlugin {
 			return false;
 		}
 		try {
-			stmt.executeUpdate("INSERT INTO `" + SQL_area_table + "` (`areaname`,`world`,`x1`, `y1`, `z1`, `x2`, `y2`, `z2`) VALUES ('" + name + "','" + world + "','" + pos1.getBlockX() + "','" + pos1.getBlockY() + "','" + pos1.getBlockZ() + "','" + pos2.getBlockX() + "','" + pos2.getBlockY() + "','" + pos2.getBlockZ() + "')");
+			settings.stmt.executeUpdate("INSERT INTO `" + settings.SQL_area_table + "` (`areaname`,`world`,`x1`, `y1`, `z1`, `x2`, `y2`, `z2`) VALUES ('" + name + "','" + world + "','" + pos1.getBlockX() + "','" + pos1.getBlockY() + "','" + pos1.getBlockZ() + "','" + pos2.getBlockX() + "','" + pos2.getBlockY() + "','" + pos2.getBlockZ() + "')");
 			return true;
 		} catch(SQLException e) {
 			if (!e.getMessage().equalsIgnoreCase(null))
@@ -1518,7 +1367,7 @@ public class BankAccount extends JavaPlugin {
 	 */
 	public boolean removeArea(String name) {
 		try {
-			stmt.executeUpdate("DELETE FROM `" + SQL_area_table + "` WHERE `areaname` = '" + name + "'");
+			settings.stmt.executeUpdate("DELETE FROM `" + settings.SQL_area_table + "` WHERE `areaname` = '" + name + "'");
 			return true;
 		} catch(SQLException e) {
 			if (!e.getMessage().equalsIgnoreCase(null))

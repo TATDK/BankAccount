@@ -28,8 +28,8 @@ public class Upgrade {
 	private void runUpgrade03c(BankAccount plugin, boolean UseMySQL,File file) {
 		try {
 			if (UseMySQL) {
-				String query = "ALTER TABLE `" + plugin.SQL_account_table + "` CHANGE  `amount`  `amount` DOUBLE( 255, 2 ) NOT NULL DEFAULT  '0.00'";
-				plugin.stmt.execute(query);
+				String query = "ALTER TABLE `" + plugin.settings.SQL_account_table + "` CHANGE  `amount`  `amount` DOUBLE( 255, 2 ) NOT NULL DEFAULT  '0.00'";
+				plugin.settings.stmt.execute(query);
 				plugin.consoleInfo("Tables upgraded to v.0.3c");
 				if (file.delete()) {
 					plugin.consoleInfo("SQLUpgrade03c deleted");
@@ -55,17 +55,17 @@ public class Upgrade {
 		try {
 			if (UseMySQL) {
 				//MySQL
-				String query = "ALTER TABLE `" + plugin.SQL_account_table + "` CHANGE  `players`  `owners` LONGTEXT NOT NULL";
-				plugin.stmt.execute(query);
-				query = "ALTER TABLE  `" + plugin.SQL_account_table + "` ADD  `users` LONGTEXT NOT NULL AFTER  `owners`";
-				plugin.stmt.execute(query);
+				String query = "ALTER TABLE `" + plugin.settings.SQL_account_table + "` CHANGE  `players`  `owners` LONGTEXT NOT NULL";
+				plugin.settings.stmt.execute(query);
+				query = "ALTER TABLE  `" + plugin.settings.SQL_account_table + "` ADD  `users` LONGTEXT NOT NULL AFTER  `owners`";
+				plugin.settings.stmt.execute(query);
 				plugin.consoleInfo("MySQL Tables upgraded to v.0.5");
 			} else {
 				//SQLite
-				String query = "ALTER TABLE `" + plugin.SQL_account_table + "` ADD  `owners` LONGTEXT NOT NULL DEFAULT ''";
-				plugin.stmt.execute(query);
-				query = "ALTER TABLE  `" + plugin.SQL_account_table + "` ADD  `users` LONGTEXT NOT NULL DEFAULT ''";
-				plugin.stmt.execute(query);
+				String query = "ALTER TABLE `" + plugin.settings.SQL_account_table + "` ADD  `owners` LONGTEXT NOT NULL DEFAULT ''";
+				plugin.settings.stmt.execute(query);
+				query = "ALTER TABLE  `" + plugin.settings.SQL_account_table + "` ADD  `users` LONGTEXT NOT NULL DEFAULT ''";
+				plugin.settings.stmt.execute(query);
 				plugin.consoleInfo("SQLite Tables upgraded to v.0.5");
 			}
 			if (file != null) {

@@ -46,7 +46,7 @@ public class Loan {
 			runPayment();
 		}
 		try {
-			plugin.stmt.executeUpdate("UPDATE `" + plugin.SQL_loan_table + "` SET `timeleft` = '" + timeleft + "' WHERE `player` = '" + player + "'");
+			plugin.settings.stmt.executeUpdate("UPDATE `" + plugin.settings.SQL_loan_table + "` SET `timeleft` = '" + timeleft + "' WHERE `player` = '" + player + "'");
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -64,7 +64,7 @@ public class Loan {
 		}
 		
 		try {
-			plugin.stmt.executeUpdate("UPDATE `" + plugin.SQL_loan_table + "` SET `part` = '" + part + "' WHERE `player` = '" + player + "'");
+			plugin.settings.stmt.executeUpdate("UPDATE `" + plugin.settings.SQL_loan_table + "` SET `part` = '" + part + "' WHERE `player` = '" + player + "'");
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -79,7 +79,7 @@ public class Loan {
 		
 		if (part >= parts) {
 			try {
-				plugin.stmt.executeUpdate("DELETE FROM `" + plugin.SQL_loan_table + "` WHERE `player` = '" + player + "'");
+				plugin.settings.stmt.executeUpdate("DELETE FROM `" + plugin.settings.SQL_loan_table + "` WHERE `player` = '" + player + "'");
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}

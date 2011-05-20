@@ -35,12 +35,12 @@ public class BAPluginListener extends ServerListener {
 			}
 		}
 		//Permissions
-		if (this.plugin.Permissions != null && plugin.equalsIgnoreCase("Permissions")) {
-			this.plugin.Permissions = null;
+		if (this.plugin.settings.Permissions != null && plugin.equalsIgnoreCase("Permissions")) {
+			this.plugin.settings.Permissions = null;
 			this.plugin.consoleWarning("Lost connection with " + plugin + "!");
 		}
-		if (this.plugin.GroupManager != null && plugin.equalsIgnoreCase("GroupManager")) {
-			this.plugin.GroupManager = null;
+		if (this.plugin.settings.GroupManager != null && plugin.equalsIgnoreCase("GroupManager")) {
+			this.plugin.settings.GroupManager = null;
 			this.plugin.consoleWarning("Lost connection with " + plugin + "!");
 		}
 	}
@@ -58,21 +58,21 @@ public class BAPluginListener extends ServerListener {
 		}
 		
 		//Permissions
-		if (this.plugin.Permissions == null && plugin.equalsIgnoreCase("Permissions") && this.plugin.UsePermissions) {
+		if (this.plugin.settings.Permissions == null && plugin.equalsIgnoreCase("Permissions") && this.plugin.settings.UsePermissions) {
 			Plugin test = checkPlugin("Permissions");
 			if (test != null) {
 				((Permissions)test).getDatabase();
-				this.plugin.Permissions = ((Permissions)test).getHandler();
+				this.plugin.settings.Permissions = ((Permissions)test).getHandler();
 				this.plugin.consoleInfo("Established connection with " + plugin + "!");
 			}
 		}
-		if (this.plugin.GroupManager == null && plugin.equalsIgnoreCase("GroupManager") && this.plugin.UseGroupManager) {
+		if (this.plugin.settings.GroupManager == null && plugin.equalsIgnoreCase("GroupManager") && this.plugin.settings.UseGroupManager) {
 			Plugin test = checkPlugin("GroupManager");
 			if (test != null) {
-				this.plugin.GroupManager = (GroupManager)test;
+				this.plugin.settings.GroupManager = (GroupManager)test;
 				this.plugin.consoleInfo("Established connection with " + plugin + "!");
-				if (this.plugin.checkJobId > 0) {
-					this.plugin.getServer().getScheduler().cancelTask(this.plugin.checkJobId);
+				if (this.plugin.settings.checkJobId > 0) {
+					this.plugin.getServer().getScheduler().cancelTask(this.plugin.settings.checkJobId);
 				}
 			}
 		}

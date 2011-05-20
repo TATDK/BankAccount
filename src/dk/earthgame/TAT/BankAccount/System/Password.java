@@ -30,7 +30,7 @@ public class Password {
 		String CryptPassword = passwordCrypt(password);
 		try {
 			ResultSet rs;
-			rs = plugin.stmt.executeQuery("SELECT `password` FROM `" + plugin.SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
+			rs = plugin.settings.stmt.executeQuery("SELECT `password` FROM `" + plugin.settings.SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
 			while (rs.next()) {
 				if (CryptPassword.equalsIgnoreCase(rs.getString("password"))) {
 					return true;
