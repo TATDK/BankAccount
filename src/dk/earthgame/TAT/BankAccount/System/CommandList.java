@@ -37,12 +37,14 @@ public enum CommandList {
 	}
 	/**
 	 * Get the command in simplest form
+	 * 
 	 * @since 0.5
 	 * @return Command (example: loan)
 	 */
 	public String getCommand() { return command; }
 	/**
 	 * Get the description of command
+	 * 
 	 * @since 0.5
 	 * @return Description (example: loan [amount])
 	 */
@@ -50,6 +52,7 @@ public enum CommandList {
 	/**
 	 * Check if the command needs to be sent inside area.
 	 * Only if areas are enabled
+	 * 
 	 * @since 0.5
 	 * @return boolean
 	 */
