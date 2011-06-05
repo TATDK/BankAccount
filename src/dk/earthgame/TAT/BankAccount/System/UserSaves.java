@@ -21,7 +21,7 @@ public class UserSaves {
 	/**
 	 * Change the bounty 
 	 * 
-	 * @param bounty - New bounty on the user's head
+	 * @param bounty New bounty on the user's head
 	 * @since 0.5
 	 */
 	public void setBounty(double bounty) {
@@ -51,8 +51,8 @@ public class UserSaves {
 	/**
 	 * Set if the user is selecting
 	 * 
+	 * @param isSelecting Is the user selecting
 	 * @since 0.5
-	 * @param isSelecting - Is the user selecting
 	 */
 	public void isSelecting(boolean isSelecting) {
 		selecting = isSelecting;
@@ -71,8 +71,8 @@ public class UserSaves {
 	/**
 	 * Set the next available position
 	 * 
+	 * @param pos Location of the next position
 	 * @since 0.5
-	 * @param pos - Location of the next position
 	 * @return position set - 1: Position 1 set - 2: Position 2 set
 	 */
 	public int setPosition(Location pos) {
@@ -92,8 +92,8 @@ public class UserSaves {
 	/**
 	 * Get the set position
 	 * 
+	 * @param position Position 1 or 2
 	 * @since 0.5
-	 * @param position - Position 1 or 2
 	 * @return Location of the position - Returns null if position isn't set
 	 */
 	public Location getPosition(int position) {

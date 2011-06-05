@@ -36,6 +36,7 @@ public class NPCManager {
 	 * 
 	 * @param NPCname - Name of new NPC
 	 * @param l - Location to spawn
+	 * @since 0.5
 	 * @return NPCEntity of the new NPC
 	 */
 	public NPCEntity spawnNPC(String NPCname, Location l) {
@@ -136,6 +137,7 @@ public class NPCManager {
 	 * 
 	 * @param NPCname - ID of NPC
 	 * @param l - New location
+	 * @since 0.5
 	 * @see moveNPCStatic(String NPCname, Location l);
 	 */
 	public void moveNPC(String id, Location l) {
@@ -150,6 +152,7 @@ public class NPCManager {
 	 * 
 	 * @param NPCname - Name of NPC
 	 * @param l - New location
+	 * @since 0.5
 	 * @see moveNPC(String NPCname, Location l);
 	 */
 	public void moveNPCStatic(String NPCname, Location l) {
@@ -163,6 +166,7 @@ public class NPCManager {
 	 * Get NPCEntity
 	 * 
 	 * @param id - ID of NPC
+	 * @since 0.5
 	 * @return NPCEntity of NPC - If not found: returns null
 	 */
 	public NPCEntity getNPC(String id) {
@@ -190,6 +194,7 @@ public class NPCManager {
 	/**
 	 * Get list of all NPCs
 	 * 
+	 * @since 0.5
 	 * @return List of NPCs
 	 */
 	public List<NPCEntity> getNPCs() {

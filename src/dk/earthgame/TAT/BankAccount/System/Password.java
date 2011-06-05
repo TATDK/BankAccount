@@ -22,8 +22,8 @@ public class Password {
 	/**
 	 * Check if a password match an account
 	 * 
-	 * @param accountname - Name of account
-	 * @param password - Password (both encrypted and not encrypted)
+	 * @param accountname Name of account
+	 * @param password Password (both encrypted and not encrypted)
 	 * @return boolean
 	 */
 	public boolean passwordCheck(String accountname,String password) {
@@ -52,7 +52,7 @@ public class Password {
 	/**
 	 * Encrypt password
 	 * 
-	 * @param password - String that must be encrypted
+	 * @param password String that must be encrypted
 	 * @return Encrypted password
 	 */
 	public String passwordCrypt(String password) {

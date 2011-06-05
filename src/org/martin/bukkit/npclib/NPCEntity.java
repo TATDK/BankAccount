@@ -13,7 +13,7 @@ import net.minecraft.server.ItemStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.NetHandler;
 import net.minecraft.server.NetworkManager;
-import net.minecraft.server.Packet18ArmAnimation;
+//import net.minecraft.server.Packet18ArmAnimation;
 import net.minecraft.server.World;
 import net.minecraft.server.WorldServer;
 
@@ -90,11 +90,11 @@ public class NPCEntity extends EntityPlayer {
 	}
 
 	public void animateArmSwing() {
-		this.b.tracker.a(this, new Packet18ArmAnimation(this, 1));
+		//this.b.tracker.a(this, new Packet18ArmAnimation(this, 1));
 	}
 
 	public void actAsHurt() {
-		this.b.tracker.a(this, new Packet18ArmAnimation(this, 2));
+		//this.b.tracker.a(this, new Packet18ArmAnimation(this, 2));
 	}
 
 	@Override

@@ -104,7 +104,7 @@ public class LoanSystem {
 	/**
 	 * Check if the player have a loan
 	 * 
-	 * @param player - The username of the player
+	 * @param player The username of the player
 	 * @since 0.5
 	 * @return boolean - If player have a loan
 	 */
@@ -118,7 +118,7 @@ public class LoanSystem {
 	/**
 	 * Get the loan of a player, returns null of none loan is found
 	 * 
-	 * @param player - The username of the player
+	 * @param player The username of the player
 	 * @since 0.5
 	 * @return Loan
 	 */
@@ -132,8 +132,8 @@ public class LoanSystem {
 	/**
 	 * Run a payment of a loan
 	 * 
-	 * @param player - The username of the player
-	 * @param amount - Amount money
+	 * @param player The username of the player
+	 * @param amount Amount money
 	 * @since 0.5
 	 * @return double - The amount that are removed from the loan
 	 */
@@ -159,8 +159,8 @@ public class LoanSystem {
 	/**
 	 * Add a loan to a player
 	 * 
-	 * @param player - Name of the player
-	 * @param amount - Amount the loan should be on
+	 * @param player Name of the player
+	 * @param amount Amount the loan should be on
 	 * @since 0.5
 	 * @return boolean - If the loan is successfully created
 	 */
@@ -205,7 +205,7 @@ public class LoanSystem {
 	/**
 	 * Check if the player have a loan
 	 * 
-	 * @param player - The player
+	 * @param player The player
 	 * @since 0.5.1
 	 * @return boolean - If player have a loan
 	 */
@@ -214,7 +214,7 @@ public class LoanSystem {
 	/**
 	 * Get the loan of a player, returns null of none loan is found
 	 * 
-	 * @param player - The player
+	 * @param player The player
 	 * @since 0.5.1
 	 * @return Loan
 	 */
@@ -223,8 +223,8 @@ public class LoanSystem {
 	/**
 	 * Run a payment of a loan
 	 * 
-	 * @param player - The player
-	 * @param amount - Amount money
+	 * @param player The player
+	 * @param amount Amount money
 	 * @since 0.5.1
 	 * @return double - The amount that are removed from the loan
 	 */
@@ -233,8 +233,8 @@ public class LoanSystem {
 	/**
 	 * Add a loan to a player
 	 * 
-	 * @param player - The player
-	 * @param amount - Amount the loan should be on
+	 * @param player The player
+	 * @param amount Amount the loan should be on
 	 * @since 0.5.1
 	 * @return boolean - If the loan is successfully created
 	 */

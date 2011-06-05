@@ -28,6 +28,8 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
+import org.anjocaido.groupmanager.GroupManager;
+
 import com.nijikokun.register.payment.Method;
 import com.nijikokun.register.payment.Method.MethodAccount;
 import com.nijikokun.bukkit.Permissions.Permissions;
@@ -37,8 +39,6 @@ import dk.earthgame.TAT.BankAccount.System.Password;
 import dk.earthgame.TAT.BankAccount.System.PermissionNodes;
 import dk.earthgame.TAT.BankAccount.System.TransactionTypes;
 import dk.earthgame.TAT.BankAccount.System.UserSaves;
-
-import org.anjocaido.groupmanager.GroupManager;
 
 /**
  * BankAccount for Bukkit
@@ -294,8 +294,8 @@ public class BankAccount extends JavaPlugin {
 	/**
 	 * Output Info to log on behalf of BankAccount
 	 * 
-	 * @since 0.5
 	 * @param message
+	 * @since 0.5
 	 */
 	public void consoleInfo(String message) {
 		log.info("[" + pdfFile.getName() + "] " + message);
@@ -304,8 +304,8 @@ public class BankAccount extends JavaPlugin {
 	/**
 	 * Output Warning to log on behalf of BankAccount
 	 * 
-	 * @since 0.5
 	 * @param message
+	 * @since 0.5
 	 */
 	public void consoleWarning(String message) {
 		log.warning("[" + pdfFile.getName() + "] " + message);
@@ -351,8 +351,8 @@ public class BankAccount extends JavaPlugin {
 	/**
 	 * Check for a permission
 	 * 
-	 * @param player - The player
-	 * @param node - The PermissionNode (dk.earthgame.TAT.BankAccount.System.PermissionNodes)
+	 * @param player The player
+	 * @param node The PermissionNode (dk.earthgame.TAT.BankAccount.System.PermissionNodes)
 	 * @since 0.5
 	 * @return boolean - If the player have the permission
 	 */
@@ -511,10 +511,10 @@ public class BankAccount extends JavaPlugin {
 	/**
 	 * Add a transaction to the database
 	 * 
-	 * @param player - Username of the player
-	 * @param account - Name of account
-	 * @param type - Type of transaction (dk.earthgame.TAT.BankAccount.System.TransactionTypes)
-	 * @param amount - amount of money the transaction (0.00 if money isn't a part of the transaction)
+	 * @param player Username of the player
+	 * @param account Name of account
+	 * @param type Type of transaction (dk.earthgame.TAT.BankAccount.System.TransactionTypes)
+	 * @param amount amount of money the transaction (0.00 if money isn't a part of the transaction)
 	 * @since 0.5
 	 */
 	public void addTransaction(String player, String account, TransactionTypes type, Double amount) {
@@ -536,7 +536,7 @@ public class BankAccount extends JavaPlugin {
 	/**
 	 * Get the saved data of a player
 	 * 
-	 * @param player - The username of the player
+	 * @param player The username of the player
 	 * @since 0.5
 	 * @return UserSaves - the saved data
 	 */
@@ -556,8 +556,8 @@ public class BankAccount extends JavaPlugin {
 	/**
 	 * Check if an account exists
 	 * 
+	 * @param accountname The name of the account
 	 * @since 0.5
-	 * @param accountname - The name of the account
 	 * @return boolean - If the account exists
 	 */
 	public boolean accountExists(String accountname) {
@@ -592,8 +592,7 @@ public class BankAccount extends JavaPlugin {
 	 * List of accounts, the user have access to
 	 * 
 	 * @since 0.5
-	 * @param player - Username of the player
-	 * @param Offline 
+	 * @param player Username of the player
 	 * @return List of accounts 
 	 */
 	public List<String> accountList(String player) {
@@ -621,7 +620,7 @@ public class BankAccount extends JavaPlugin {
 	 * List of accounts, the user have access to
 	 * 
 	 * @since 0.5
-	 * @param player - The player
+	 * @param player The player
 	 * @return List of accounts
 	 */
 	public List<String> accountList(Player player) {
@@ -631,12 +630,12 @@ public class BankAccount extends JavaPlugin {
 	/**
 	 * Add a new account
 	 * 
-	 * @param accountname - The name of the account
-	 * @param player - Username of the players - Name of players seperated by comma (,)
+	 * @param accountname The name of the account
+	 * @param players Username of the players - Name of players separated by comma (,)
 	 * @since 0.5
 	 * @return boolean - If the account is successfully created
 	 * @deprecated
-	 * @see openAccount(String accountname,String players)
+	 * @see #openAccount(String accountname,String players,String commandsender)
 	 */
 	public boolean addAccount(String accountname,String players) {
 		return openAccount(accountname, players, "");
@@ -645,8 +644,9 @@ public class BankAccount extends JavaPlugin {
 	/**
 	 * Open a new account
 	 * 
-	 * @param accountname - The name of the account
-	 * @param player - Username of the players - Name of players seperated by comma (,)
+	 * @param accountname The name of the account
+	 * @param players Username of the players - Name of players separated by comma (,)
+	 * @param commandsender Username of the player that opens the account
 	 * @since 0.5.1
 	 * @return boolean - If the account is successfully created
 	 */
@@ -714,9 +714,9 @@ public class BankAccount extends JavaPlugin {
 	/**
 	 * Do the player have access to an account
 	 * 
-	 * @param accountname - Name of account
-	 * @param player - The player
-	 * @param writeAccess - Only look for owners
+	 * @param accountname Name of account
+	 * @param player The player
+	 * @param writeAccess Only look for owners
 	 * @since 0.5
 	 * @return boolean - If the player have access
 	 */
@@ -770,9 +770,9 @@ public class BankAccount extends JavaPlugin {
 	/**
 	 * Do the player have access to an account
 	 * 
-	 * @param accountname - Name of account
-	 * @param player - Username of player
-	 * @param writeAccess - Only look for owners
+	 * @param accountname Name of account
+	 * @param player Username of player
+	 * @param writeAccess Only look for owners
 	 * @since 0.5
 	 * @return boolean - If the player have access
 	 */
@@ -812,10 +812,10 @@ public class BankAccount extends JavaPlugin {
 	/**
 	 * Add user to account
 	 * 
-	 * @param accountname - Name of account
-	 * @param player - Username of the player
+	 * @param accountname Name of account
+	 * @param player Username of the player
 	 * @since 0.5
-	 * @see addOwner(String accountname,String player)
+	 * @see #addOwner(String accountname,String player)
 	 * @return boolean - If the user is successfully added
 	 */
 	public boolean addUser(String accountname,String player) {
@@ -850,10 +850,10 @@ public class BankAccount extends JavaPlugin {
 	/**
 	 * Remove an user from an account
 	 * 
-	 * @param accountname - Name of account
-	 * @param player - Username of the player
+	 * @param accountname Name of account
+	 * @param player Username of the player
 	 * @since 0.5
-	 * @see removeOwner(String accountname,String player)
+	 * @see #removeOwner(String accountname,String player)
 	 * @return boolean - If the user is successfully removed
 	 */
 	public boolean removeUser(String accountname,String player) {
@@ -893,10 +893,10 @@ public class BankAccount extends JavaPlugin {
 	/**
 	 * Add owner to account
 	 * 
-	 * @param accountname - Name of account
-	 * @param player - Username of the player
+	 * @param accountname Name of account
+	 * @param player Username of the player
 	 * @since 0.5
-	 * @see addUser(String accountname,String player)
+	 * @see #addUser(String accountname,String player)
 	 * @return boolean - If the owner is successfully added
 	 */
 	public boolean addOwner(String accountname,String player) {
@@ -931,10 +931,10 @@ public class BankAccount extends JavaPlugin {
 	/**
 	 * Remove an owner from an account
 	 * 
-	 * @param accountname - Name of account
-	 * @param player - Username of the player
+	 * @param accountname Name of account
+	 * @param player Username of the player
 	 * @since 0.5
-	 * @see removeUser(String accountname,String player)
+	 * @see #removeUser(String accountname,String player)
 	 * @return boolean - If the owner is successfully removed
 	 */
 	public boolean removeOwner(String accountname,String player) {
@@ -974,8 +974,8 @@ public class BankAccount extends JavaPlugin {
 	/**
 	 * Set the password for an account
 	 * 
-	 * @param accountname - Name of account
-	 * @param password - The new password (Must be encrypted!)
+	 * @param accountname Name of account
+	 * @param password The new password (Must be encrypted!)
 	 * @since 0.5
 	 * @return boolean - If the password is successfully set
 	 */
@@ -995,11 +995,11 @@ public class BankAccount extends JavaPlugin {
 	/**
 	 * Send action to the ATM
 	 * 
-	 * @param accountname - Name of account
-	 * @param player - Username of the player
-	 * @param type - Type of action
-	 * @param amount - Amount money
-	 * @param password - Password
+	 * @param accountname Name of account
+	 * @param player Username of the player
+	 * @param type Type of action
+	 * @param amount Amount money
+	 * @param password Password
 	 * @since 0.5
 	 * @return boolean - If the action is run successfully
 	 */
@@ -1066,9 +1066,9 @@ public class BankAccount extends JavaPlugin {
 	/**
 	 * Close an account
 	 * 
-	 * @param accountname - Name of account
-	 * @param player - Username of the player
-	 * @param password - Password
+	 * @param accountname Name of account
+	 * @param player Username of the player
+	 * @param password Password
 	 * @since 0.5
 	 * @return boolean - If the account is successfully closed
 	 */
@@ -1097,7 +1097,7 @@ public class BankAccount extends JavaPlugin {
 	/**
 	 * Get the users of an account
 	 * 
-	 * @param accountname - Name of account
+	 * @param accountname Name of account
 	 * @since 0.5
 	 * @return String of users (seperated by comma and space(, ))
 	 */
@@ -1130,7 +1130,7 @@ public class BankAccount extends JavaPlugin {
 	/**
 	 * Get the owners of an account
 	 * 
-	 * @param accountname - Name of account
+	 * @param accountname Name of account
 	 * @since 0.5
 	 * @return String of owners (seperated by comma and space(, ))
 	 */
@@ -1163,7 +1163,7 @@ public class BankAccount extends JavaPlugin {
 	/**
 	 * Get the balance of an account
 	 * 
-	 * @param accountname - Name of account
+	 * @param accountname Name of account
 	 * @since 0.5
 	 * @return double - Amount of money on account
 	 */
@@ -1187,8 +1187,8 @@ public class BankAccount extends JavaPlugin {
 	
 	/**
 	 * Set the balance of an account
-	 * @param balance - New balance
-	 * @param accountname - Name of account
+	 * @param balance New balance
+	 * @param accountname Name of account
 	 * @since 0.5
 	 * @return boolean - If the account balance is successfully changed
 	 */
@@ -1208,8 +1208,8 @@ public class BankAccount extends JavaPlugin {
 	/**
 	 * Add money to an account
 	 * 
-	 * @param amount - Amount of money that shall be added
-	 * @param accountname - Name of account
+	 * @param amount Amount of money that shall be added
+	 * @param accountname Name of account
 	 * @since 0.5
 	 * @return boolean - If the money is successfully added
 	 */
@@ -1231,8 +1231,8 @@ public class BankAccount extends JavaPlugin {
 	/**
 	 * Subtract money from an account
 	 * 
-	 * @param amount - Amount of money that shall be subtracted
-	 * @param accountname - Name of account
+	 * @param amount Amount of money that shall be subtracted
+	 * @param accountname Name of account
 	 * @since 0.5
 	 * @return boolean - If the money is successfully subtracted
 	 */
@@ -1255,7 +1255,7 @@ public class BankAccount extends JavaPlugin {
 	/**
 	 * Does an area exists
 	 * 
-	 * @param name - Name of area
+	 * @param name Name of area
 	 * @since 0.5
 	 * @return boolean - If the area exists
 	 */
@@ -1297,8 +1297,8 @@ public class BankAccount extends JavaPlugin {
 	/**
 	 * Are the position inside an area
 	 * 
-	 * @param world - Name of world
-	 * @param pos - Position
+	 * @param world Name of world
+	 * @param pos Position
 	 * @since 0.5
 	 * @return boolean - If the position is inside an area
 	 */
@@ -1335,10 +1335,10 @@ public class BankAccount extends JavaPlugin {
 	/**
 	 * Add an area
 	 * 
-	 * @param name - Name of area
-	 * @param pos1 - Position 1
-	 * @param pos2 - Position 2
-	 * @param world - Name of world
+	 * @param name Name of area
+	 * @param pos1 Position 1
+	 * @param pos2 Position 2
+	 * @param world Name of world
 	 * @since 0.5
 	 * @return boolean - If the area is successfully added
 	 */
@@ -1361,7 +1361,7 @@ public class BankAccount extends JavaPlugin {
 	/**
 	 * Remove an area
 	 * 
-	 * @param name - Name of area
+	 * @param name Name of area
 	 * @since 0.5
 	 * @return boolean - If the area is successfully removed
 	 */

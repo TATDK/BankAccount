@@ -8,7 +8,7 @@ It is because I can commit new changes and not testing it before later in the pr
 *****************************
        Requirements
 *****************************
-iConomy (minimum v. 4.1)
+iConomy 4/5, BOSEconomy or Essentials Economy
 mysql-connector-java-bin (included)
 sqlitejdbc-v056 (included)
 
