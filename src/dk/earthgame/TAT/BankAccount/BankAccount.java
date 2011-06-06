@@ -58,7 +58,7 @@ public class BankAccount extends JavaPlugin {
 	Password PasswordSystem = new Password(this);
 	BankAccountCommandExecutor cmdExecutor = new BankAccountCommandExecutor(this);
 	BankAccountDisabled disabledExecutor = new BankAccountDisabled();
-	BAPluginListener pluginListener = new BAPluginListener(this);
+	BankAccountPluginListener pluginListener = new BankAccountPluginListener(this);
 	public Settings settings = new Settings(this);
 	//Economy
 	public Method Method = null;

@@ -9,11 +9,11 @@ import org.bukkit.plugin.Plugin;
 import com.nijikokun.bukkit.Permissions.Permissions;
 import com.nijikokun.register.payment.Methods;
 
-public class BAPluginListener extends ServerListener {
+public class BankAccountPluginListener extends ServerListener {
 	private BankAccount plugin;
 	Methods Methods;
 
-	public BAPluginListener(BankAccount plugin) {
+	public BankAccountPluginListener(BankAccount plugin) {
 	    this.plugin = plugin;
 	    this.Methods = new Methods();
 	}
