@@ -53,7 +53,7 @@ Permissions:
 #Doing: Is it possible to use commands global or in specific areas (example: banks or trade areas)?
 #    Active: true = specific areas // false = global
 #    AreaWandId:    [Require areas enabled]  339 (Paper) // Other item ID
-#    MultipleBanks: [Require areas enabled]  true = there is multiple banks // false = there is only one bank
+#    MultipleBanks: <FUTURE FEATURE>[Require areas enabled]  true = there is multiple banks // false = there is only one bank
 ##
 Areas:
     Active: true

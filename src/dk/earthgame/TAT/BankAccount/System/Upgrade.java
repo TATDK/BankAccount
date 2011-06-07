@@ -30,25 +30,25 @@ public class Upgrade {
 			if (UseMySQL) {
 				String query = "ALTER TABLE `" + plugin.settings.SQL_account_table + "` CHANGE  `amount`  `amount` DOUBLE( 255, 2 ) NOT NULL DEFAULT  '0.00'";
 				plugin.settings.stmt.execute(query);
-				plugin.consoleInfo("Tables upgraded to v.0.3c");
+				plugin.console.info("Tables upgraded to v.0.3c");
 				if (file.delete()) {
-					plugin.consoleInfo("SQLUpgrade03c deleted");
+					plugin.console.info("SQLUpgrade03c deleted");
 				} else {
-					plugin.consoleWarning("SQLUpgrade03c could not be deleted, please remove it yourself");
+					plugin.console.warning("SQLUpgrade03c could not be deleted, please remove it yourself");
 				}
 			} else {
-				plugin.consoleInfo("SQLUpgrade03c is not for SQLite");
+				plugin.console.info("SQLUpgrade03c is not for SQLite");
 				if (file != null) {
 					if (file.delete()) {
-						plugin.consoleInfo("SQLUpgrade03c deleted");
+						plugin.console.info("SQLUpgrade03c deleted");
 					} else {
-						plugin.consoleWarning("SQLUpgrade03c could not be deleted, please remove it yourself");
+						plugin.console.warning("SQLUpgrade03c could not be deleted, please remove it yourself");
 					}
 				}
 			}
 		} catch (SQLException e4) {
-			plugin.consoleWarning("Could not upgrade tables to v.0.3c");
-			plugin.consoleWarning(e4.toString());
+			plugin.console.warning("Could not upgrade tables to v.0.3c");
+			plugin.console.warning(e4.toString());
 		}
 	}
 	private void runUpgrade05(BankAccount plugin, boolean UseMySQL,File file) {
@@ -59,25 +59,25 @@ public class Upgrade {
 				plugin.settings.stmt.execute(query);
 				query = "ALTER TABLE  `" + plugin.settings.SQL_account_table + "` ADD  `users` LONGTEXT NOT NULL AFTER  `owners`";
 				plugin.settings.stmt.execute(query);
-				plugin.consoleInfo("MySQL Tables upgraded to v.0.5");
+				plugin.console.info("MySQL Tables upgraded to v.0.5");
 			} else {
 				//SQLite
 				String query = "ALTER TABLE `" + plugin.settings.SQL_account_table + "` ADD  `owners` LONGTEXT NOT NULL DEFAULT ''";
 				plugin.settings.stmt.execute(query);
 				query = "ALTER TABLE  `" + plugin.settings.SQL_account_table + "` ADD  `users` LONGTEXT NOT NULL DEFAULT ''";
 				plugin.settings.stmt.execute(query);
-				plugin.consoleInfo("SQLite Tables upgraded to v.0.5");
+				plugin.console.info("SQLite Tables upgraded to v.0.5");
 			}
 			if (file != null) {
 				if (file.delete()) {
-					plugin.consoleInfo("SQLUpgrade05 deleted");
+					plugin.console.info("SQLUpgrade05 deleted");
 				} else {
-					plugin.consoleWarning("SQLUpgrade05 could not be deleted, please remove it yourself");
+					plugin.console.warning("SQLUpgrade05 could not be deleted, please remove it yourself");
 				}
 			}
 		} catch (SQLException e) {
-			plugin.consoleWarning("Could not upgrade tables to v.0.5");
-			plugin.consoleWarning(e.toString());
+			plugin.console.warning("Could not upgrade tables to v.0.5");
+			plugin.console.warning(e.toString());
 		}
 	}
 }

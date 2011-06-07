@@ -3,12 +3,14 @@ Author: TAT
 CHANGELOG
 
 0.5.1DEV
-Added permissionsnode for list command (Included in basic permission)
+Added permissionnode for list command (Included in basic permission)
 Added possibility to disable interest and loan debug output
+Code clean-up
 Changed to use Register
 - Added support for iConomy 4/5, BOSEconomy and Essentials Economy
-Updated to CraftBukkit #766
-API: Added support for Player player in LoanSystem
+Updated to CraftBukkit #818
+Removed response to multiple banks config
+API changes
 
 CREDIT: Thanks to TrainYourBrain for helping out in my silent time
         http://forums.bukkit.org/members/trainyourbrain.69207/

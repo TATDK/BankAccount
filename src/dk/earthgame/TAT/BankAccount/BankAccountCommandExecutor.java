@@ -129,7 +129,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   					int tmpWidth = 0;
   					String output = "";
   					for (String account : accounts) {
-  						plugin.consoleInfo(account);
+  						plugin.console.info(account);
   						if (tmpWidth == 0) {
   							tmpWidth = plugin.stringWidth(account);
   							output = account;

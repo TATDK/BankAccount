@@ -51,13 +51,13 @@ public class NPCManager {
 	
 	private NPCEntity spawnNPC(String NPCname, Location l, String id) {
 		if (npcs.containsKey(id)) {
-			plugin.consoleWarning("NPC with that id already exists, existing NPC returned");
+			plugin.console.warning("NPC with that id already exists, existing NPC returned");
 			return npcs.get(id);
 		} else {
 			if (NPCname.length() > 16) { // Check and nag if name is too long, spawn NPC anyway with shortened name.
 				String tmp = NPCname.substring(0, 16);
-				plugin.consoleWarning("NPCs can't have names longer than 16 characters,");
-				plugin.consoleWarning(NPCname + " has been shortened to " + tmp);
+				plugin.console.warning("NPCs can't have names longer than 16 characters,");
+				plugin.console.warning(NPCname + " has been shortened to " + tmp);
 				NPCname = tmp;
 			}
 			BWorld world = new BWorld(l.getWorld());
@@ -222,8 +222,8 @@ public class NPCManager {
 	public void rename(String id, String name) {
 		if (name.length() > 16) { // Check and nag if name is too long, spawn NPC anyway with shortened name.
 			String tmp = name.substring(0, 16);
-			plugin.consoleWarning("NPCs can't have names longer than 16 characters,");
-			plugin.consoleWarning(name + " has been shortened to " + tmp);
+			plugin.console.warning("NPCs can't have names longer than 16 characters,");
+			plugin.console.warning(name + " has been shortened to " + tmp);
 			name = tmp;
 		}
 		NPCEntity npc = getNPC(id);

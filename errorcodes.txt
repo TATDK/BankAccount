@@ -25,6 +25,7 @@ ID       Function
 20       passwordCheck
 21       passwordCrypt
 22       accountList
+23       addLoan
 
 Error code    Function        Description
 ------------------------------------------------------------------------
@@ -57,8 +58,8 @@ Error code    Function        Description
 #10-1         getBalance      Exception error
 #10-2         getBalance      SQLException error - Response type 1
 #10-3         getBalance      SQLException error - Response type 2
-#11-1         haveLoan        Error lookup loans - Response type 1
-#11-2         haveLoan        Error lookup loans - Response type 2
+#11-1         startupLoan     Error lookup loans - Response type 1
+#11-2         startupLoan     Error lookup loans - Response type 2
 #12-1         setArea         Error lookup areas - Response type 1
 #12-2         setArea         Error lookup areas - Response type 2
 #13-1         removeArea      Exception error
@@ -84,3 +85,5 @@ Error code    Function        Description
 #21-1         passwordCrypt   Error crypting password
 #22-1         accountList     Error getting list - Response type 1
 #22-2         accountList     Error getting list - Response type 2
+#23-1         addLoan         Error adding loan - Response type 1
+#23-2         addLoan         Error adding loan - Response type 2

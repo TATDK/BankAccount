@@ -29,3 +29,9 @@ UPDATE:
 - Transfer money between shared bank accounts
 - Password protect shared bank accounts (Case-sensitive)
 - Create bankareas
+
+*****************************
+           JavaDoc
+*****************************
+JavaDoc for BankAccount API can be found @ Github
+http://TATDK.github.com/BankAccount/doc/

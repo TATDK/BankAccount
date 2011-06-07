@@ -52,9 +52,9 @@ public class LoanSystem {
 			running = true;
 		} catch (SQLException e) {
 			if (!e.getMessage().equalsIgnoreCase(null))
-				plugin.consoleWarning("Error #11-2: " + e.getMessage());
+				plugin.console.warning("Error #11-2: " + e.getMessage());
 			else
-				plugin.consoleWarning("Error #11-1: " + e.getErrorCode() + " - " + e.getSQLState());
+				plugin.console.warning("Error #11-1: " + e.getErrorCode() + " - " + e.getSQLState());
 		}
 		
 		if (JobId > 0) {
@@ -65,7 +65,7 @@ public class LoanSystem {
 			@SuppressWarnings({ "unchecked", "rawtypes" })
 			public void run() {
 				if (plugin.settings.Debug_Loan)
-					plugin.consoleInfo("Loan start");
+					plugin.console.info("Loan start");
 				Iterator it = Loans.entrySet().iterator();
 				while (it.hasNext()) {
 			        Map.Entry<String,Loan> pairs = (Map.Entry<String,Loan>)it.next();
@@ -76,13 +76,13 @@ public class LoanSystem {
 			        		plugin.addTransaction(pairs.getKey(), "", TransactionTypes.LOAN_MISSING, pairs.getValue().remaining);
 			        	} else {
 			        		if (plugin.settings.Debug_Loan)
-			        			plugin.consoleInfo(pairs.getKey() + " paid a part of the loan back");
+			        			plugin.console.info(pairs.getKey() + " paid a part of the loan back");
 			        		plugin.addTransaction(pairs.getKey(), "", TransactionTypes.LOAN_PAID, 0.00);
 			        	}
 			        }
 			    }
 				if (plugin.settings.Debug_Loan)
-					plugin.consoleInfo("Loan stop");
+					plugin.console.info("Loan stop");
 			}
 		}, 0, runTime*20*60);
 	}
@@ -191,9 +191,9 @@ public class LoanSystem {
 				return true;
 			} catch(SQLException e) {
 				if (!e.getMessage().equalsIgnoreCase(null))
-					plugin.consoleWarning("Error #02-2: " + e.getMessage());
+					plugin.console.warning("Error #23-2: " + e.getMessage());
 				else
-					plugin.consoleWarning("Error #02-1: " + e.getErrorCode() + " - " + e.getSQLState());
+					plugin.console.warning("Error #23-1: " + e.getErrorCode() + " - " + e.getSQLState());
 			}
 			return false;
 		}

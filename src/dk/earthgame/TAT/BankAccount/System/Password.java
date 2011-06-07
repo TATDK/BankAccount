@@ -40,11 +40,11 @@ public class Password {
 			}
 		} catch(SQLException e) {
 			if (!e.getMessage().equalsIgnoreCase(null))
-				plugin.consoleWarning("Error #20-3: " + e.getMessage());
+				plugin.console.warning("Error #20-3: " + e.getMessage());
 			else
-				plugin.consoleWarning("Error #20-2: " + e.getErrorCode() + " - " + e.getSQLState());
+				plugin.console.warning("Error #20-2: " + e.getErrorCode() + " - " + e.getSQLState());
 		} catch(Exception e) {
-			plugin.consoleWarning("Error #20-1: " + e.toString());
+			plugin.console.warning("Error #20-1: " + e.toString());
 		}
 		return false;
 	}
@@ -65,7 +65,7 @@ public class Password {
 			password = bytesToHex(output);
 			return password;
 		} catch (NoSuchAlgorithmException e) {
-			plugin.consoleWarning("Error #21-1: Couldn't encrypt password");
+			plugin.console.warning("Error #21-1: Couldn't encrypt password");
 			return "Error";
 		}
 	}

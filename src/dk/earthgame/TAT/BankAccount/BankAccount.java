@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Logger;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -24,7 +23,6 @@ import org.bukkit.event.entity.EntityListener;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerListener;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
@@ -39,6 +37,7 @@ import dk.earthgame.TAT.BankAccount.System.Password;
 import dk.earthgame.TAT.BankAccount.System.PermissionNodes;
 import dk.earthgame.TAT.BankAccount.System.TransactionTypes;
 import dk.earthgame.TAT.BankAccount.System.UserSaves;
+import dk.earthgame.TAT.BankAccount.System.Console;
 
 /**
  * BankAccount for Bukkit
@@ -49,8 +48,6 @@ import dk.earthgame.TAT.BankAccount.System.UserSaves;
 public class BankAccount extends JavaPlugin {
 	protected final Plugin thisPlugin = this;
 	//System
-	protected final Logger log = Logger.getLogger("Minecraft");
-	private PluginDescriptionFile pdfFile;
 	HashMap<String, Integer> fontWidth = new HashMap<String, Integer>();
 	File myFolder;
 	private HashMap<String,UserSaves> UserSaves = new HashMap<String,UserSaves>();
@@ -60,6 +57,7 @@ public class BankAccount extends JavaPlugin {
 	BankAccountDisabled disabledExecutor = new BankAccountDisabled();
 	BankAccountPluginListener pluginListener = new BankAccountPluginListener(this);
 	public Settings settings = new Settings(this);
+	public Console console;
 	//Economy
 	public Method Method = null;
 	//NPC
@@ -190,7 +188,7 @@ public class BankAccount extends JavaPlugin {
 			settings.interestJobId = getServer().getScheduler().scheduleSyncRepeatingTask(thisPlugin, new Runnable() {
 				public void run() {
 					if (settings.Debug_Interest)
-						consoleInfo("Running interest system");
+						console.info("Running interest system");
 														
 					double totalGiven = 0.00;
 					try {
@@ -279,38 +277,26 @@ public class BankAccount extends JavaPlugin {
 							settings.con.setAutoCommit(true);
 						}
 					} catch (SQLException e) {
-						consoleWarning("Couldn't execute interest");
-						consoleInfo(e.toString());
+						console.warning("Couldn't execute interest");
+						console.info(e.toString());
 					}
 					if (settings.Debug_Interest)
-						consoleInfo("Total given " + Method.format(totalGiven) + " in interest");
+						console.info("Total given " + Method.format(totalGiven) + " in interest");
 				}
 			}, settings.interestTime*20*60, settings.interestTime*20*60);
-			consoleInfo("Running interest every " + settings.interestTime + " minutes by " + settings.interestAmount + "%");
+			console.info("Running interest every " + settings.interestTime + " minutes by " + settings.interestAmount + "%");
 		}
-		consoleInfo("Established connection with economy!");
-	}
-	
-	/**
-	 * Output Info to log on behalf of BankAccount
-	 * 
-	 * @param message
-	 * @since 0.5
-	 */
-	public void consoleInfo(String message) {
-		log.info("[" + pdfFile.getName() + "] " + message);
+		console.info("Established connection with economy!");
 	}
 
 	/**
-	 * Output Warning to log on behalf of BankAccount
-	 * 
-	 * @param message
+	 * Check if a player have a PermissionNode
+	 * @param player The player
+	 * @param node The PermissionNode
+	 * @param extraLookup If it's an extra lookup (Used by the system)
 	 * @since 0.5
+	 * @return boolean - If the player have the permission
 	 */
-	public void consoleWarning(String message) {
-		log.warning("[" + pdfFile.getName() + "] " + message);
-	}
-
 	private boolean checkPermission(Player player,PermissionNodes node,boolean extraLookup) {
 		if (player != null) {
 			if (settings.UsePermissions) {
@@ -360,7 +346,11 @@ public class BankAccount extends JavaPlugin {
 		return checkPermission(player, node, false);
 	}
 	
+	/**
+	 * Setting up BankAccount
+	 */
 	public void onEnable() {
+		console = new Console(getDescription());
 		getDataFolder().mkdir();
 		
 		// Register our events
@@ -444,14 +434,13 @@ public class BankAccount extends JavaPlugin {
 		pm.registerEvent(Type.PLUGIN_ENABLE, pluginListener, Priority.Low, this);
 		pm.registerEvent(Type.PLUGIN_DISABLE, pluginListener, Priority.Low, this);
 		
-		pdfFile = this.getDescription();
-		log.info(pdfFile.getName() + " version " + pdfFile.getVersion() + " is enabled!" );
+		console.enabled();
 
 		myFolder = getDataFolder();
 		if (!myFolder.exists()) {
-			consoleInfo("Config folder missing, creating...");
+			console.message("Config folder missing, creating...");
 			myFolder.mkdir();
-			consoleInfo("Folder created");
+			console.message("Folder created");
 		}
 		
 		/*
@@ -461,7 +450,7 @@ public class BankAccount extends JavaPlugin {
 			public void run() {
 				if (!pluginListener.Methods.hasMethod()) {
 					//Shutdown if economy isn't found
-					consoleWarning("Stopping BankAccount - Reason: Missing economy plugin!");
+					console.warning("Stopping BankAccount - Reason: Missing economy plugin!");
 					getServer().getPluginManager().disablePlugin(thisPlugin);
 					settings.checkJobId = 0;
 				}
@@ -483,7 +472,7 @@ public class BankAccount extends JavaPlugin {
 			if (test != null) {
 				if (test.isEnabled()) {
 					settings.Permissions = ((Permissions)test).getHandler();
-					consoleInfo("Established connection with Permissions!");
+					console.info("Established connection with Permissions!");
 				}
 			}
 		}
@@ -492,20 +481,24 @@ public class BankAccount extends JavaPlugin {
 			if (test != null) {
 				if (test.isEnabled()) {
 					settings.GroupManager = (GroupManager)test;
-					consoleInfo("Established connection with GroupManager!");
+					console.info("Established connection with GroupManager!");
 				}
 			}
 		}
 	}
 
+	/**
+	 * Setting up BankAccount to use disabledExecutor and cancel tasks
+	 */
 	public void onDisable() {
+		LoanSystem.shutdownRunner();
 		if (settings.interestJobId > 0) {
 			this.getServer().getScheduler().cancelTask(settings.interestJobId);
 		}
 		settings.interestJobId = 0;
 		getCommand("account").setExecutor(disabledExecutor);
 		getCommand("account").setUsage(ChatColor.RED + "BankAccount is disabled");
-		log.info(pdfFile.getName() + " is disabled!" );
+		console.disabled();
 	}
 
 	/**
@@ -524,9 +517,9 @@ public class BankAccount extends JavaPlugin {
 				settings.stmt.executeUpdate("INSERT INTO `" + settings.SQL_transaction_table + "` (`player`,`account`,`type`,`amount`,`time`) VALUES ('" + player + "','" + account + "','" + type.get() + "','" + amount + "','" + time +"')");
 			} catch(SQLException e) {
 				if (!e.getMessage().equalsIgnoreCase(null))
-					consoleWarning("Error #16-2: " + e.getMessage());
+					console.warning("Error #16-2: " + e.getMessage());
 				else
-					consoleWarning("Error #16-1: " + e.getErrorCode() + " - " + e.getSQLState());
+					console.warning("Error #16-1: " + e.getErrorCode() + " - " + e.getSQLState());
 			}
 		}
 	}
@@ -578,9 +571,9 @@ public class BankAccount extends JavaPlugin {
 			}
 		} catch (SQLException e) {
 			if (!e.getMessage().equalsIgnoreCase(null))
-				consoleWarning("Error #01-2: " + e.getMessage());
+				console.warning("Error #01-2: " + e.getMessage());
 			else
-				consoleWarning("Error #01-1: " + e.getErrorCode() + " - " + e.getSQLState());
+				console.warning("Error #01-1: " + e.getErrorCode() + " - " + e.getSQLState());
 		}
 		if (id > 0) {
 			return true;
@@ -601,17 +594,20 @@ public class BankAccount extends JavaPlugin {
 		try {
 			rs = settings.stmt.executeQuery("SELECT `accountname` FROM `" + settings.SQL_account_table + "` WHERE `owners` LIKE '%" + player + "%' OR `users` LIKE '%" + player + "%'");
 			while (rs.next()) {
+				console.info(rs.findColumn("accountname"));
 				//Make sure it's not just a part of the name
-				if (accessAccount(rs.getString("accountname"),player,false)) {
-					accounts.add(rs.getString("accountname"));
+				if (accessAccount(rs.getString(1),player,false)) {
+					accounts.add(rs.getString(1));
 				}
 			}
 			rs.close();
 		} catch (SQLException e) {
 			if (!e.getMessage().equalsIgnoreCase(null))
-				consoleWarning("Error #22-2: " + e.getMessage());
+				console.warning("Error #22-2: " + e.getMessage());
 			else
-				consoleWarning("Error #22-1: " + e.getErrorCode() + " - " + e.getSQLState());
+				console.warning("Error #22-1: " + e.getErrorCode() + " - " + e.getSQLState());
+		} catch (Exception e) {
+			console.warning(e.getMessage());
 		}
 		return accounts;
 	}
@@ -700,13 +696,13 @@ public class BankAccount extends JavaPlugin {
 		}
 		
 		try {
-			settings.stmt.executeUpdate("INSERT INTO `" + settings.SQL_account_table + "` (`accountname`,`owners`,`user`,`amount`) VALUES ('" + accountname + "','" + players + "','','" + StartAmount + "')");
+			settings.stmt.executeUpdate("INSERT INTO `" + settings.SQL_account_table + "` (`accountname`,`owners`,`users`,`amount`) VALUES ('" + accountname + "','" + players + "','','" + StartAmount + "')");
 			return true;
 		} catch(SQLException e) {
 			if (!e.getMessage().equalsIgnoreCase(null))
-				consoleWarning("Error #02-2: " + e.getMessage());
+				console.warning("Error #02-2: " + e.getMessage());
 			else
-				consoleWarning("Error #02-1: " + e.getErrorCode() + " - " + e.getSQLState());
+				console.warning("Error #02-1: " + e.getErrorCode() + " - " + e.getSQLState());
 		}
 		return false;
 	}
@@ -758,11 +754,11 @@ public class BankAccount extends JavaPlugin {
 			}
 		} catch(SQLException e1) {
 			if (!e1.getMessage().equalsIgnoreCase(null))
-				consoleWarning("Error #03-3: " + e1.getMessage());
+				console.warning("Error #03-3: " + e1.getMessage());
 			else
-				consoleWarning("Error #03-2: " + e1.getErrorCode() + " - " + e1.getSQLState());
+				console.warning("Error #03-2: " + e1.getErrorCode() + " - " + e1.getSQLState());
 		} catch(Exception e) {
-			consoleWarning("Error #03-1: " + e.toString());
+			console.warning("Error #03-1: " + e.toString());
 		}
 		return false;
 	}
@@ -800,11 +796,11 @@ public class BankAccount extends JavaPlugin {
 			}
 		} catch(SQLException e1) {
 			if (!e1.getMessage().equalsIgnoreCase(null))
-				consoleWarning("Error #03-3: " + e1.getMessage());
+				console.warning("Error #03-3: " + e1.getMessage());
 			else
-				consoleWarning("Error #03-2: " + e1.getErrorCode() + " - " + e1.getSQLState());
+				console.warning("Error #03-2: " + e1.getErrorCode() + " - " + e1.getSQLState());
 		} catch(Exception e) {
-			consoleWarning("Error #03-1: " + e.toString());
+			console.warning("Error #03-1: " + e.toString());
 		}
 		return false;
 	}
@@ -834,15 +830,15 @@ public class BankAccount extends JavaPlugin {
 				return true;
 			} catch(SQLException e) {
 				if (!e.getMessage().equalsIgnoreCase(null))
-					consoleWarning("Error #04-4: " + e.getMessage());
+					console.warning("Error #04-4: " + e.getMessage());
 				else
-					consoleWarning("Error #04-3: " + e.getErrorCode() + " - " + e.getSQLState());
+					console.warning("Error #04-3: " + e.getErrorCode() + " - " + e.getSQLState());
 			}
 		} catch(SQLException e) {
 			if (!e.getMessage().equalsIgnoreCase(null))
-				consoleWarning("Error #04-2: " + e.getMessage());
+				console.warning("Error #04-2: " + e.getMessage());
 			else
-				consoleWarning("Error #04-1: " + e.getErrorCode() + " - " + e.getSQLState());
+				console.warning("Error #04-1: " + e.getErrorCode() + " - " + e.getSQLState());
 		}
 		return false;
 	}
@@ -877,15 +873,15 @@ public class BankAccount extends JavaPlugin {
 				return true;
 			} catch(SQLException e) {
 				if (!e.getMessage().equalsIgnoreCase(null))
-					consoleWarning("Error #05-4: " + e.getMessage());
+					console.warning("Error #05-4: " + e.getMessage());
 				else
-					consoleWarning("Error #05-3: " + e.getErrorCode() + " - " + e.getSQLState());
+					console.warning("Error #05-3: " + e.getErrorCode() + " - " + e.getSQLState());
 			}
 		} catch(SQLException e) {
 			if (!e.getMessage().equalsIgnoreCase(null))
-				consoleWarning("Error #05-2: " + e.getMessage());
+				console.warning("Error #05-2: " + e.getMessage());
 			else
-				consoleWarning("Error #05-1: " + e.getErrorCode() + " - " + e.getSQLState());
+				console.warning("Error #05-1: " + e.getErrorCode() + " - " + e.getSQLState());
 		}
 		return false;
 	}
@@ -915,15 +911,15 @@ public class BankAccount extends JavaPlugin {
 				return true;
 			} catch(SQLException e) {
 				if (!e.getMessage().equalsIgnoreCase(null))
-					consoleWarning("Error #xx-4: " + e.getMessage());
+					console.warning("Error #xx-4: " + e.getMessage());
 				else
-					consoleWarning("Error #xx-3: " + e.getErrorCode() + " - " + e.getSQLState());
+					console.warning("Error #xx-3: " + e.getErrorCode() + " - " + e.getSQLState());
 			}
 		} catch(SQLException e) {
 			if (!e.getMessage().equalsIgnoreCase(null))
-				consoleWarning("Error #xx-2: " + e.getMessage());
+				console.warning("Error #xx-2: " + e.getMessage());
 			else
-				consoleWarning("Error #xx-1: " + e.getErrorCode() + " - " + e.getSQLState());
+				console.warning("Error #xx-1: " + e.getErrorCode() + " - " + e.getSQLState());
 		}
 		return false;
 	}
@@ -958,15 +954,15 @@ public class BankAccount extends JavaPlugin {
 				return true;
 			} catch(SQLException e) {
 				if (!e.getMessage().equalsIgnoreCase(null))
-					consoleWarning("Error #xx-4: " + e.getMessage());
+					console.warning("Error #xx-4: " + e.getMessage());
 				else
-					consoleWarning("Error #xx-3: " + e.getErrorCode() + " - " + e.getSQLState());
+					console.warning("Error #xx-3: " + e.getErrorCode() + " - " + e.getSQLState());
 			}
 		} catch(SQLException e) {
 			if (!e.getMessage().equalsIgnoreCase(null))
-				consoleWarning("Error #xx-2: " + e.getMessage());
+				console.warning("Error #xx-2: " + e.getMessage());
 			else
-				consoleWarning("Error #xx-1: " + e.getErrorCode() + " - " + e.getSQLState());
+				console.warning("Error #xx-1: " + e.getErrorCode() + " - " + e.getSQLState());
 		}
 		return false;
 	}
@@ -985,9 +981,9 @@ public class BankAccount extends JavaPlugin {
 			return true;
 		} catch(SQLException e) {
 			if (!e.getMessage().equalsIgnoreCase(null))
-				consoleWarning("Error #06-2: " + e.getMessage());
+				console.warning("Error #06-2: " + e.getMessage());
 			else
-				consoleWarning("Error #06-1: " + e.getErrorCode() + " - " + e.getSQLState());
+				console.warning("Error #06-1: " + e.getErrorCode() + " - " + e.getSQLState());
 		}
 		return false;
 	}
@@ -1054,11 +1050,11 @@ public class BankAccount extends JavaPlugin {
 			}
 		} catch(SQLException e1) {
 			if (!e1.getMessage().equalsIgnoreCase(null))
-				consoleWarning("Error #07-3: " + e1.getMessage());
+				console.warning("Error #07-3: " + e1.getMessage());
 			else
-				consoleWarning("Error #07-2: " + e1.getErrorCode() + " - " + e1.getSQLState());
+				console.warning("Error #07-2: " + e1.getErrorCode() + " - " + e1.getSQLState());
 		} catch(Exception e) {
-			consoleWarning("Error #07-1: " + e.toString());
+			console.warning("Error #07-1: " + e.toString());
 		}
 		return false;
 	}
@@ -1082,11 +1078,11 @@ public class BankAccount extends JavaPlugin {
 				return true;
 			} catch(SQLException e) {
 				if (!e.getMessage().equalsIgnoreCase(null))
-					consoleWarning("Error #08-3: " + e.getMessage());
+					console.warning("Error #08-3: " + e.getMessage());
 				else
-					consoleWarning("Error #08-2: " + e.getErrorCode() + " - " + e.getSQLState());
+					console.warning("Error #08-2: " + e.getErrorCode() + " - " + e.getSQLState());
 			} catch(Exception e) {
-				consoleWarning("Error #08-1: " + e.toString());
+				console.warning("Error #08-1: " + e.toString());
 			}
 			return false;
 		} else {
@@ -1118,11 +1114,11 @@ public class BankAccount extends JavaPlugin {
 			return output;
 		} catch (SQLException e1) {
 			if (!e1.getMessage().equalsIgnoreCase(null))
-				consoleWarning("Error #09-3: " + e1.getMessage());
+				console.warning("Error #09-3: " + e1.getMessage());
 			else
-				consoleWarning("Error #09-2: " + e1.getErrorCode() + " - " + e1.getSQLState());
+				console.warning("Error #09-2: " + e1.getErrorCode() + " - " + e1.getSQLState());
 		} catch(Exception e) {
-			consoleWarning("Error #09-1: " + e.toString());
+			console.warning("Error #09-1: " + e.toString());
 		}
 		return "Error loading users";
 	}
@@ -1151,11 +1147,11 @@ public class BankAccount extends JavaPlugin {
 			return output;
 		} catch (SQLException e1) {
 			if (!e1.getMessage().equalsIgnoreCase(null))
-				consoleWarning("Error #09-3: " + e1.getMessage());
+				console.warning("Error #09-3: " + e1.getMessage());
 			else
-				consoleWarning("Error #09-2: " + e1.getErrorCode() + " - " + e1.getSQLState());
+				console.warning("Error #09-2: " + e1.getErrorCode() + " - " + e1.getSQLState());
 		} catch(Exception e) {
-			consoleWarning("Error #09-1: " + e.toString());
+			console.warning("Error #09-1: " + e.toString());
 		}
 		return "Error loading owners";
 	}
@@ -1176,11 +1172,11 @@ public class BankAccount extends JavaPlugin {
 			}
 		} catch (SQLException e1) {
 			if (!e1.getMessage().equalsIgnoreCase(null))
-				consoleWarning("Error #10-3: " + e1.getMessage());
+				console.warning("Error #10-3: " + e1.getMessage());
 			else
-				consoleWarning("Error #10-2: " + e1.getErrorCode() + " - " + e1.getSQLState());
+				console.warning("Error #10-2: " + e1.getErrorCode() + " - " + e1.getSQLState());
 		} catch(Exception e) {
-			consoleWarning("Error #10-1: " + e.toString());
+			console.warning("Error #10-1: " + e.toString());
 		}
 		return 0;
 	}
@@ -1198,9 +1194,9 @@ public class BankAccount extends JavaPlugin {
 			return true;
 		} catch (SQLException e) {
 			if (!e.getMessage().equalsIgnoreCase(null))
-				consoleWarning("Error #17-2: " + e.getMessage());
+				console.warning("Error #17-2: " + e.getMessage());
 			else
-				consoleWarning("Error #17-1: " + e.getErrorCode() + " - " + e.getSQLState());
+				console.warning("Error #17-1: " + e.getErrorCode() + " - " + e.getSQLState());
 		}
 		return false;
 	}
@@ -1221,9 +1217,9 @@ public class BankAccount extends JavaPlugin {
 			return true;
 		} catch (SQLException e) {
 			if (!e.getMessage().equalsIgnoreCase(null))
-				consoleWarning("Error #18-2: " + e.getMessage());
+				console.warning("Error #18-2: " + e.getMessage());
 			else
-				consoleWarning("Error #18-1: " + e.getErrorCode() + " - " + e.getSQLState());
+				console.warning("Error #18-1: " + e.getErrorCode() + " - " + e.getSQLState());
 		}
 		return false;
 	}
@@ -1244,9 +1240,9 @@ public class BankAccount extends JavaPlugin {
 			return true;
 		} catch (SQLException e) {
 			if (!e.getMessage().equalsIgnoreCase(null))
-				consoleWarning("Error #19-2: " + e.getMessage());
+				console.warning("Error #19-2: " + e.getMessage());
 			else
-				consoleWarning("Error #19-1: " + e.getErrorCode() + " - " + e.getSQLState());
+				console.warning("Error #19-1: " + e.getErrorCode() + " - " + e.getSQLState());
 		}
 		return false;
 	}
@@ -1278,15 +1274,15 @@ public class BankAccount extends JavaPlugin {
 				}
 			} catch (SQLException e1) {
 				if (!e1.getMessage().equalsIgnoreCase(null))
-					consoleWarning("Error #14-4: " + e1.getMessage());
+					console.warning("Error #14-4: " + e1.getMessage());
 				else
-					consoleWarning("Error #14-3: " + e1.getErrorCode() + " - " + e1.getSQLState());
+					console.warning("Error #14-3: " + e1.getErrorCode() + " - " + e1.getSQLState());
 			}
 		} catch (SQLException e) {
 			if (!e.getMessage().equalsIgnoreCase(null))
-				consoleWarning("Error #14-2: " + e.getMessage());
+				console.warning("Error #14-2: " + e.getMessage());
 			else
-				consoleWarning("Error #14-1: " + e.getErrorCode() + " - " + e.getSQLState());
+				console.warning("Error #14-1: " + e.getErrorCode() + " - " + e.getSQLState());
 		}
 		if (id > 0) {
 			return true;
@@ -1325,9 +1321,9 @@ public class BankAccount extends JavaPlugin {
 			}
 		} catch(SQLException e) {
 			if (!e.getMessage().equalsIgnoreCase(null))
-				consoleWarning("Error #15-2: " + e.getMessage());
+				console.warning("Error #15-2: " + e.getMessage());
 			else
-				consoleWarning("Error #15-1: " + e.getErrorCode() + " - " + e.getSQLState());
+				console.warning("Error #15-1: " + e.getErrorCode() + " - " + e.getSQLState());
 		}
 		return false;
 	}
@@ -1351,9 +1347,9 @@ public class BankAccount extends JavaPlugin {
 			return true;
 		} catch(SQLException e) {
 			if (!e.getMessage().equalsIgnoreCase(null))
-				consoleWarning("Error #12-2: " + e.getMessage());
+				console.warning("Error #12-2: " + e.getMessage());
 			else
-				consoleWarning("Error #12-1: " + e.getErrorCode() + " - " + e.getSQLState());
+				console.warning("Error #12-1: " + e.getErrorCode() + " - " + e.getSQLState());
 		}
 		return false;
 	}
@@ -1371,12 +1367,36 @@ public class BankAccount extends JavaPlugin {
 			return true;
 		} catch(SQLException e) {
 			if (!e.getMessage().equalsIgnoreCase(null))
-				consoleWarning("Error #13-3: " + e.getMessage());
+				console.warning("Error #13-3: " + e.getMessage());
 			else
-				consoleWarning("Error #13-2: " + e.getErrorCode() + " - " + e.getSQLState());
+				console.warning("Error #13-2: " + e.getErrorCode() + " - " + e.getSQLState());
 		} catch (Exception e) {
-			consoleWarning("Error #13-1: " + e.toString());
+			console.warning("Error #13-1: " + e.toString());
 		}
 		return false;
+	}
+	
+	/**
+	 * Output Info to log on behalf of BankAccount
+	 * 
+	 * @deprecated
+	 * @param message
+	 * @since 0.5
+	 * @see #console
+	 */
+	public void consoleInfo(String message) {
+		console.info(message);
+	}
+
+	/**
+	 * Output Warning to log on behalf of BankAccount
+	 * 
+	 * @deprecated
+	 * @param message
+	 * @since 0.5
+	 * @see #console
+	 */
+	public void consoleWarning(String message) {
+		console.warning(message);
 	}
 }

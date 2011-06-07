@@ -30,19 +30,19 @@ public class BankAccountPluginListener extends ServerListener {
 			boolean check = this.Methods.checkDisabled(event.getPlugin());
 
 			if(check) {
-				this.plugin.consoleInfo("Payment method was disabled.");
-				this.plugin.consoleWarning("Stopping BankAccount - Reason: Missing economy plugin!");
+				this.plugin.console.info("Payment method was disabled.");
+				this.plugin.console.warning("Stopping BankAccount - Reason: Missing economy plugin!");
 				this.plugin.getServer().getPluginManager().disablePlugin(event.getPlugin());
 			}
 		}
 		//Permissions
 		if (this.plugin.settings.Permissions != null && plugin.equalsIgnoreCase("Permissions")) {
 			this.plugin.settings.Permissions = null;
-			this.plugin.consoleWarning("Lost connection with " + plugin + "!");
+			this.plugin.console.warning("Lost connection with " + plugin + "!");
 		}
 		if (this.plugin.settings.GroupManager != null && plugin.equalsIgnoreCase("GroupManager")) {
 			this.plugin.settings.GroupManager = null;
-			this.plugin.consoleWarning("Lost connection with " + plugin + "!");
+			this.plugin.console.warning("Lost connection with " + plugin + "!");
 		}
 	}
 
@@ -53,7 +53,7 @@ public class BankAccountPluginListener extends ServerListener {
 		if (!this.Methods.hasMethod()) {
 			if(this.Methods.setMethod(event.getPlugin())) {
 				this.plugin.Method = this.Methods.getMethod();
-				this.plugin.consoleInfo("Payment method found (" + this.plugin.Method.getName() + " version: " + this.plugin.Method.getVersion() + ")");
+				this.plugin.console.info("Payment method found (" + this.plugin.Method.getName() + " version: " + this.plugin.Method.getVersion() + ")");
 				this.plugin.foundEconomy();
 			}
 		}
@@ -64,14 +64,14 @@ public class BankAccountPluginListener extends ServerListener {
 			if (test != null) {
 				((Permissions)test).getDatabase();
 				this.plugin.settings.Permissions = ((Permissions)test).getHandler();
-				this.plugin.consoleInfo("Established connection with " + plugin + "!");
+				this.plugin.console.info("Established connection with " + plugin + "!");
 			}
 		}
 		if (this.plugin.settings.GroupManager == null && plugin.equalsIgnoreCase("GroupManager") && this.plugin.settings.UseGroupManager) {
 			Plugin test = checkPlugin("GroupManager");
 			if (test != null) {
 				this.plugin.settings.GroupManager = (GroupManager)test;
-				this.plugin.consoleInfo("Established connection with " + plugin + "!");
+				this.plugin.console.info("Established connection with " + plugin + "!");
 				if (this.plugin.settings.checkJobId > 0) {
 					this.plugin.getServer().getScheduler().cancelTask(this.plugin.settings.checkJobId);
 				}

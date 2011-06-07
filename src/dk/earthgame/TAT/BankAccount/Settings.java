@@ -122,7 +122,9 @@ public class Settings {
 		//Area
 		Areas = config.getBoolean("Areas.Active",false);
 		AreaWandId = config.getInt("Areas.AreaWandid",339);
+		/* FEATURE: Multiple banks
 		MultiBanks = config.getBoolean("Areas.MultipleBanks", false);
+		*/
 		//Loan
 		plugin.LoanSystem.LoanActive = config.getBoolean("Loan.Active", false);
 		plugin.LoanSystem.Fixed_rate = config.getDouble("Loan.Fixed-rate", 0);
@@ -144,7 +146,7 @@ public class Settings {
 		Debug_Interest = config.getBoolean("Debug.Interest", true);
 		Debug_Loan = config.getBoolean("Debug.Loan", true);
 		
-		plugin.consoleInfo("Properties Loaded");
+		plugin.console.info("Properties Loaded");
 		try {
 			if (UseMySQL) {
 				Class.forName("com.mysql.jdbc.Driver");
@@ -163,16 +165,16 @@ public class Settings {
 			try {
 				if (UseMySQL) {
 					stmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_UPDATABLE);
-					plugin.consoleInfo("Connected to MySQL");
+					plugin.console.info("Connected to MySQL");
 				} else {
 					stmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_READ_ONLY);
-					plugin.consoleInfo("Connected to SQLite");
+					plugin.console.info("Connected to SQLite");
 				}
 				boolean checkAccount = false;
 				boolean checkArea = false;
 				boolean checkLoan = false;
 				boolean checkTransaction = false;
-				boolean checkBanks = false;
+				//boolean checkBanks = false;
 				try {
 					ResultSet tables = con.getMetaData().getTables(null, null, null, null);
 					while (tables.next()) {
@@ -186,19 +188,19 @@ public class Settings {
 						} else if (tablename.equalsIgnoreCase(SQL_transaction_table)) {
 							checkTransaction = true;
 						} else if (tablename.equalsIgnoreCase(SQL_banks_table)) {
-							checkBanks = true;
+							//checkBanks = true;
 						}
 					}
 				} catch (SQLException e3) {
-					plugin.consoleWarning("Couldn't get tables existing! Running as if all exists");
-					plugin.consoleWarning(e3.toString());
+					plugin.console.warning("Couldn't get tables existing! Running as if all exists");
+					plugin.console.warning(e3.toString());
 				}
 				try {
 					if (!checkAccount) {
 						//ACCOUNT TABLE
 						String query = "CREATE TABLE IF NOT EXISTS `" + SQL_account_table + "` (`accountname` VARCHAR( 255 ) NOT NULL , `owners` LONGTEXT NOT NULL, `users` LONGTEXT NOT NULL, `password` VARCHAR( 255 ) NULL DEFAULT '', `amount` DOUBLE( 255,2 ) NOT NULL DEFAULT '0')";
 						if (UseMySQL) {
-							plugin.consoleWarning("Created table " + SQL_account_table);
+							plugin.console.warning("Created table " + SQL_account_table);
 							query = "CREATE TABLE IF NOT EXISTS `" + SQL_account_table + "` (`id` INT( 255 ) NOT NULL AUTO_INCREMENT PRIMARY KEY , `accountname` VARCHAR( 255 ) NOT NULL , `owners` LONGTEXT NOT NULL, `users` LONGTEXT NOT NULL, `password` VARCHAR( 255 ) NULL DEFAULT '', `amount` DOUBLE( 255,2 ) NOT NULL DEFAULT '0')";
 						}
 						stmt.execute(query);
@@ -207,7 +209,7 @@ public class Settings {
 						//AREA TABLE
 						String query = "CREATE TABLE IF NOT EXISTS `" + SQL_area_table + "` (`areaname` VARCHAR( 255 ) NOT NULL , `world` VARCHAR( 255 ) NOT NULL , `x1` INT( 255 ) NOT NULL , `y1` INT( 255 ) NOT NULL , `z1` INT( 255 ) NOT NULL , `x2` INT( 255 ) NOT NULL , `y2` INT( 255 ) NOT NULL , `z2` INT( 255 ) NOT NULL)";
 						if (UseMySQL) {
-							plugin.consoleWarning("Created table " + SQL_area_table);
+							plugin.console.warning("Created table " + SQL_area_table);
 							query = "CREATE TABLE IF NOT EXISTS `" + SQL_area_table + "` (`id` INT( 255 ) NOT NULL AUTO_INCREMENT PRIMARY KEY , `areaname` VARCHAR( 255 ) NOT NULL , `world` VARCHAR( 255 ) NOT NULL , `x1` INT( 255 ) NOT NULL , `y1` INT( 255 ) NOT NULL , `z1` INT( 255 ) NOT NULL , `x2` INT( 255 ) NOT NULL , `y2` INT( 255 ) NOT NULL , `z2` INT( 255 ) NOT NULL)";
 						}
 						stmt.execute(query);
@@ -216,7 +218,7 @@ public class Settings {
 						//LOAN TABLE
 						String query = "CREATE TABLE IF NOT EXISTS `" + SQL_loan_table + "` (`player` VARCHAR( 255 ) NOT NULL, `totalamount` DOUBLE( 255,2 ) NOT NULL, `remaining` DOUBLE( 255,2 ) NOT NULL, `timepayment` INT( 255 ) NOT NULL, `timeleft` INT( 255 ) NOT NULL, `part` INT( 255 ) NOT NULL, `parts` INT( 255 ) NOT NULL)";
 						if (UseMySQL) {
-							plugin.consoleWarning("Created table " + SQL_loan_table);
+							plugin.console.warning("Created table " + SQL_loan_table);
 							query = "CREATE TABLE IF NOT EXISTS `" + SQL_loan_table + "` (`id` INT( 255 ) NOT NULL AUTO_INCREMENT PRIMARY KEY, `player` VARCHAR( 255 ) NOT NULL, `totalamount` DOUBLE( 255,2 ) NOT NULL, `timeleft` INT( 255 ) NOT NULL, `part` INT( 255 ) NOT NULL, `parts` INT( 255 ) NOT NULL)";
 						}
 						stmt.execute(query);
@@ -225,74 +227,77 @@ public class Settings {
 						//TRANSACTION TABLE
 						String query = "CREATE TABLE IF NOT EXISTS `" + SQL_transaction_table + "` (`player` VARCHAR( 255 ) NOT NULL, `account` VARCHAR( 255 ) NULL, `type` INT( 255 ) NOT NULL, `amount` DOUBLE( 255,2 ) NULL, `time` INT( 255 ) NOT NULL)";
 						if (UseMySQL) {
-							plugin.consoleWarning("Created table " + SQL_transaction_table);
+							plugin.console.warning("Created table " + SQL_transaction_table);
 							query = "CREATE TABLE IF NOT EXISTS `" + SQL_transaction_table + "` (`id` INT( 255 ) NOT NULL AUTO_INCREMENT PRIMARY KEY , `player` VARCHAR( 255 ) NOT NULL, `account` VARCHAR( 255 ) NULL, `type` INT( 255 ) NOT NULL, `amount` DOUBLE( 255,2 ) NULL, `time` INT( 255 ) NOT NULL)";
 						}
 						stmt.execute(query);
 					}
+					/*
 					if (!checkBanks && MultiBanks) {
 						//BANKS TABLE
 						String query = "";
 						if (UseMySQL) {
-							plugin.consoleWarning("Created table " + SQL_banks_table);
+							plugin.console.warning("Created table " + SQL_banks_table);
 							query = "";
 						}
 						stmt.execute(query);
 					}
-					
+					*/
 					//Run upgrades of SQL tables
 					new Upgrade(plugin, UseMySQL);
 				} catch (SQLException e3) {
 					if (!checkAccount) {
-						plugin.consoleWarning("Failed to find and create table " + SQL_account_table);
+						plugin.console.warning("Failed to find and create table " + SQL_account_table);
 					}
 					if (!checkArea && Areas) {
-						plugin.consoleWarning("Failed to find and create table " + SQL_area_table);
-						plugin.consoleInfo("Disabled areas!");
+						plugin.console.warning("Failed to find and create table " + SQL_area_table);
+						plugin.console.info("Disabled areas!");
 						Areas = false;
 					}
 					if (!checkLoan && plugin.LoanSystem.LoanActive) {
-						plugin.consoleWarning("Failed to find and create table " + SQL_loan_table);
-						plugin.consoleInfo("Disabled loans!");
+						plugin.console.warning("Failed to find and create table " + SQL_loan_table);
+						plugin.console.info("Disabled loans!");
 						plugin.LoanSystem.LoanActive = false;
 						if (plugin.LoanSystem.running) {
 							plugin.LoanSystem.shutdownRunner();
 						}
 					}
 					if (!checkTransaction && Transactions) {
-						plugin.consoleWarning("Failed to find and create table " + SQL_transaction_table);
-						plugin.consoleInfo("Disabled transactions!");
+						plugin.console.warning("Failed to find and create table " + SQL_transaction_table);
+						plugin.console.info("Disabled transactions!");
 						Transactions = false;
 					}
+					/*
 					if (!checkBanks && MultiBanks) {
-						plugin.consoleWarning("Failed to find and create table " + SQL_banks_table);
-						plugin.consoleInfo("Disabled multiple banks!");
+						plugin.console.warning("Failed to find and create table " + SQL_banks_table);
+						plugin.console.info("Disabled multiple banks!");
 						MultiBanks = false;
 					}
-					plugin.consoleWarning(e3.toString());
-					plugin.consoleInfo("Shuting down");
+					*/
+					plugin.console.warning(e3.toString());
+					plugin.console.info("Shuting down");
 					plugin.getServer().getPluginManager().disablePlugin(plugin);
 					return false;
 				}
 			} catch (SQLException e2) {
 				if (UseMySQL) {
-					plugin.consoleWarning("Failed to connect to MySQL");
+					plugin.console.warning("Failed to connect to MySQL");
 				} else {
-					plugin.consoleWarning("Failed to connect to SQLite");
+					plugin.console.warning("Failed to connect to SQLite");
 				}
-				plugin.consoleWarning(e2.toString());
-				plugin.consoleInfo("Shuting down");
+				plugin.console.warning(e2.toString());
+				plugin.console.info("Shuting down");
 				plugin.getServer().getPluginManager().disablePlugin(plugin);
 				return false;
 			}
 		} catch (SQLException e1) {
 			if (UseMySQL) {
-				plugin.consoleWarning("Failed to connect to MySQL");
+				plugin.console.warning("Failed to connect to MySQL");
 			} else {
-				plugin.consoleWarning("Failed to connect to SQLite");
+				plugin.console.warning("Failed to connect to SQLite");
 			}
-			plugin.consoleWarning(e1.toString());
-			plugin.consoleInfo("Shuting down");
+			plugin.console.warning(e1.toString());
+			plugin.console.info("Shuting down");
 			plugin.getServer().getPluginManager().disablePlugin(plugin);
 			return false;
 		}
@@ -315,10 +320,10 @@ public class Settings {
 						output.write(buf, 0, length);
 					}
 					
-					plugin.consoleInfo("Default config file created!");
+					plugin.console.info("Default config file created!");
 				} catch (IOException e) {
 					e.printStackTrace();
-					plugin.consoleInfo("Error creating config file!");
+					plugin.console.info("Error creating config file!");
 				} finally {
 					try {
 						if (input != null)
@@ -332,7 +337,7 @@ public class Settings {
 				}
 			}
 		} else {
-			plugin.consoleInfo("Config file found!");
+			plugin.console.info("Config file found!");
 		}
 	}
 }

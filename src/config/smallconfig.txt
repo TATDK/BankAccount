@@ -27,6 +27,7 @@ Permissions:
 Areas:
     Active: true
     AreaWandId: 339
+    MultipleBanks: false
 Interest:
     Time: 5
     Amount: 0.1
