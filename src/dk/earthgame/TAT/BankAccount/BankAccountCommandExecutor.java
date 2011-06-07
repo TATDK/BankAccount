@@ -485,9 +485,9 @@ public class BankAccountCommandExecutor implements CommandExecutor {
 	 * Show help to a player
 	 * 
 	 * @param player - The player
-	 * @param Page - Page number
+	 * @param page - Page number
 	 * @since 0.5
-	 * @see showHelp(CommandSender sender, int page);
+	 * @see #showHelp(CommandSender sender, int page)
 	 */
 	public void showHelp(Player player, int page) {
 		List<String> commands = new ArrayList<String>();
@@ -606,7 +606,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
 	 * @param sender - The CommandSender (Player)
 	 * @param page - Page number
 	 * @since 0.5
-	 * @see showHelp(Player player, int page);
+	 * @see #showHelp(Player player, int page)
 	 */
 	public void showHelp(CommandSender sender, int page) { showHelp((Player)sender,page); }
 }
