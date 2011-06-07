@@ -1,8 +1,8 @@
 CREATE TABLE `bankaccounts` (
   `id` INT( 255 ) NOT NULL AUTO_INCREMENT PRIMARY KEY ,
   `accountname` VARCHAR( 255 ) NOT NULL ,
-  `owners` LONGTEXT NOT NULL DEFAULT '',
-  `users` LONGTEXT NOT NULL DEFAULT '',
+  `owners` LONGTEXT NOT NULL,
+  `users` LONGTEXT NOT NULL,
   `password` VARCHAR( 255 ) NULL DEFAULT '',
   `amount` DOUBLE( 255,2 ) NOT NULL DEFAULT '0'
 )
