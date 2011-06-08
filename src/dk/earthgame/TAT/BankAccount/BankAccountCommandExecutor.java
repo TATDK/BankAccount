@@ -130,10 +130,13 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   					}
   					
   					List<String> accounts = plugin.accountList((Player)sender);
+  					if (accounts.size() > 0) {
+  						sender.sendMessage("ATM: You have " + ChatColor.BLUE + accounts.size() + ChatColor.WHITE + " account" + (accounts.size() == 1?"":"s"));
+  					}
+  					
   					int tmpWidth = 0;
   					String output = "";
   					for (String account : accounts) {
-  						plugin.console.info(account);
   						if (tmpWidth == 0) {
   							tmpWidth = plugin.font.stringWidth(account);
   							output = account;

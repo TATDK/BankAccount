@@ -41,6 +41,8 @@ public class Settings {
 	String MySQL_database;
 	//SQL
 	public Connection con;
+	public java.sql.Statement selectStmt;
+	public java.sql.Statement updateStmt;
 	public java.sql.Statement stmt;
 	public String SQL_account_table;
 	String SQL_area_table;
@@ -168,9 +170,13 @@ public class Settings {
 			}
 			try {
 				if (UseMySQL) {
+					selectStmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_UPDATABLE);
+					updateStmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_UPDATABLE);
 					stmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_UPDATABLE);
 					plugin.console.info("Connected to MySQL");
 				} else {
+					selectStmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_READ_ONLY);
+					updateStmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_READ_ONLY);
 					stmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_READ_ONLY);
 					plugin.console.info("Connected to SQLite");
 				}

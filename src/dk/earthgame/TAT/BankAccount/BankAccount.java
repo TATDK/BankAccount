@@ -478,24 +478,30 @@ public class BankAccount extends JavaPlugin {
 	 */
 	public List<String> accountList(String player) {
 		List<String> accounts = new ArrayList<String>();
-		ResultSet rs;
+		ResultSet rs = null;
 		try {
-			rs = settings.stmt.executeQuery("SELECT `accountname` FROM `" + settings.SQL_account_table + "` WHERE `owners` LIKE '%" + player + "%' OR `users` LIKE '%" + player + "%'");
+			rs = settings.selectStmt.executeQuery("SELECT `accountname` FROM `" + settings.SQL_account_table + "` WHERE `owners` LIKE '%" + player + "%' OR `users` LIKE '%" + player + "%'");
 			while (rs.next()) {
-				console.info(rs.findColumn("accountname"));
+				String accountname = rs.getString("accountname");
 				//Make sure it's not just a part of the name
-				if (accessAccount(rs.getString(1),player,false)) {
-					accounts.add(rs.getString(1));
+				if (accessAccount(accountname,player,false)) {
+					accounts.add(accountname);
 				}
 			}
+		} catch (SQLException e) {
+			if (!e.getMessage().equalsIgnoreCase(null))
+				console.warning("Error #22-2: " + e.getMessage());
+			else
+				console.warning("Error #22-1: " + e.getErrorCode() + " - " + e.getSQLState());
+		}
+		//Be sure that rs is closed
+		try {
 			rs.close();
 		} catch (SQLException e) {
 			if (!e.getMessage().equalsIgnoreCase(null))
 				console.warning("Error #22-2: " + e.getMessage());
 			else
 				console.warning("Error #22-1: " + e.getErrorCode() + " - " + e.getSQLState());
-		} catch (Exception e) {
-			console.warning(e.getMessage());
 		}
 		return accounts;
 	}
