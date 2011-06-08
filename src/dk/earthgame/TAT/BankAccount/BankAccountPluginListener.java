@@ -9,6 +9,10 @@ import org.bukkit.plugin.Plugin;
 import com.nijikokun.bukkit.Permissions.Permissions;
 import com.nijikokun.register.payment.Methods;
 
+/**
+ * BankAccount hook with other plugins
+ * @author TAT
+ */
 public class BankAccountPluginListener extends ServerListener {
 	private BankAccount plugin;
 	Methods Methods;

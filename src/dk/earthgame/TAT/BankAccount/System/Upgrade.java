@@ -5,6 +5,10 @@ import java.sql.SQLException;
 
 import dk.earthgame.TAT.BankAccount.BankAccount;
 
+/**
+ * Upgrade functions of BankAccount
+ * @author TAT
+ */
 public class Upgrade {
 	/**
 	 * SHOULD ONLY BE USED BY BANKACCOUNT

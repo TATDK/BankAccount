@@ -2,7 +2,6 @@ package dk.earthgame.TAT.BankAccount.System;
 
 /**
  * BankAccount commands
- * 
  * @author TAT
  * @since 0.5
  */

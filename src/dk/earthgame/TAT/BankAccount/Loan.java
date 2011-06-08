@@ -13,7 +13,10 @@ import com.nijikokun.register.payment.Method.MethodAccount;
 
 import dk.earthgame.TAT.BankAccount.System.TransactionTypes;
 
-
+/**
+ * Class for every single loan
+ * @author TAT
+ */
 public class Loan {
 	private BankAccount plugin;
 	private LoanSystem system;

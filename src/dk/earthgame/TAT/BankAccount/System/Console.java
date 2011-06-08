@@ -4,6 +4,10 @@ import java.util.logging.Logger;
 
 import org.bukkit.plugin.PluginDescriptionFile;
 
+/**
+ * BankAccount interaction with console logs
+ * @author TAT
+ */
 public class Console {
 	protected final Logger log = Logger.getLogger("Minecraft");
 	private PluginDescriptionFile pdfFile;

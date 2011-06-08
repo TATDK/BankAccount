@@ -8,6 +8,10 @@ import org.bukkit.event.entity.EntityTargetEvent;
 import org.martin.bukkit.npclib.*;
 import org.martin.bukkit.npclib.NPCEntityTargetEvent.NPCTargetReason;
 
+/**
+ * NPCs behavior on player interaction
+ * @author TAT
+ */
 public class BankAccountNPC extends EntityListener {
 	@SuppressWarnings("unused")
 	private BankAccount plugin;
@@ -17,7 +21,6 @@ public class BankAccountNPC extends EntityListener {
 	}
 
 	public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
-
 		if (event.getEntity() instanceof NPCEntity) {
 			if (event.getDamager() instanceof Player) {
 				NPCEntity npc = (NPCEntity)event.getEntity();
@@ -34,7 +37,6 @@ public class BankAccountNPC extends EntityListener {
 
 	@Override
 	public void onEntityTarget(EntityTargetEvent event) {
-
 		if (event instanceof NPCEntityTargetEvent) {
 			NPCEntityTargetEvent nevent = (NPCEntityTargetEvent)event;
 

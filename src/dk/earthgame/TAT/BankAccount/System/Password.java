@@ -8,7 +8,7 @@ import java.sql.SQLException;
 import dk.earthgame.TAT.BankAccount.BankAccount;
 
 /**
- * Class for encrypt of passwords
+ * Class for password functions
  * 
  * @author TAT
  */

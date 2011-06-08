@@ -17,6 +17,10 @@ import com.nijiko.permissions.PermissionHandler;
 
 import dk.earthgame.TAT.BankAccount.System.Upgrade;
 
+/**
+ * BankAccount settings
+ * @author TAT
+ */
 public class Settings {
 	private BankAccount plugin;
 	

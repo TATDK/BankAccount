@@ -2,7 +2,6 @@ package dk.earthgame.TAT.BankAccount.System;
 
 /**
  * BankAccount permissionnodes
- * 
  * @author TAT
  * @since 0.5
  */

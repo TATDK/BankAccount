@@ -14,6 +14,10 @@ import dk.earthgame.TAT.BankAccount.System.PermissionNodes;
 import dk.earthgame.TAT.BankAccount.System.TransactionTypes;
 import dk.earthgame.TAT.BankAccount.System.UserSaves;
 
+/**
+ * BankAccount executor for commands
+ * @author TAT
+ */
 public class BankAccountCommandExecutor implements CommandExecutor {
 	private BankAccount plugin;
 	
@@ -56,7 +60,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   						return true;
   					}
   					
-  					if (plugin.stringWidth(args[1]) > 150) {
+  					if (plugin.font.stringWidth(args[1]) > 150) {
   						sender.sendMessage("ATM: " + ChatColor.RED + "Accountname to long");
   					}
   					if (plugin.accountExists(args[1])) {
@@ -131,12 +135,12 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   					for (String account : accounts) {
   						plugin.console.info(account);
   						if (tmpWidth == 0) {
-  							tmpWidth = plugin.stringWidth(account);
+  							tmpWidth = plugin.font.stringWidth(account);
   							output = account;
   						} else {
   							while (tmpWidth < 160) {
   								output += " ";
-  								tmpWidth += plugin.stringWidth(" ");
+  								tmpWidth += plugin.font.stringWidth(" ");
   							}
   							output += account;
   	  						sender.sendMessage(output);

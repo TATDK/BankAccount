@@ -2,7 +2,6 @@ package dk.earthgame.TAT.BankAccount.System;
 
 /**
  * Transaction types used by BankAccount
- * 
  * @author TAT
  * @since 0.5
  */

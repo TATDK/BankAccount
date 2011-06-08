@@ -4,7 +4,6 @@ import org.bukkit.Location;
 
 /**
  * Saved informations of an user
- * 
  * @author TAT
  * @since 0.5
  */
