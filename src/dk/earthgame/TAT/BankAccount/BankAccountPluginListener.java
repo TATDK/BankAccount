@@ -19,7 +19,7 @@ public class BankAccountPluginListener extends ServerListener {
 
 	public BankAccountPluginListener(BankAccount plugin) {
 	    this.plugin = plugin;
-	    this.Methods = new Methods();
+	    this.Methods = new Methods("iConomy");
 	}
 	
 	Plugin checkPlugin(String pluginname) {

@@ -1,3 +1,11 @@
+/*****************Register*****************/
+
+Gotten from the Bukkit forum.
+http://forums.bukkit.org/threads/Register.16849/
+
+Original source code available from GitHub
+https://github.com/iConomy/Register
+
 /******************NPClib******************/
 
 Gotten from the Bukkit forum.
