@@ -21,7 +21,6 @@ import dk.earthgame.TAT.BankAccount.BankAccount;
  * @author martin
  */
 public class NPCManager {
-
 	private HashMap<String, NPCEntity> npcs = new HashMap<String, NPCEntity>();
 	private BServer server;
 	private BankAccount plugin;

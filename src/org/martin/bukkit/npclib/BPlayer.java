@@ -15,7 +15,6 @@ import org.bukkit.entity.Player;
  * @author martin
  */
 public class BPlayer {
-
 	private CraftPlayer cPlayer;
 	private EntityPlayer ePlayer;
 	
