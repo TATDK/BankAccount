@@ -18,6 +18,12 @@
     <url>http://earthgame.dk:8080</url>
   </ciManagement>
   
+  <repositories>
+  	<repository>
+  		<id>intern-site</id>
+  		<url>http://www.earthgame.dk/artifact/</url>
+  	</repository>
+  </repositories>
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
