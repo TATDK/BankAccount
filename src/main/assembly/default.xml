@@ -16,9 +16,17 @@
   </files>
   <fileSets>
     <fileSet>
+      <directory>ZipInclude</directory>
+      <outputDirectory>/</outputDirectory>
       <includes>
-        <include>src/main/resources/Readme/changelog.txt</include>
-        <include>ZipInclude/*</include>
+        <include>*</include>
+      </includes>
+    </fileSet>
+    <fileSet>
+      <directory>src/main/resources/Readme</directory>
+      <outputDirectory>/</outputDirectory>
+      <includes>
+        <include>changelog.txt</include>
       </includes>
     </fileSet>
   </fileSets>
