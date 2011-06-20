@@ -126,14 +126,13 @@
         </configuration>
       </plugin>
 
-<!-- Assembly of not-released is currently off
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-release-plugin</artifactId>
         <version>2.1</version>
         <configuration>
-          <preparationGoals>assembly:assembly</preparationGoals>
-          <goals>assembly:assembly</goals>
+          <preparationGoals>assembly:simple</preparationGoals>
+          <goals>assembly:simple</goals>
         </configuration>
       </plugin>
       
@@ -144,7 +143,8 @@
           <descriptor>${basedir}/src/main/assembly/default.xml</descriptor>
         </configuration>
       </plugin>
--->
     </plugins>
+    <filters>
+    </filters>
   </build>
 </project>
