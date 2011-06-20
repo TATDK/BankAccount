@@ -1,0 +1,16 @@
+*****************************
+    UPGRADE 0.5 => 0.5.1
+*****************************
+
+***** AUTOMATIC UPGRADE *****
+Add a new file "SQLUpgrade051" in /plugins/BankAccount
+It doesn't need any content, it just need to exists
+Then run/restart the server, the server will now update your MySQL or SQLite to v.0.5.1
+The server will try to delete the file after upgrade, if it isn't deleted, please do this yourself.
+
+****** MANUAL UPGRADE *******
+--- SQL ---
+ALTER TABLE  `bankaccounts` ADD  `cleanname` LONGTEXT NOT NULL AFTER  `accountname`
+
+-- OTHER --
+Manual add a lowercase version of accountname in cleanname for every account

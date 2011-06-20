@@ -27,6 +27,7 @@ public class Settings {
 	Configuration config;
 	int interestTime;
 	double interestAmount;
+	int interestNeededOnline;
 	double interestOfflineAmount;
 	int interestJobId;
 	int checkJobId;
@@ -123,6 +124,16 @@ public class Settings {
 		DepositAll = config.getBoolean("Permissions.DepositAll", false);
 		//Interest
 		interestAmount = config.getDouble("Interest.Amount", 0);
+		interestNeededOnline = config.getInt("Interest.Online-limit", 1);
+		if (interestNeededOnline < 1) {
+			interestNeededOnline = 1;
+			plugin.console.warning("Interest -> Online-limit must be between 1 and 100");
+			plugin.console.info("Interest -> Online-limit set to 1");
+		} else if (interestNeededOnline > 100) {
+			interestNeededOnline = 100;
+			plugin.console.warning("Interest -> Online-limit must be between 1 and 100");
+			plugin.console.info("Interest -> Online-limit set to 100");
+		}
 		interestOfflineAmount = config.getDouble("Interest.Offline-amount", 0);
 		interestTime = config.getInt("Interest.Time", 0);
 		//Area
@@ -172,12 +183,12 @@ public class Settings {
 				if (UseMySQL) {
 					selectStmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_UPDATABLE);
 					updateStmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_UPDATABLE);
-					stmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_UPDATABLE);
+					stmt       = con.createStatement(ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_UPDATABLE);
 					plugin.console.info("Connected to MySQL");
 				} else {
 					selectStmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_READ_ONLY);
 					updateStmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_READ_ONLY);
-					stmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_READ_ONLY);
+					stmt       = con.createStatement(ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_READ_ONLY);
 					plugin.console.info("Connected to SQLite");
 				}
 				boolean checkAccount = false;
@@ -318,7 +329,7 @@ public class Settings {
 		String name = "config.yml";
 		File actual = new File(plugin.getDataFolder(), name);
 		if (!actual.exists()) {
-			InputStream input = BankAccount.class.getResourceAsStream("/config/" + name);
+			InputStream input = BankAccount.class.getResourceAsStream("/Config/" + name);
 			if (input != null) {
 				FileOutputStream output = null;
 

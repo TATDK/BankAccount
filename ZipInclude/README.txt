@@ -1,7 +1,10 @@
+BankAccount by TAT
+https://github.com/TATDK/BankAccount
+
 *****************************
        Requirements
 *****************************
-iConomy (minimum v. 4.1)
+iConomy 4/5, BOSEconomy or Essentials Economy
 mysql-connector-java-bin (included)
 sqlitejdbc-v056 (included)
 
@@ -9,7 +12,7 @@ sqlitejdbc-v056 (included)
        How to install
 *****************************
 FIRST TIME INSTALLMENT:
-    Copy BankAccount.jar to your plugin folder in the root folder of your MineCraft server.
+    Copy BankAccount.jar into your plugin folder in the root folder of your MineCraft server.
     Copy mysql-connector-java-bin.jar and sqlitejdbc-v056.jar into your Java ext folder.
     Windows default folder: C:\Program Files\Java\jre6\lib\ext (If not found, try this: C:\Program Files (x86)\Java\jre6\lib\ext)
     Linux Ubuntu default folder: /usr/lib/jvm/java-6-openjdk/jre/lib/ext/

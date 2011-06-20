@@ -2,13 +2,18 @@ Plugin: BankAccount
 Author: TAT
 CHANGELOG
 
-0.5.1DEV
+0.5.1
 Added permissionnode for list command (Included in basic permission)
 Added possibility to disable interest and loan debug output
+Accounts no longer case-sensitive
 Code clean-up
-Changed to use Register
-- Added support for iConomy 4/5, BOSEconomy and Essentials Economy
-Updated to CraftBukkit #818
+Changed to use Register [GitHub Commit: 2071011cca5d89940f310dc39273be8bb7e517bc]
+* Now supports following economy plugins (iConomy preferred)
+  * iConomy 4
+  * iConomy 5
+  * BOSEconomy
+  * Essentials Economy
+Updated to CraftBukkit #860
 Removed response to multiple banks config
 API changes
 

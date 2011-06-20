@@ -87,24 +87,53 @@ public class BankAccount extends JavaPlugin {
 							while (accounts.next()) {
 								double accountbalance = accounts.getDouble("amount");
 								String[] owners = accounts.getString("owners").split(";");
-								boolean online = false;
+								String[] users = accounts.getString("users").split(";");
+								int neededOnline = (owners.length+users.length)/settings.interestNeededOnline;
+								int online = 0;
+								boolean accountOnline = false;
 								if (owners.length > 1) {
 									for (String o : owners) {
 										if (getServer().getPlayer(o) != null) {
 											if (getServer().getPlayer(o).isOnline()) {
-												online = true;
+												online++;
+												if (online > neededOnline) {
+													accountOnline = true;
+													break;
+												}
 											}
 										}
 									}
 								} else {
 									if (getServer().getPlayer(owners[0]) != null) {
 										if (getServer().getPlayer(owners[0]).isOnline()) {
-											online = true;
+											online++;
 										}
 									}
 								}
+								if (users.length > 1) {
+									for (String u : users) {
+										if (getServer().getPlayer(u) != null) {
+											if (getServer().getPlayer(u).isOnline()) {
+												online++;
+												if (online > neededOnline) {
+													accountOnline = true;
+													break;
+												}
+											}
+										}
+									}
+								} else {
+									if (getServer().getPlayer(users[0]) != null) {
+										if (getServer().getPlayer(users[0]).isOnline()) {
+											online++;
+										}
+									}
+								}
+								if (online > neededOnline) {
+									accountOnline = true;
+								}
 								double interest;
-								if (online)
+								if (accountOnline)
 									interest = settings.interestAmount;
 								else
 									interest = settings.interestOfflineAmount;
@@ -121,30 +150,59 @@ public class BankAccount extends JavaPlugin {
 							accounts.close();
 						} else {
 							//SQLite
-							PreparedStatement prep = settings.con.prepareStatement("UPDATE `" + settings.SQL_account_table + "` SET `amount` = ? WHERE `accountname` = ?");
-							ResultSet accounts = settings.stmt.executeQuery("SELECT `accountname`, `amount`, `owners` FROM `" + settings.SQL_account_table + "`");
+							PreparedStatement prep = settings.con.prepareStatement("UPDATE `" + settings.SQL_account_table + "` SET `amount` = ? WHERE `cleanname` = ?");
+							ResultSet accounts = settings.updateStmt.executeQuery("SELECT `cleanname`, `amount`, `owners`, `users` FROM `" + settings.SQL_account_table + "`");
 							while (accounts.next()) {
-								String accountname = accounts.getString("accountname");
+								String accountname = accounts.getString("cleanname");
 								double accountbalance = accounts.getDouble("amount");
 								String[] owners = accounts.getString("owners").split(";");
-								boolean online = false;
+								String[] users = accounts.getString("users").split(";");
+								int neededOnline = (owners.length+users.length)/settings.interestNeededOnline;
+								int online = 0;
+								boolean accountOnline = false;
 								if (owners.length > 1) {
 									for (String o : owners) {
 										if (getServer().getPlayer(o) != null) {
 											if (getServer().getPlayer(o).isOnline()) {
-												online = true;
+												online++;
+												if (online > neededOnline) {
+													accountOnline = true;
+													break;
+												}
 											}
 										}
 									}
 								} else {
 									if (getServer().getPlayer(owners[0]) != null) {
 										if (getServer().getPlayer(owners[0]).isOnline()) {
-											online = true;
+											online++;
 										}
 									}
 								}
+								if (users.length > 1 && !accountOnline) {
+									for (String u : users) {
+										if (getServer().getPlayer(u) != null) {
+											if (getServer().getPlayer(u).isOnline()) {
+												online++;
+												if (online > neededOnline) {
+													accountOnline = true;
+													break;
+												}
+											}
+										}
+									}
+								} else {
+									if (getServer().getPlayer(users[0]) != null) {
+										if (getServer().getPlayer(users[0]).isOnline()) {
+											online++;
+										}
+									}
+								}
+								if (online > neededOnline) {
+									accountOnline = true;
+								}
 								double interest;
-								if (online)
+								if (accountOnline)
 									interest = settings.interestAmount;
 								else
 									interest = settings.interestOfflineAmount;
@@ -446,9 +504,9 @@ public class BankAccount extends JavaPlugin {
 		int id = 0;
 		try {
 			if (settings.UseMySQL) {
-				rs = settings.stmt.executeQuery("SELECT `id` FROM `" + settings.SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
+				rs = settings.stmt.executeQuery("SELECT `id` FROM `" + settings.SQL_account_table + "` WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
 			} else {
-				rs = settings.stmt.executeQuery("SELECT `rowid` FROM `" + settings.SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
+				rs = settings.stmt.executeQuery("SELECT `rowid` FROM `" + settings.SQL_account_table + "` WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
 			}
 			while (rs.next()) {
 				if (settings.UseMySQL) {
@@ -569,12 +627,12 @@ public class BankAccount extends JavaPlugin {
 				if (balance >= settings.Fee_Static) {
 					feePaid = settings.Fee_Static;
 					balance -= settings.Fee_Static;
-					account.set(balance);
 				} else {
 					return false;
 				}
 				feePaid += balance*(settings.Fee_Percentage/100);
 				balance -= balance*(settings.Fee_Percentage/100);
+				account.set(balance);
 				break;
 			}
 		}
@@ -586,7 +644,7 @@ public class BankAccount extends JavaPlugin {
 		}
 		
 		try {
-			settings.stmt.executeUpdate("INSERT INTO `" + settings.SQL_account_table + "` (`accountname`,`owners`,`users`,`amount`) VALUES ('" + accountname + "','" + players + "','','" + StartAmount + "')");
+			settings.stmt.executeUpdate("INSERT INTO `" + settings.SQL_account_table + "` (`accountname`,`cleanname`,`owners`,`users`,`amount`) VALUES ('" + accountname + "','" + accountname.toLowerCase() + "','" + players + "','','" + StartAmount + "')");
 			return true;
 		} catch(SQLException e) {
 			if (!e.getMessage().equalsIgnoreCase(null))
@@ -623,7 +681,7 @@ public class BankAccount extends JavaPlugin {
 				coloum = "users`, `owners";
 			}
 			ResultSet rs;
-			rs = settings.stmt.executeQuery("SELECT `" + coloum + "` FROM `" + settings.SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
+			rs = settings.stmt.executeQuery("SELECT `" + coloum + "` FROM `" + settings.SQL_account_table + "` WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
 			while(rs.next()) {
 				//Owners
 				String[] owners = rs.getString("owners").split(";");
@@ -665,7 +723,7 @@ public class BankAccount extends JavaPlugin {
 	public boolean accessAccount(String accountname,String player,boolean writeAccess) {
 		try {
 			ResultSet rs;
-			rs = settings.stmt.executeQuery("SELECT `users`, `owners` FROM `" + settings.SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
+			rs = settings.stmt.executeQuery("SELECT `users`, `owners` FROM `" + settings.SQL_account_table + "` WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
 			while(rs.next()) {
 				//Owners
 				String[] owners = rs.getString("owners").split(";");
@@ -708,7 +766,7 @@ public class BankAccount extends JavaPlugin {
 		try {
 			String newPlayers = player;
 			ResultSet rs;
-			rs = settings.stmt.executeQuery("SELECT `users` FROM `" + settings.SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
+			rs = settings.stmt.executeQuery("SELECT `users` FROM `" + settings.SQL_account_table + "` WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
 			while(rs.next()) {
 				String[] players = rs.getString("users").split(";");
 				for (String p : players) {
@@ -716,7 +774,7 @@ public class BankAccount extends JavaPlugin {
 				}
 			}
 			try {
-				settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `users` = '" + newPlayers + "' WHERE `accountname` = '" + accountname + "'");
+				settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `users` = '" + newPlayers + "' WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
 				return true;
 			} catch(SQLException e) {
 				if (!e.getMessage().equalsIgnoreCase(null))
@@ -746,7 +804,7 @@ public class BankAccount extends JavaPlugin {
 		try {
 			String newPlayers = "";
 			ResultSet rs;
-			rs = settings.stmt.executeQuery("SELECT `users` FROM `" + settings.SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
+			rs = settings.stmt.executeQuery("SELECT `users` FROM `" + settings.SQL_account_table + "` WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
 			while(rs.next()) {
 				String[] players = rs.getString("users").split(";");
 				for (String p : players) {
@@ -759,7 +817,7 @@ public class BankAccount extends JavaPlugin {
 				}
 			}
 			try {
-				settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `users` = '" + newPlayers + "' WHERE `accountname` = '" + accountname + "'");
+				settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `users` = '" + newPlayers + "' WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
 				return true;
 			} catch(SQLException e) {
 				if (!e.getMessage().equalsIgnoreCase(null))
@@ -789,7 +847,7 @@ public class BankAccount extends JavaPlugin {
 		try {
 			String newPlayers = player;
 			ResultSet rs;
-			rs = settings.stmt.executeQuery("SELECT `owners` FROM `" + settings.SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
+			rs = settings.stmt.executeQuery("SELECT `owners` FROM `" + settings.SQL_account_table + "` WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
 			while(rs.next()) {
 				String[] players = rs.getString("owners").split(";");
 				for (String p : players) {
@@ -797,7 +855,7 @@ public class BankAccount extends JavaPlugin {
 				}
 			}
 			try {
-				settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `owners` = '" + newPlayers + "' WHERE `accountname` = '" + accountname + "'");
+				settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `owners` = '" + newPlayers + "' WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
 				return true;
 			} catch(SQLException e) {
 				if (!e.getMessage().equalsIgnoreCase(null))
@@ -827,7 +885,7 @@ public class BankAccount extends JavaPlugin {
 		try {
 			String newPlayers = "";
 			ResultSet rs;
-			rs = settings.stmt.executeQuery("SELECT `owners` FROM `" + settings.SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
+			rs = settings.stmt.executeQuery("SELECT `owners` FROM `" + settings.SQL_account_table + "` WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
 			while(rs.next()) {
 				String[] players = rs.getString("owners").split(";");
 				for (String p : players) {
@@ -840,7 +898,7 @@ public class BankAccount extends JavaPlugin {
 				}
 			}
 			try {
-				settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `owners` = '" + newPlayers + "' WHERE `accountname` = '" + accountname + "'");
+				settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `owners` = '" + newPlayers + "' WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
 				return true;
 			} catch(SQLException e) {
 				if (!e.getMessage().equalsIgnoreCase(null))
@@ -867,7 +925,7 @@ public class BankAccount extends JavaPlugin {
 	 */
 	public boolean setPassword(String accountname,String password) {
 		try {
-			settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `password` = '" + password + "' WHERE `accountname` = '" + accountname + "'");
+			settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `password` = '" + password + "' WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
 			return true;
 		} catch(SQLException e) {
 			if (!e.getMessage().equalsIgnoreCase(null))
@@ -899,7 +957,7 @@ public class BankAccount extends JavaPlugin {
 					return false;
 				} else if (economyAccount.hasEnough(amount)) {
 					account += amount;
-					settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `amount` = '" + account + "' WHERE `accountname` = '" + accountname + "'");
+					settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `amount` = '" + account + "' WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
 					economyAccount.subtract(amount);
 					return true;
 				} else {
@@ -909,7 +967,7 @@ public class BankAccount extends JavaPlugin {
 				if (PasswordSystem.passwordCheck(accountname, password)) {
 					if ((account - amount) >= 0) {
 						account -= amount;
-						settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `amount` = '" + account + "' WHERE `accountname` = '" + accountname + "'");
+						settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `amount` = '" + account + "' WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
 						economyAccount.add(amount);
 						return true;
 					} else {
@@ -928,8 +986,8 @@ public class BankAccount extends JavaPlugin {
 					} else if ((account - amount) >= 0) {
 						account -= amount;
 						receiver_account += amount;
-						settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `amount` = '" + account + "' WHERE `accountname` = '" + accountname + "'");
-						settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `amount` = '" + receiver_account + "' WHERE `accountname` = '" + player + "'");
+						settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `amount` = '" + account + "' WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
+						settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `amount` = '" + receiver_account + "' WHERE `cleanname` = '" + player.toLowerCase() + "'");
 						return true;
 					} else {
 						return false;
@@ -963,7 +1021,7 @@ public class BankAccount extends JavaPlugin {
 			try {
 				MethodAccount economyAccount = Method.getAccount(player);
 				double accountBalance = getBalance(accountname);
-				settings.stmt.executeUpdate("DELETE FROM `" + settings.SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
+				settings.stmt.executeUpdate("DELETE FROM `" + settings.SQL_account_table + "` WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
 				economyAccount.add(accountBalance);
 				return true;
 			} catch(SQLException e) {
@@ -991,7 +1049,7 @@ public class BankAccount extends JavaPlugin {
 		try {
 			String output = "";
 			ResultSet rs;
-			rs = settings.stmt.executeQuery("SELECT `users` FROM `" + settings.SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
+			rs = settings.stmt.executeQuery("SELECT `users` FROM `" + settings.SQL_account_table + "` WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
 			while(rs.next()) {
 				String[] users = rs.getString("users").split(";");
 				for (String user : users) {
@@ -1024,7 +1082,7 @@ public class BankAccount extends JavaPlugin {
 		try {
 			String output = "";
 			ResultSet rs;
-			rs = settings.stmt.executeQuery("SELECT `owners` FROM `" + settings.SQL_account_table + "` WHERE `accountname` = '" + accountname + "'");
+			rs = settings.stmt.executeQuery("SELECT `owners` FROM `" + settings.SQL_account_table + "` WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
 			while(rs.next()) {
 				String[] owners = rs.getString("owners").split(";");
 				for (String owner : owners) {
@@ -1056,7 +1114,7 @@ public class BankAccount extends JavaPlugin {
 	public double getBalance(String accountname) {
 		try {
 			ResultSet rs;
-			rs = settings.stmt.executeQuery("SELECT `amount` FROM `" + settings.SQL_account_table + "` WHERE `accountname` = '" + accountname +"'");
+			rs = settings.stmt.executeQuery("SELECT `amount` FROM `" + settings.SQL_account_table + "` WHERE `cleanname` = '" + accountname.toLowerCase() +"'");
 			while (rs.next()) {
 				return rs.getDouble("amount");
 			}
@@ -1080,7 +1138,7 @@ public class BankAccount extends JavaPlugin {
 	 */
 	public boolean setBalance(double balance,String accountname) {
 		try {
-			settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `amount` = '" + balance + "' WHERE `accountname` = '" + accountname + "'");
+			settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `amount` = '" + balance + "' WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
 			return true;
 		} catch (SQLException e) {
 			if (!e.getMessage().equalsIgnoreCase(null))
@@ -1103,7 +1161,7 @@ public class BankAccount extends JavaPlugin {
 		double temp = getBalance(accountname);
 		temp += amount;
 		try {
-			settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `amount` = '" + temp + "' WHERE `accountname` = '" + accountname + "'");
+			settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `amount` = '" + temp + "' WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
 			return true;
 		} catch (SQLException e) {
 			if (!e.getMessage().equalsIgnoreCase(null))
@@ -1126,7 +1184,7 @@ public class BankAccount extends JavaPlugin {
 		double temp = getBalance(accountname);
 		temp -= amount;
 		try {
-			settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `amount` = '" + temp + "' WHERE `accountname` = '" + accountname + "'");
+			settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `amount` = '" + temp + "' WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
 			return true;
 		} catch (SQLException e) {
 			if (!e.getMessage().equalsIgnoreCase(null))

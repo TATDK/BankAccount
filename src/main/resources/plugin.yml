@@ -1,6 +1,6 @@
 name: BankAccount
 main: dk.earthgame.TAT.BankAccount.BankAccount
-version: 0.5.1DEV
+version: 0.5.1INDEV
 commands:
     account:
         description: Shared Bank Accounts

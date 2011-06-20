@@ -64,12 +64,14 @@ Areas:
 #Interest settings
 #    Time: Minutes between updates
 #    Amount: % of account balance added to every account
+#    Online-limit: % of users and owners that needs to be online to gain online interest
 #    Offline-amount: % of account balance added to every account when player is offline
 ##
 Interest:
     Time: 5
-    Amount: 0.1
-    Offline-amount: 0.05
+    Amount: 1
+    Online-limit: 1
+    Offline-amount: 0.5
 
 ##
 #Loan settings

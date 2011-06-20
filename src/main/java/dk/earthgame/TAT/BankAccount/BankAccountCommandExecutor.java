@@ -130,30 +130,30 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   					}
   					
   					List<String> accounts = plugin.accountList((Player)sender);
-  					if (accounts.size() > 0) {
-  						sender.sendMessage("ATM: You have " + ChatColor.BLUE + accounts.size() + ChatColor.WHITE + " account" + (accounts.size() == 1?"":"s"));
-  					}
   					
-  					int tmpWidth = 0;
-  					String output = "";
-  					for (String account : accounts) {
-  						if (tmpWidth == 0) {
-  							tmpWidth = plugin.font.stringWidth(account);
-  							output = account;
-  						} else {
-  							while (tmpWidth < 160) {
-  								output += " ";
-  								tmpWidth += plugin.font.stringWidth(" ");
-  							}
-  							output += account;
-  	  						sender.sendMessage(output);
-  	  						tmpWidth = 0;
-  	  						output = "";
-  						}
-  					}
-  					//If not all accounts is sent
-  					if (output != "") {
-  						sender.sendMessage(output);
+  					sender.sendMessage("ATM: You have " + ChatColor.BLUE + accounts.size() + ChatColor.WHITE + " account" + (accounts.size() == 1?"":"s"));
+  					if (accounts.size() > 0) {
+	  					int tmpWidth = 0;
+	  					String output = "";
+	  					for (String account : accounts) {
+	  						if (tmpWidth == 0) {
+	  							tmpWidth = plugin.font.stringWidth(account);
+	  							output = account;
+	  						} else {
+	  							while (tmpWidth < 160) {
+	  								output += " ";
+	  								tmpWidth += plugin.font.stringWidth(" ");
+	  							}
+	  							output += account;
+	  	  						sender.sendMessage(output);
+	  	  						tmpWidth = 0;
+	  	  						output = "";
+	  						}
+	  					}
+	  					//If not all accounts is sent
+	  					if (output != "") {
+	  						sender.sendMessage(output);
+	  					}
   					}
 //ADDUSER
   				} else if (args[0].equalsIgnoreCase("adduser") && args.length >= 3) {
