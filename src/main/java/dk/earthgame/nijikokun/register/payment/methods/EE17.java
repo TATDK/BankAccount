@@ -1,11 +1,11 @@
-package com.nijikokun.register.payment.methods;
+package dk.earthgame.nijikokun.register.payment.methods;
 
 import com.earth2me.essentials.Essentials;
 import com.earth2me.essentials.api.Economy;
 import com.earth2me.essentials.api.NoLoanPermittedException;
 import com.earth2me.essentials.api.UserDoesNotExistException;
 
-import com.nijikokun.register.payment.Method;
+import dk.earthgame.nijikokun.register.payment.Method;
 
 import org.bukkit.plugin.Plugin;
 

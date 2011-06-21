@@ -28,8 +28,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
 import org.anjocaido.groupmanager.GroupManager;
 
-import com.nijikokun.register.payment.Method;
-import com.nijikokun.register.payment.Method.MethodAccount;
 import com.nijikokun.bukkit.Permissions.Permissions;
 
 import dk.earthgame.TAT.BankAccount.Settings.FeeModes;
@@ -39,6 +37,8 @@ import dk.earthgame.TAT.BankAccount.System.PermissionNodes;
 import dk.earthgame.TAT.BankAccount.System.TransactionTypes;
 import dk.earthgame.TAT.BankAccount.System.UserSaves;
 import dk.earthgame.TAT.BankAccount.System.Console;
+import dk.earthgame.nijikokun.register.payment.Method;
+import dk.earthgame.nijikokun.register.payment.Method.MethodAccount;
 
 /**
  * BankAccount for Bukkit

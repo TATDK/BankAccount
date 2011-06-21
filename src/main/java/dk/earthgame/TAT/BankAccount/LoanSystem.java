@@ -9,9 +9,9 @@ import java.util.Map;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
-import com.nijikokun.register.payment.Method.MethodAccount;
 
 import dk.earthgame.TAT.BankAccount.System.TransactionTypes;
+import dk.earthgame.nijikokun.register.payment.Method.MethodAccount;
 
 /**
  * Class for control of every loan

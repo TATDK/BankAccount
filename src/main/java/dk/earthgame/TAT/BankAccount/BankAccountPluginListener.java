@@ -7,7 +7,8 @@ import org.bukkit.event.server.ServerListener;
 import org.bukkit.plugin.Plugin;
 
 import com.nijikokun.bukkit.Permissions.Permissions;
-import com.nijikokun.register.payment.Methods;
+
+import dk.earthgame.nijikokun.register.payment.Methods;
 
 /**
  * BankAccount hook with other plugins

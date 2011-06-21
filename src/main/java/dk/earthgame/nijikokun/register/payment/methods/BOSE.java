@@ -1,7 +1,8 @@
-package com.nijikokun.register.payment.methods;
+package dk.earthgame.nijikokun.register.payment.methods;
 
-import com.nijikokun.register.payment.Method;
 import cosine.boseconomy.BOSEconomy;
+import dk.earthgame.nijikokun.register.payment.Method;
+
 import org.bukkit.plugin.Plugin;
 
 public class BOSE implements Method {

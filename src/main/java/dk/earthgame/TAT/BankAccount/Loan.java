@@ -9,9 +9,9 @@ import java.sql.SQLException;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
-import com.nijikokun.register.payment.Method.MethodAccount;
 
 import dk.earthgame.TAT.BankAccount.System.TransactionTypes;
+import dk.earthgame.nijikokun.register.payment.Method.MethodAccount;
 
 /**
  * Class for every single loan

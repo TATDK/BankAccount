@@ -1,4 +1,4 @@
-package com.nijikokun.register.payment;
+package dk.earthgame.nijikokun.register.payment;
 
 import org.bukkit.plugin.Plugin;
 

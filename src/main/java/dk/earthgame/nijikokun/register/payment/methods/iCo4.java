@@ -1,9 +1,9 @@
-package com.nijikokun.register.payment.methods;
+package dk.earthgame.nijikokun.register.payment.methods;
 
 import com.nijiko.coelho.iConomy.iConomy;
 import com.nijiko.coelho.iConomy.system.Account;
 
-import com.nijikokun.register.payment.Method;
+import dk.earthgame.nijikokun.register.payment.Method;
 
 import org.bukkit.plugin.Plugin;
 

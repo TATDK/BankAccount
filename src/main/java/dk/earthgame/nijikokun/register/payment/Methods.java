@@ -1,4 +1,4 @@
-package com.nijikokun.register.payment;
+package dk.earthgame.nijikokun.register.payment;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -40,10 +40,10 @@ public class Methods {
     }
 
     private void _init() {
-        this.addMethod("iConomy", new com.nijikokun.register.payment.methods.iCo4());
-        this.addMethod("iConomy", new com.nijikokun.register.payment.methods.iCo5());
-        this.addMethod("BOSEconomy", new com.nijikokun.register.payment.methods.BOSE());
-        this.addMethod("Essentials", new com.nijikokun.register.payment.methods.EE17());
+        this.addMethod("iConomy", new dk.earthgame.nijikokun.register.payment.methods.iCo4());
+        this.addMethod("iConomy", new dk.earthgame.nijikokun.register.payment.methods.iCo5());
+        this.addMethod("BOSEconomy", new dk.earthgame.nijikokun.register.payment.methods.BOSE());
+        this.addMethod("Essentials", new dk.earthgame.nijikokun.register.payment.methods.EE17());
     }
 
     public Set<String> getDependencies() {
