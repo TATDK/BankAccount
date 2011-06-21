@@ -8,6 +8,7 @@
   
   <name>BankAccount</name>
   <description>Shared Bank Accounts</description>
+  <url>http://forums.bukkit.org/threads/BankAccount.7095/</url>
   
   <properties>
   	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -72,6 +73,7 @@
   		<groupId>org.bukkit</groupId>
   		<artifactId>craftbukkit</artifactId>
   		<version>0.0.1-SNAPSHOT</version>
+  		<scope>test</scope>
   	</dependency>
   </dependencies>
   
@@ -140,7 +142,17 @@
         <artifactId>maven-assembly-plugin</artifactId>
         <version>2.2-beta-2</version>
         <configuration>
+          <finalName>${artifactId}-${project.version}</finalName>
           <descriptor>${basedir}/src/main/assembly/default.xml</descriptor>
+        </configuration>
+      </plugin>
+      
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>2.2-beta-2</version>
+        <configuration>
+          <finalName>${artifactId}</finalName>
+          <descriptor>${basedir}/src/main/assembly/small.xml</descriptor>
         </configuration>
       </plugin>
     </plugins>
