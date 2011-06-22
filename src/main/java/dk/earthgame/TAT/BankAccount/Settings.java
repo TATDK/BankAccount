@@ -8,7 +8,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Map;
+import java.util.HashMap;
 
 import org.anjocaido.groupmanager.GroupManager;
 import org.bukkit.util.config.Configuration;
@@ -145,7 +145,7 @@ public class Settings {
 		//Loan
 		plugin.LoanSystem.LoanActive = config.getBoolean("Loan.Active", false);
 		plugin.LoanSystem.Fixed_rate = config.getDouble("Loan.Fixed-rate", 0);
-		plugin.LoanSystem.Rates = (Map<Double, Double>)config.getProperty("Loan.Rate");
+		plugin.LoanSystem.Rates = (HashMap<Double, Double>)config.getProperty("Loan.Rate");
 		plugin.LoanSystem.Max_amount = config.getDouble("Loan.Max-amount", 200);
 		plugin.LoanSystem.PaymentTime = config.getInt("Loan.Payment-time", 60);
 		plugin.LoanSystem.PaymentParts = config.getInt("Loan.Payment-parts", 3);

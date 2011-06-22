@@ -23,7 +23,7 @@ public class LoanSystem {
 	boolean running;
 	HashMap<String,Loan> Loans = new HashMap<String,Loan>();
 	double Fixed_rate;
-    Map<Double, Double> Rates = new HashMap<Double, Double>();
+    HashMap<Double, Double> Rates = new HashMap<Double, Double>();
 	double Max_amount;
 	int PaymentTime;
 	int PaymentParts;
