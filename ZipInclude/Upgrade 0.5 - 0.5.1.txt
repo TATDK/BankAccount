@@ -11,6 +11,4 @@ The server will try to delete the file after upgrade, if it isn't deleted, pleas
 ****** MANUAL UPGRADE *******
 --- SQL ---
 ALTER TABLE  `bankaccounts` ADD  `cleanname` LONGTEXT NOT NULL AFTER  `accountname`
-
--- OTHER --
-Manual add a lowercase version of accountname in cleanname for every account
+UPDATE `bankaccounts` SET `cleanname` = LOWER(`accountname`) WHERE `cleanname` = '';
