@@ -42,7 +42,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
 			}
 
 			//Are you in an area? (If areas are enabled)
-	  		if (plugin.settings.Areas) {
+	  		if (plugin.settings.Areas && args.length > 0) {
 	  			CommandList foundCommand = CommandList.valueOf(args[0].toUpperCase());
 	  			if (foundCommand != null) {
 	  				if (foundCommand.getRequireArea() && !plugin.inArea(((Player)sender).getWorld().getName(), ((Player)sender).getLocation())) {
