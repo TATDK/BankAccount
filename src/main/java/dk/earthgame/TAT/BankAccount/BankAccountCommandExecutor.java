@@ -34,25 +34,24 @@ public class BankAccountCommandExecutor implements CommandExecutor {
 		}
 		
 		String sendername = ((Player)sender).getName();
-		if (label.equalsIgnoreCase("account")) {
+		if (command.getName().equalsIgnoreCase("account")) {
 			//Do the player have access to use BankAccount
 			if (!plugin.playerPermission((Player)sender,PermissionNodes.ACCESS)) {
 				sender.sendMessage(ChatColor.DARK_RED + "You don't have access to use BankAccount");
 				return true;
 			}
 
-			//Are you in an area? (If areas are enabled)
-	  		if (plugin.settings.Areas && args.length > 0) {
-	  			CommandList foundCommand = CommandList.valueOf(args[0].toUpperCase());
-	  			if (foundCommand != null) {
-	  				if (foundCommand.getRequireArea() && !plugin.inArea(((Player)sender).getWorld().getName(), ((Player)sender).getLocation())) {
-	  					sender.sendMessage("ATM: You're not in bank area");
-	  					return true;
-	  				}
-	  			}
-  			}
-
 	  		if (args.length > 0) {
+	  			//Are you in an area? (If areas are enabled)
+		  		if (plugin.settings.Areas) {
+		  			CommandList foundCommand = CommandList.valueOf(args[0].toUpperCase());
+		  			if (foundCommand != null) {
+		  				if (foundCommand.getRequireArea() && !plugin.inArea(((Player)sender).getWorld().getName(), ((Player)sender).getLocation())) {
+		  					sender.sendMessage("ATM: You're not in bank area");
+		  					return true;
+		  				}
+		  			}
+	  			}
 //OPEN
   				if (args[0].equalsIgnoreCase("open") && args.length >= 2) {
   					if (!plugin.playerPermission((Player)sender,PermissionNodes.OPEN)) {
