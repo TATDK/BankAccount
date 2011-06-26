@@ -45,21 +45,21 @@ Loan:
     Payment-parts: 3
 Fee:
     Opening:
-    	Mode: None
-    	Percentage: 0
-    	Static: 0
+        Mode: None
+        Percentage: 0
+        Static: 0
     Deposit:
-    	Mode: None
-    	Percentage: 0
-    	Static: 0
+        Mode: None
+        Percentage: 0
+        Static: 0
     Withdraw:
-    	Mode: None
-    	Percentage: 0
-    	Static: 0
+        Mode: None
+        Percentage: 0
+        Static: 0
     Transfer:
-    	Mode: None
-    	Percentage: 0
-    	Static: 0
+        Mode: None
+        Percentage: 0
+        Static: 0
 StartAmount:
     Active: false
     Fee: 0
