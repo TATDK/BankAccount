@@ -15,6 +15,7 @@ import org.bukkit.util.config.Configuration;
 
 import com.nijiko.permissions.PermissionHandler;
 
+import dk.earthgame.TAT.BankAccount.System.FeeSystem;
 import dk.earthgame.TAT.BankAccount.System.Upgrade;
 
 /**
@@ -69,9 +70,10 @@ public class Settings {
 		SMART1,
 		SMART2;
 	}
-	FeeModes Fee_Mode = FeeModes.NONE;
-	double Fee_Percentage;
-	double Fee_Static;
+	FeeSystem OpeningFee;
+	FeeSystem DepositFee;
+	FeeSystem WithdrawFee;
+	FeeSystem TransferFee;
 	//Start Amount
 	boolean StartAmount_Active;
 	double StartAmount_Fee;
@@ -150,9 +152,10 @@ public class Settings {
 		plugin.LoanSystem.PaymentTime = config.getInt("Loan.Payment-time", 60);
 		plugin.LoanSystem.PaymentParts = config.getInt("Loan.Payment-parts", 3);
 		//Fee
-		Fee_Mode = stringToType(config.getString("Fee.Mode","NONE"));
-		Fee_Percentage = config.getDouble("Fee.Percentage",0);
-		Fee_Static = config.getDouble("Fee.Static",0);
+		OpeningFee = new FeeSystem(stringToType(config.getString("Fee.Opening.Mode","NONE")), config.getDouble("Fee.Opening.Percentage",0), config.getDouble("Fee.Opening.Static",0));
+		DepositFee = new FeeSystem(stringToType(config.getString("Fee.Deposit.Mode","NONE")), config.getDouble("Fee.Deposit.Percentage",0), config.getDouble("Fee.Deposit.Static",0));
+		WithdrawFee = new FeeSystem(stringToType(config.getString("Fee.Withdraw.Mode","NONE")), config.getDouble("Fee.Withdraw.Percentage",0), config.getDouble("Fee.Withdraw.Static",0));
+		TransferFee = new FeeSystem(stringToType(config.getString("Fee.Transfer.Mode","NONE")), config.getDouble("Fee.Transfer.Percentage",0), config.getDouble("Fee.Transfer.Static",0));
 		//Start Amount
 		StartAmount_Active = config.getBoolean("StartAmount.Active", false);
 		StartAmount_Fee = config.getDouble("StartAmount.Fee", 0);

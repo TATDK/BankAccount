@@ -6,13 +6,13 @@
 
 ##
 #SQL Settings
-#    Transaction: true = save transactions in table // false = don't save transactions
-#    MySQL: true = database (MySQL) // false = flatfile (SQLite)
-#    Host:     [ONLY MySQL] Server IP or address to MySQL server (Same as Minecraft server: localhost)
-#    Port:     [ONLY MySQL] Server port to MySQL server (Default: 3306)
-#    User:     [ONLY MySQL] Username to MySQL
-#    Pass:     [ONLY MySQL] Password to MySQL
-#    Database: [ONLY MySQL] Database where the data must be saved
+#   Transaction: true = save transactions in table // false = don't save transactions
+#   MySQL: true = database (MySQL) // false = flatfile (SQLite)
+#   Host:     [ONLY MySQL] Server IP or address to MySQL server (Same as Minecraft server: localhost)
+#   Port:     [ONLY MySQL] Server port to MySQL server (Default: 3306)
+#   User:     [ONLY MySQL] Username to MySQL
+#   Pass:     [ONLY MySQL] Password to MySQL
+#   Database: [ONLY MySQL] Database where the data must be saved
 ##
 SQL-info:
     Transactions: true
@@ -35,11 +35,11 @@ SQL-tables:
 
 ##
 #Permissions settings (Permission plugins and other permission configs)
-#    OP: true = use OP // false = don't use OP
-#    Permissions: true = use Permissions // false = don't use Permissions
-#    GroupManager: true = use GroupManager // false = don't use GroupManager
-#    SuperAdmins: true = admins have access to all accounts // false = admins only have access to own accounts
-#    DepositAll: true = players can deposit to all accounts // false = players can only deposit to own accounts (players must have permission to deposit)
+#   OP: true = use OP // false = don't use OP
+#   Permissions: true = use Permissions // false = don't use Permissions
+#   GroupManager: true = use GroupManager // false = don't use GroupManager
+#   SuperAdmins: true = admins have access to all accounts // false = admins only have access to own accounts
+#   DepositAll: true = players can deposit to all accounts // false = players can only deposit to own accounts (players must have permission to deposit)
 ##
 Permissions:
     OP: true
@@ -51,9 +51,9 @@ Permissions:
 ##
 #Config: Areas
 #Doing: Is it possible to use commands global or in specific areas (example: banks or trade areas)?
-#    Active: true = specific areas // false = global
-#    AreaWandId:    [Require areas enabled]  339 (Paper) // Other item ID
-#    MultipleBanks: <FUTURE FEATURE>[Require areas enabled]  true = there is multiple banks // false = there is only one bank
+#   Active: true = specific areas // false = global
+#   AreaWandId:    [Require areas enabled]  339 (Paper) // Other item ID
+#   MultipleBanks: <FUTURE FEATURE>[Require areas enabled]  true = there is multiple banks // false = there is only one bank
 ##
 Areas:
     Active: true
@@ -62,10 +62,10 @@ Areas:
 
 ##
 #Interest settings
-#    Time: Minutes between updates
-#    Amount: % of account balance added to every account
-#    Online-limit: % of users and owners that needs to be online to gain online interest
-#    Offline-amount: % of account balance added to every account when player is offline
+#   Time: Minutes between updates
+#   Amount: % of account balance added to every account
+#   Online-limit: % of users and owners that needs to be online to gain online interest
+#   Offline-amount: % of account balance added to every account when player is offline
 ##
 Interest:
     Time: 5
@@ -75,19 +75,19 @@ Interest:
 
 ##
 #Loan settings
-#    Active: true = activate // false = deactivate
-#    Fixed-rate: 0 = no fixed rate // > 0 = fixed rate set to value
-#    Rate: Variable rates after amount loaned (only if fixed-rate is set to zero)
-#        Example: 0.01: 0.05
-#                 50.01: 0.10
-#                 Loans from 0.01 => 50.00 there there will be a rate on 0.05
-#                 Loans from 50.01 => Max_amount there will be a rate on 0.10
-#    Max-amount: 0.00 = No limit // > 0.00 = Highest amount that can be borrowed at a time (Note: only 1 loan at a time)
-#    Payment-time: 0 = No deadline // > 0 = Deadline x minutes after loan taken (20 minutes = 1 Minecraft day)
-#    Payment-parts: Split the payment up in x parts
-#        Example: Payment-time: 60, Payment-parts: 3
-#                 The money must be paid back after 60 minutes (3 Minecraft days)
-#                 The money will be split in 3 parts and after 60/3 = 20 minutes (1 Minecraft day) the first part will be paid automatically 
+#   Active: true = activate // false = deactivate
+#   Fixed-rate: 0 = no fixed rate // > 0 = fixed rate set to value
+#   Rate: Variable rates after amount loaned (only if fixed-rate is set to zero)
+#       Example: 0.01: 0.05
+#                50.01: 0.10
+#                Loans from 0.01 => 50.00 there there will be a rate on 0.05
+#                Loans from 50.01 => Max_amount there will be a rate on 0.10
+#   Max-amount: 0.00 = No limit // > 0.00 = Highest amount that can be borrowed at a time (Note: only 1 loan at a time)
+#   Payment-time: 0 = No deadline // > 0 = Deadline x minutes after loan taken (20 minutes = 1 Minecraft day)
+#   Payment-parts: Split the payment up in x parts
+#       Example: Payment-time: 60, Payment-parts: 3
+#                The money must be paid back after 60 minutes (3 Minecraft days)
+#                The money will be split in 3 parts and after 60/3 = 20 minutes (1 Minecraft day) the first part will be paid automatically 
 ##
 Loan:
     Active: false
@@ -103,22 +103,47 @@ Loan:
 
 ##
 #Fee settings
-#Fee on opening account
-#    Mode: Percentage/Static/Smart1/Smart2/None (Smart1: First percentage then static / Smart2: First static then percentage)
-#    Percentage: % of money
-#    Static: static amount of money
+#   Opening: Fee on opening account
+#       Mode: Percentage/Static/Smart1/Smart2/None (Smart1: First percentage then static / Smart2: First static then percentage)
+#       Percentage: % of money
+#       Static: static amount of money
+#   Deposit: Fee on deposit money to account
+#       Mode: Percentage/Static/Smart1/Smart2/None (Smart1: First percentage then static / Smart2: First static then percentage)
+#       Percentage: % of money
+#       Static: static amount of money
+#   Withdraw: Fee on withdraw money from account
+#       Mode: Percentage/Static/Smart1/Smart2/None (Smart1: First percentage then static / Smart2: First static then percentage)
+#       Percentage: % of money
+#       Static: static amount of money
+#   Transfer: Fee on tranfer money from account to account
+#       Mode: Percentage/Static/Smart1/Smart2/None (Smart1: First percentage then static / Smart2: First static then percentage)
+#       Percentage: % of money
+#       Static: static amount of money
 ##
 Fee:
-    Mode: None
-    Percentage: 0
-    Static: 0
+    Opening:
+    	Mode: None
+    	Percentage: 0
+    	Static: 0
+    Deposit:
+    	Mode: None
+    	Percentage: 0
+    	Static: 0
+    Withdraw:
+    	Mode: None
+    	Percentage: 0
+    	Static: 0
+    Transfer:
+    	Mode: None
+    	Percentage: 0
+    	Static: 0
 
 ##
 #Start amount settings
 #Set startup amount of money on accounts on opening
-#    Active: true = activate // false = deactivate
-#    Fee: % of opening fee
-#    Static: static amount of money
+#   Active: true = activate // false = deactivate
+#   Fee: % of opening fee
+#   Static: static amount of money
 ##
 StartAmount:
     Active: false
@@ -127,20 +152,20 @@ StartAmount:
 
 ##
 #Account settings
-#    MaxAmount: 0 = no limit // > 0 = maximum amount of money on account
+#   MaxAmount: 0 = no limit // > 0 = maximum amount of money on account
 ##
 Account:
     MaxAmount: 0
 
 ##
 #Debug Output settings
-#    Loan: true = show informations from loan system // false = don't show informations from loan system
-#        Example: "[BankAccount] Loan start
-#                  [BankAccount] TAT paid a part of the loan back
-#                  [BankAccount] Loan stop"
-#    Interest: true = show informations from interest system // false = don't show informations from interest system
-#        Example: "[BankAccount] Running interest system
-#                  [BankAccount] Total given 0.00 Dollars in interest"
+#   Loan: true = show informations from loan system // false = don't show informations from loan system
+#       Example: "[BankAccount] Loan start
+#                 [BankAccount] TAT paid a part of the loan back
+#                 [BankAccount] Loan stop"
+#   Interest: true = show informations from interest system // false = don't show informations from interest system
+#       Example: "[BankAccount] Running interest system
+#                 [BankAccount] Total given 0.00 Dollars in interest"
 ##
 Debug:
     Loan: true

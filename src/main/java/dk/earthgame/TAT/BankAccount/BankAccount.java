@@ -596,44 +596,16 @@ public class BankAccount extends JavaPlugin {
 	 */
 	public boolean openAccount(String accountname,String players,String commandsender) {
 		double feePaid = 0;
-		if (settings.Fee_Mode != FeeModes.NONE) {
+		if (settings.OpeningFee.getMode() != FeeModes.NONE) {
 			MethodAccount account = Method.getAccount(commandsender);
 			double balance = account.balance();
-			switch (settings.Fee_Mode) {
-			case PERCENTAGE:
-				feePaid = balance*(settings.Fee_Percentage/100);
-				account.subtract(balance*(settings.Fee_Percentage/100));
-				break;
-			case STATIC:
-				feePaid = settings.Fee_Static;
-				if (account.hasEnough(settings.Fee_Static)) {
-					account.subtract(settings.Fee_Static);
-				} else {
+			if (settings.OpeningFee.CanAfford(balance)) {
+				feePaid = settings.OpeningFee.Fee(balance);
+				if (!account.subtract(feePaid)) {
 					return false;
 				}
-				break;
-			case SMART1:
-				feePaid = balance*(settings.Fee_Percentage/100);
-				balance -= balance*(settings.Fee_Percentage/100);
-				if (balance >= settings.Fee_Static) {
-					feePaid += settings.Fee_Static;
-					balance -= settings.Fee_Static;
-					account.set(balance);
-				} else {
-					return false;
-				}
-				break;
-			case SMART2:
-				if (balance >= settings.Fee_Static) {
-					feePaid = settings.Fee_Static;
-					balance -= settings.Fee_Static;
-				} else {
-					return false;
-				}
-				feePaid += balance*(settings.Fee_Percentage/100);
-				balance -= balance*(settings.Fee_Percentage/100);
-				account.set(balance);
-				break;
+			} else {
+				return false;
 			}
 		}
 		
@@ -956,8 +928,17 @@ public class BankAccount extends JavaPlugin {
 					//Cancel the transaction
 					return false;
 				} else if (economyAccount.hasEnough(amount)) {
-					account += amount;
-					settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `amount` = '" + account + "' WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
+					if (settings.DepositFee.getMode() != FeeModes.NONE) {
+						double balance = economyAccount.balance();
+						if (settings.DepositFee.CanAfford(balance-amount)) {
+							if (!economyAccount.subtract(settings.DepositFee.Fee(balance-amount))) {
+								return false;
+							}
+						} else {
+							return false;
+						}
+					}
+					add(amount, accountname);
 					economyAccount.subtract(amount);
 					return true;
 				} else {
@@ -966,8 +947,16 @@ public class BankAccount extends JavaPlugin {
 			} else if (type == "withdraw") {
 				if (PasswordSystem.passwordCheck(accountname, password)) {
 					if ((account - amount) >= 0) {
-						account -= amount;
-						settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `amount` = '" + account + "' WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
+						if (settings.WithdrawFee.getMode() != FeeModes.NONE) {
+							if (settings.WithdrawFee.CanAfford(account - amount)) {
+								if (!subtract(settings.WithdrawFee.Fee(account - amount), accountname)) {
+									return false;
+								}
+							} else {
+								return false;
+							}
+						}
+						subtract(amount, accountname);
 						economyAccount.add(amount);
 						return true;
 					} else {
@@ -984,10 +973,17 @@ public class BankAccount extends JavaPlugin {
 						//Cancel the transaction
 						return false;
 					} else if ((account - amount) >= 0) {
-						account -= amount;
-						receiver_account += amount;
-						settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `amount` = '" + account + "' WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
-						settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `amount` = '" + receiver_account + "' WHERE `cleanname` = '" + player.toLowerCase() + "'");
+						if (settings.TransferFee.getMode() != FeeModes.NONE) {
+							if (settings.TransferFee.CanAfford(account - amount)) {
+								if (!subtract(settings.TransferFee.Fee(account - amount), accountname)) {
+									return false;
+								}
+							} else {
+								return false;
+							}
+						}
+						subtract(amount, accountname);
+						add(amount, player);
 						return true;
 					} else {
 						return false;
@@ -996,11 +992,6 @@ public class BankAccount extends JavaPlugin {
 					return false;
 				}
 			}
-		} catch(SQLException e1) {
-			if (!e1.getMessage().equalsIgnoreCase(null))
-				console.warning("Error #07-3: " + e1.getMessage());
-			else
-				console.warning("Error #07-2: " + e1.getErrorCode() + " - " + e1.getSQLState());
 		} catch(Exception e) {
 			console.warning("Error #07-1: " + e.toString());
 		}

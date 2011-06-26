@@ -47,8 +47,6 @@ Error code    Function        Description
 #06-1         setPassword     Error updating password - Response type 1
 #06-2         setPassword     Error updating password - Response type 2
 #07-1         ATM             Exception error
-#07-2         ATM             SQLException error - Response type 1
-#07-3         ATM             SQLException error - Response type 2
 #08-1         closeAccount    Exception error
 #08-2         closeAccount    SQLException error - Response type 1
 #08-3         closeAccount    SQLException error - Response type 2
