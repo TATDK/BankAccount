@@ -74,6 +74,7 @@ public class Settings {
 	FeeSystem DepositFee;
 	FeeSystem WithdrawFee;
 	FeeSystem TransferFee;
+	FeeSystem ClosingFee;
 	//Start Amount
 	boolean StartAmount_Active;
 	double StartAmount_Fee;
@@ -156,6 +157,7 @@ public class Settings {
 		DepositFee = new FeeSystem(stringToType(config.getString("Fee.Deposit.Mode","NONE")), config.getDouble("Fee.Deposit.Percentage",0), config.getDouble("Fee.Deposit.Static",0));
 		WithdrawFee = new FeeSystem(stringToType(config.getString("Fee.Withdraw.Mode","NONE")), config.getDouble("Fee.Withdraw.Percentage",0), config.getDouble("Fee.Withdraw.Static",0));
 		TransferFee = new FeeSystem(stringToType(config.getString("Fee.Transfer.Mode","NONE")), config.getDouble("Fee.Transfer.Percentage",0), config.getDouble("Fee.Transfer.Static",0));
+		ClosingFee = new FeeSystem(stringToType(config.getString("Fee.Closing.Mode","NONE")), config.getDouble("Fee.Closing.Percentage",0), config.getDouble("Fee.Closing.Static",0));
 		//Start Amount
 		StartAmount_Active = config.getBoolean("StartAmount.Active", false);
 		StartAmount_Fee = config.getDouble("StartAmount.Fee", 0);

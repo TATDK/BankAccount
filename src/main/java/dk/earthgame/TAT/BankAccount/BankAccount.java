@@ -1012,6 +1012,17 @@ public class BankAccount extends JavaPlugin {
 			try {
 				MethodAccount economyAccount = Method.getAccount(player);
 				double accountBalance = getBalance(accountname);
+				if (settings.ClosingFee.getMode() != FeeModes.NONE) {
+					if (settings.ClosingFee.CanAfford(accountBalance)) {
+						if (!subtract(settings.ClosingFee.Fee(accountBalance), accountname)) {
+							return false;
+						} else {
+							accountBalance -= settings.ClosingFee.Fee(accountBalance);
+						}
+					} else {
+						return false;
+					}
+				}
 				settings.stmt.executeUpdate("DELETE FROM `" + settings.SQL_account_table + "` WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
 				economyAccount.add(accountBalance);
 				return true;

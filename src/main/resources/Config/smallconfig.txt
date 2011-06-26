@@ -60,6 +60,10 @@ Fee:
         Mode: None
         Percentage: 0
         Static: 0
+    Closing:
+        Mode: None
+        Percentage: 0
+        Static: 0
 StartAmount:
     Active: false
     Fee: 0
