@@ -32,7 +32,7 @@ public class NPCNetworkManager extends NetworkManager {
 	}
 
 	@Override
-	public void queue(Packet packet) {
+	public void a(Packet packet) {
 	}
 
 	@Override
