@@ -119,6 +119,10 @@ Loan:
 #       Mode: Percentage/Static/Smart1/Smart2/None (Smart1: First percentage then static / Smart2: First static then percentage)
 #       Percentage: % of money
 #       Static: static amount of money
+#   Sign: Fee on creating sign
+#       Mode: Percentage/Static/Smart1/Smart2/None (Smart1: First percentage then static / Smart2: First static then percentage)
+#       Percentage: % of money
+#       Static: static amount of money
 ##
 Fee:
     Opening:
@@ -138,6 +142,10 @@ Fee:
         Percentage: 0
         Static: 0
     Closing:
+        Mode: None
+        Percentage: 0
+        Static: 0
+    Sign:
         Mode: None
         Percentage: 0
         Static: 0

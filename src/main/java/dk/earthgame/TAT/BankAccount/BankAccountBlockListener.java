@@ -6,7 +6,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockListener;
 import org.bukkit.event.block.SignChangeEvent;
 
+import dk.earthgame.TAT.BankAccount.Settings.FeeModes;
 import dk.earthgame.TAT.BankAccount.System.PermissionNodes;
+import dk.earthgame.nijikokun.register.payment.Method.MethodAccount;
 
 public class BankAccountBlockListener extends BlockListener {
 	private BankAccount plugin;
@@ -27,7 +29,19 @@ public class BankAccountBlockListener extends BlockListener {
 				if (event.getLine(1) != null) {
 					if (plugin.accountExists(event.getLine(1))) {
 						if (plugin.accessAccount(event.getLine(1), p, false)) {
-							plugin.addSign(p.getWorld(), event.getBlock().getLocation(), event.getLine(1));
+							MethodAccount economyAccount = plugin.Method.getAccount(event.getPlayer().getName());
+							if (plugin.settings.SignFee.getMode() != FeeModes.NONE) {
+								double balance = economyAccount.balance();
+								if (plugin.settings.DepositFee.CanAfford(balance)) {
+									if (!economyAccount.subtract(plugin.settings.DepositFee.Fee(balance))) {
+										SignError(event,p,"[BankAccount] Couldn't subtract sign creating fee from your account");
+									} else {
+										plugin.addSign(p.getWorld(), event.getBlock().getLocation(), event.getLine(1));
+									}
+								} else {
+									SignError(event,p,"[BankAccount] You don't have enough money.");
+								}
+							}
 						} else {
 							SignError(event,p,"[BankAccount] You don't have access to this account");
 						}

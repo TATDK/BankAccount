@@ -1345,7 +1345,9 @@ public class BankAccount extends JavaPlugin {
 	 * @param accountname Name of account
 	 */
 	public void addSign(World w,Location l,String accountname) {
+		((Sign)w.getBlockAt(l).getState()).setLine(0, "[BankAccount]");
 		signs.put(new SignLocation(w, l), accountname);
+		updateSigns(accountname);
 	}
 	
 	/**
@@ -1397,7 +1399,29 @@ public class BankAccount extends JavaPlugin {
 	 * @param accountname Name of account
 	 */
 	public void updateSigns(String accountname) {
-		
+		double balance = getBalance(accountname);
+		Set<Entry<SignLocation, String>> signSet = signs.entrySet();
+		Iterator<Entry<SignLocation, String>> signIterator = signSet.iterator();
+		while (signIterator.hasNext()) {
+			Map.Entry<SignLocation, String> sign = (Map.Entry<SignLocation, String>) signIterator.next();
+			if (sign.getValue().equalsIgnoreCase(accountname)) {
+				SignLocation sl = sign.getKey();
+				if (sl.getBlock().getState() instanceof Sign) {
+					Sign foundSign = (Sign) sl.getBlock().getState();
+					if (foundSign.getLine(0).equalsIgnoreCase("[BankAccount]")) {
+						if (accountExists(sign.getValue())) {
+							foundSign.setLine(1, Method.format(balance));
+						} else {
+							foundSign.setLine(1, "Account closed");
+						}
+					} else {
+						removeSign(sl.getWorld(), sl.getLocation());
+					}
+				} else {
+					removeSign(sl.getWorld(), sl.getLocation());
+				}
+			}
+		}
 	}
 	
 	/**
