@@ -19,11 +19,11 @@ public class NPCNetworkManager extends NetworkManager {
 	public NPCNetworkManager(Socket socket, String s, NetHandler nethandler) {
 		super(socket, s, nethandler);
 		try {
-			Field f = NetworkManager.class.getDeclaredField("j");
+			Field f = NetworkManager.class.getDeclaredField("l");
 			f.setAccessible(true);
 			f.set(this, false);
 		} catch (Exception e) {
-			System.out.println(e);
+			e.printStackTrace();
 		}
 	}
 
@@ -32,7 +32,7 @@ public class NPCNetworkManager extends NetworkManager {
 	}
 
 	@Override
-	public void a(Packet packet) {
+	public void queue(Packet packet) {
 	}
 
 	@Override
