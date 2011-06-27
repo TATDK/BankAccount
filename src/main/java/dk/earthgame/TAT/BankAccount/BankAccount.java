@@ -7,10 +7,16 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.World;
+import org.bukkit.block.Sign;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Priority;
@@ -37,6 +43,7 @@ import dk.earthgame.TAT.BankAccount.System.PermissionNodes;
 import dk.earthgame.TAT.BankAccount.System.TransactionTypes;
 import dk.earthgame.TAT.BankAccount.System.UserSaves;
 import dk.earthgame.TAT.BankAccount.System.Console;
+import dk.earthgame.TAT.BankAccount.System.SignLocation;
 import dk.earthgame.nijikokun.register.payment.Method;
 import dk.earthgame.nijikokun.register.payment.Method.MethodAccount;
 
@@ -49,11 +56,13 @@ public class BankAccount extends JavaPlugin {
 	//System
 	File myFolder;
 	private HashMap<String,UserSaves> UserSaves = new HashMap<String,UserSaves>();
+	private HashMap<SignLocation,String> signs = new HashMap<SignLocation, String>();
 	LoanSystem LoanSystem = new LoanSystem(this);
 	Password PasswordSystem = new Password(this);
 	BankAccountCommandExecutor cmdExecutor = new BankAccountCommandExecutor(this);
 	BankAccountDisabled disabledExecutor = new BankAccountDisabled();
 	BankAccountPluginListener pluginListener = new BankAccountPluginListener(this);
+	BankAccountBlockListener blockListener = new BankAccountBlockListener(this);
 	public Settings settings = new Settings(this);
 	public Console console;
 	Font font = new Font();
@@ -242,7 +251,7 @@ public class BankAccount extends JavaPlugin {
 	 * @param node The PermissionNode
 	 * @param extraLookup If it's an extra lookup (Used by the system)
 	 * @since 0.5
-	 * @return boolean - If the player have the permission
+	 * @return If the player have the permission
 	 */
 	private boolean checkPermission(Player player,PermissionNodes node,boolean extraLookup) {
 		if (player != null) {
@@ -287,7 +296,7 @@ public class BankAccount extends JavaPlugin {
 	 * @param player The player
 	 * @param node The PermissionNode (dk.earthgame.TAT.BankAccount.System.PermissionNodes)
 	 * @since 0.5
-	 * @return boolean - If the player have the permission
+	 * @return If the player have the permission
 	 */
 	public boolean playerPermission(Player player,PermissionNodes node) {
 		return checkPermission(player, node, false);
@@ -380,6 +389,8 @@ public class BankAccount extends JavaPlugin {
 		//Enable/Disable - Used for hook up to other plugins
 		pm.registerEvent(Type.PLUGIN_ENABLE, pluginListener, Priority.Low, this);
 		pm.registerEvent(Type.PLUGIN_DISABLE, pluginListener, Priority.Low, this);
+		//SignChange - Used for balance signs
+		pm.registerEvent(Type.SIGN_CHANGE, blockListener, Priority.Normal, this);
 		
 		console.enabled();
 
@@ -497,7 +508,7 @@ public class BankAccount extends JavaPlugin {
 	 * 
 	 * @param accountname The name of the account
 	 * @since 0.5
-	 * @return boolean - If the account exists
+	 * @return If the account exists
 	 */
 	public boolean accountExists(String accountname) {
 		ResultSet rs;
@@ -579,7 +590,7 @@ public class BankAccount extends JavaPlugin {
 	 * @param accountname The name of the account
 	 * @param players Username of the players - Name of players separated by comma (,)
 	 * @since 0.5
-	 * @return boolean - If the account is successfully created
+	 * @return If the account is successfully created
 	 * @deprecated
 	 * @see #openAccount(String accountname,String players,String commandsender)
 	 */
@@ -592,7 +603,7 @@ public class BankAccount extends JavaPlugin {
 	 * @param players Username of the players - Name of players separated by comma (,)
 	 * @param commandsender Username of the player that opens the account
 	 * @since 0.5.1
-	 * @return boolean - If the account is successfully created
+	 * @return If the account is successfully created
 	 */
 	public boolean openAccount(String accountname,String players,String commandsender) {
 		double feePaid = 0;
@@ -634,7 +645,7 @@ public class BankAccount extends JavaPlugin {
 	 * @param player The player
 	 * @param writeAccess Only look for owners
 	 * @since 0.5
-	 * @return boolean - If the player have access
+	 * @return If the player have access
 	 */
 	public boolean accessAccount(String accountname,Player player,boolean writeAccess) {
 		if (!accountExists(accountname)) {
@@ -690,7 +701,7 @@ public class BankAccount extends JavaPlugin {
 	 * @param player Username of player
 	 * @param writeAccess Only look for owners
 	 * @since 0.5
-	 * @return boolean - If the player have access
+	 * @return If the player have access
 	 */
 	public boolean accessAccount(String accountname,String player,boolean writeAccess) {
 		try {
@@ -732,7 +743,7 @@ public class BankAccount extends JavaPlugin {
 	 * @param player Username of the player
 	 * @since 0.5
 	 * @see #addOwner(String accountname,String player)
-	 * @return boolean - If the user is successfully added
+	 * @return If the user is successfully added
 	 */
 	public boolean addUser(String accountname,String player) {
 		try {
@@ -770,7 +781,7 @@ public class BankAccount extends JavaPlugin {
 	 * @param player Username of the player
 	 * @since 0.5
 	 * @see #removeOwner(String accountname,String player)
-	 * @return boolean - If the user is successfully removed
+	 * @return If the user is successfully removed
 	 */
 	public boolean removeUser(String accountname,String player) {
 		try {
@@ -813,7 +824,7 @@ public class BankAccount extends JavaPlugin {
 	 * @param player Username of the player
 	 * @since 0.5
 	 * @see #addUser(String accountname,String player)
-	 * @return boolean - If the owner is successfully added
+	 * @return If the owner is successfully added
 	 */
 	public boolean addOwner(String accountname,String player) {
 		try {
@@ -851,7 +862,7 @@ public class BankAccount extends JavaPlugin {
 	 * @param player Username of the player
 	 * @since 0.5
 	 * @see #removeUser(String accountname,String player)
-	 * @return boolean - If the owner is successfully removed
+	 * @return If the owner is successfully removed
 	 */
 	public boolean removeOwner(String accountname,String player) {
 		try {
@@ -893,7 +904,7 @@ public class BankAccount extends JavaPlugin {
 	 * @param accountname Name of account
 	 * @param password The new password (Must be encrypted!)
 	 * @since 0.5
-	 * @return boolean - If the password is successfully set
+	 * @return If the password is successfully set
 	 */
 	public boolean setPassword(String accountname,String password) {
 		try {
@@ -917,7 +928,7 @@ public class BankAccount extends JavaPlugin {
 	 * @param amount Amount money
 	 * @param password Password
 	 * @since 0.5
-	 * @return boolean - If the action is run successfully
+	 * @return If the action is run successfully
 	 */
 	public boolean ATM(String accountname,String player,String type,Double amount,String password) {
 		try {
@@ -1005,7 +1016,7 @@ public class BankAccount extends JavaPlugin {
 	 * @param player Username of the player
 	 * @param password Password
 	 * @since 0.5
-	 * @return boolean - If the account is successfully closed
+	 * @return If the account is successfully closed
 	 */
 	public boolean closeAccount(String accountname,String player,String password) {
 		if (PasswordSystem.passwordCheck(accountname, password)) {
@@ -1136,7 +1147,7 @@ public class BankAccount extends JavaPlugin {
 	 * @param balance New balance
 	 * @param accountname Name of account
 	 * @since 0.5
-	 * @return boolean - If the account balance is successfully changed
+	 * @return If the account balance is successfully changed
 	 */
 	public boolean setBalance(double balance,String accountname) {
 		try {
@@ -1157,7 +1168,7 @@ public class BankAccount extends JavaPlugin {
 	 * @param amount Amount of money that shall be added
 	 * @param accountname Name of account
 	 * @since 0.5
-	 * @return boolean - If the money is successfully added
+	 * @return If the money is successfully added
 	 */
 	public boolean add(double amount,String accountname) {
 		double temp = getBalance(accountname);
@@ -1180,7 +1191,7 @@ public class BankAccount extends JavaPlugin {
 	 * @param amount Amount of money that shall be subtracted
 	 * @param accountname Name of account
 	 * @since 0.5
-	 * @return boolean - If the money is successfully subtracted
+	 * @return If the money is successfully subtracted
 	 */
 	public boolean subtract(double amount,String accountname) {
 		double temp = getBalance(accountname);
@@ -1203,7 +1214,7 @@ public class BankAccount extends JavaPlugin {
 	 * 
 	 * @param name Name of area
 	 * @since 0.5
-	 * @return boolean - If the area exists
+	 * @return If the area exists
 	 */
 	public boolean areaExists(String name) {
 		ResultSet rs;
@@ -1246,7 +1257,7 @@ public class BankAccount extends JavaPlugin {
 	 * @param world Name of world
 	 * @param pos Position
 	 * @since 0.5
-	 * @return boolean - If the position is inside an area
+	 * @return If the position is inside an area
 	 */
 	public boolean inArea(String world,Location pos) {
 		try {
@@ -1286,7 +1297,7 @@ public class BankAccount extends JavaPlugin {
 	 * @param pos2 Position 2
 	 * @param world Name of world
 	 * @since 0.5
-	 * @return boolean - If the area is successfully added
+	 * @return If the area is successfully added
 	 */
 	public boolean setArea(String name,Location pos1,Location pos2,String world) {
 		if (areaExists(name)) {
@@ -1309,7 +1320,7 @@ public class BankAccount extends JavaPlugin {
 	 * 
 	 * @param name Name of area
 	 * @since 0.5
-	 * @return boolean - If the area is successfully removed
+	 * @return If the area is successfully removed
 	 */
 	public boolean removeArea(String name) {
 		try {
@@ -1324,6 +1335,69 @@ public class BankAccount extends JavaPlugin {
 			console.warning("Error #13-1: " + e.toString());
 		}
 		return false;
+	}
+	
+	/**
+	 * Add a sign
+	 * 
+	 * @param w World
+	 * @param l Location
+	 * @param accountname Name of account
+	 */
+	public void addSign(World w,Location l,String accountname) {
+		signs.put(new SignLocation(w, l), accountname);
+	}
+	
+	/**
+	 * Remove a sign
+	 * 
+	 * @param w World
+	 * @param l Location
+	 */
+	public void removeSign(World w,Location l) {
+		signs.remove(new SignLocation(w, l));
+	}
+	
+	/**
+	 * Update all signs
+	 */
+	public void updateSigns() {
+		HashMap<String, Double> balances = new HashMap<String, Double>();
+		Set<Entry<SignLocation, String>> signSet = signs.entrySet();
+		Iterator<Entry<SignLocation, String>> signIterator = signSet.iterator();
+		while (signIterator.hasNext()) {
+			Map.Entry<SignLocation, String> sign = (Map.Entry<SignLocation, String>) signIterator.next();
+			double balance = 0;
+			if (balances.containsKey(sign.getValue())) {
+				balance = balances.get(sign.getValue());
+			} else {
+				balance = getBalance(sign.getValue());
+				balances.put(sign.getValue(), balance);
+			}
+			SignLocation sl = sign.getKey();
+			if (sl.getBlock().getState() instanceof Sign) {
+				Sign foundSign = (Sign) sl.getBlock().getState();
+				if (foundSign.getLine(0).equalsIgnoreCase("[BankAccount]")) {
+					if (accountExists(sign.getValue())) {
+						foundSign.setLine(1, Method.format(balance));
+					} else {
+						foundSign.setLine(1, "Account closed");
+					}
+				} else {
+					removeSign(sl.getWorld(), sl.getLocation());
+				}
+			} else {
+				removeSign(sl.getWorld(), sl.getLocation());
+			}
+		}
+	}
+	
+	/**
+	 * Update all signs that showing defined account
+	 * @param accountname Name of account
+	 */
+	public void updateSigns(String accountname) {
+		
 	}
 	
 	/**
