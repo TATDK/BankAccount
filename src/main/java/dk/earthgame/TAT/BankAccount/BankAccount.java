@@ -83,7 +83,7 @@ public class BankAccount extends JavaPlugin {
 					try {
 						if (settings.UseMySQL) {
 							//MySQL
-							ResultSet accounts = settings.stmt.executeQuery("SELECT `id`, `amount`, `owners` FROM `" + settings.SQL_account_table + "`");
+							ResultSet accounts = settings.stmt.executeQuery("SELECT `id`, `amount`, `owners`, `users` FROM `" + settings.SQL_account_table + "`");
 							while (accounts.next()) {
 								double accountbalance = accounts.getDouble("amount");
 								String[] owners = accounts.getString("owners").split(";");
