@@ -28,6 +28,21 @@ public class NPCManager {
 	public NPCManager(BankAccount plugin) {
 		this.plugin = plugin;
 		server = BServer.getInstance(plugin);
+		plugin.getServer().getScheduler().scheduleAsyncRepeatingTask(plugin, new Runnable() {
+            public void run() {
+            	HashSet<String> toRemove = new HashSet<String>();
+                for (String i : npcs.keySet()) {
+                	Entity j = npcs.get(i);
+                	j.Q();
+                	if (j.dead) {
+                		toRemove.add(i);
+                	}
+                }
+                for (String n : toRemove) {
+                    npcs.remove(n);
+                }
+            }
+        }, 1L, 1L);
 	}
 
 	/**
@@ -159,6 +174,21 @@ public class NPCManager {
 		if (npc != null) {
 			npc.setPosition(l.getX(), l.getY(), l.getZ());
 		}
+	}
+	
+	public void putNPCinbed(String id, Location bed) {
+		NPCEntity npc = npcs.get(id);
+		npc.setPosition(bed.getX(), bed.getY(), bed.getZ());
+		if (npc != null) {
+			npc.a((int) bed.getX(), (int) bed.getY(), (int) bed.getZ());
+		}
+	}
+	
+	public void getNPCoutofbed(String id) {
+		NPCEntity npc = npcs.get(id);
+		if (npc != null) {
+			npc.a(true, true, true);
+	 	}
 	}
 	
 	/**
