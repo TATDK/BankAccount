@@ -3,7 +3,7 @@
   
   <groupId>dk.earthgame.TAT</groupId>
   <artifactId>BankAccount</artifactId>
-  <version>0.5.1</version>
+  <version>0.5.1a</version>
   <packaging>jar</packaging>
   
   <name>BankAccount</name>
@@ -11,7 +11,7 @@
   <url>http://forums.bukkit.org/threads/BankAccount.7095/</url>
   
   <properties>
-  	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
   
   <ciManagement>
@@ -20,16 +20,16 @@
   </ciManagement>
   
   <repositories>
-  	<repository>
-  		<releases>
-  			<updatePolicy>always</updatePolicy>
-  		</releases>
-  		<snapshots>
-  			<updatePolicy>always</updatePolicy>
-  		</snapshots>
-  		<id>intern-site</id>
-  		<url>http://www.earthgame.dk/artifact/</url>
-  	</repository>
+    <repository>
+      <releases>
+        <updatePolicy>always</updatePolicy>
+      </releases>
+      <snapshots>
+        <updatePolicy>always</updatePolicy>
+      </snapshots>
+      <id>intern-site</id>
+      <url>http://www.earthgame.dk/artifact/</url>
+    </repository>
   </repositories>
   
   <dependencies>
@@ -40,52 +40,70 @@
       <scope>test</scope>
     </dependency>
     <!-- Bukkit -->
-  	<dependency>
-  		<groupId>org.bukkit</groupId>
-  		<artifactId>bukkit</artifactId>
-  		<version>0.0.1-746</version>
-  	</dependency>
-  	<dependency>
-  		<groupId>cosine.boseconomy</groupId>
-  		<artifactId>BOSEconomy</artifactId>
-  		<version>0.6.2</version>
-  	</dependency>
-  	<dependency>
-  		<groupId>com.earth2me.essentials</groupId>
-  		<artifactId>Essentials</artifactId>
-  		<version>Dev2.2.183</version>
-  	</dependency>
-  	<dependency>
-  		<groupId>com.nijiko.coelho.iConomy</groupId>
-  		<artifactId>iConomy</artifactId>
-  		<version>4.65</version>
-  	</dependency>
-  	<dependency>
-  		<groupId>com.iConomy</groupId>
-  		<artifactId>iConomy</artifactId>
-  		<version>5.0</version>
-  	</dependency>
-  	<dependency>
-  		<groupId>com.nijikokun.bukkit.Permissions</groupId>
-  		<artifactId>Permissions</artifactId>
-  		<version>2.7.3</version>
-  	</dependency>
-  	<dependency>
-  		<groupId>org.anjocaido.groupmanager</groupId>
-  		<artifactId>GroupManager</artifactId>
-  		<version>1.0(alpha-5)</version>
-  	</dependency>
-  	<dependency>
-  		<groupId>org.bukkit</groupId>
-  		<artifactId>craftbukkit</artifactId>
-  		<version>0.0.1-935</version>
-  	</dependency>
+    <dependency>
+      <groupId>org.bukkit</groupId>
+      <artifactId>bukkit</artifactId>
+      <version>0.0.1-746</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>cosine.boseconomy</groupId>
+      <artifactId>BOSEconomy</artifactId>
+      <version>0.6.2</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.earth2me.essentials</groupId>
+      <artifactId>Essentials</artifactId>
+      <version>Dev2.2.183</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.nijiko.coelho.iConomy</groupId>
+      <artifactId>iConomy</artifactId>
+      <version>4.65</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.iConomy</groupId>
+      <artifactId>iConomy</artifactId>
+      <version>5.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.nijikokun.bukkit.Permissions</groupId>
+      <artifactId>Permissions</artifactId>
+      <version>2.7.3</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.anjocaido.groupmanager</groupId>
+      <artifactId>GroupManager</artifactId>
+      <version>1.0(alpha-5)</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.bukkit</groupId>
+      <artifactId>craftbukkit</artifactId>
+      <version>0.0.1-935</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
+      <version>bin</version>
+    </dependency>
+    <dependency>
+      <groupId>sqlite</groupId>
+      <artifactId>sqlitejdbc</artifactId>
+      <version>v056</version>
+    </dependency>
   </dependencies>
   
   <build>
-  	<sourceDirectory>${basedir}/src/main/java/</sourceDirectory>
-  	
-  	<!-- Resources -->
+    <sourceDirectory>${basedir}/src/main/java/</sourceDirectory>
+    
+    <!-- Resources -->
     <resources>
       <resource>
         <targetPath>.</targetPath>
@@ -95,39 +113,35 @@
           <include>plugin.yml</include>
         </includes>
         <excludes>
-        	<exclude>org/</exclude>
+          <exclude>org/</exclude>
         </excludes>
       </resource>
       <resource>
         <targetPath>Config/</targetPath>
         <directory>${basedir}/src/main/resources/Config/</directory>
         <includes>
-        	<include>*</include>
+          <include>*</include>
         </includes>
       </resource>
       <resource>
-      	<targetPath>Readme/</targetPath>
-      	<directory>${basedir}/src/main/resources/Readme</directory>
+        <targetPath>Readme/</targetPath>
+        <directory>${basedir}/src/main/resources/Readme</directory>
       </resource>
     </resources>
-    
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.3.2</version>
-      </plugin>
 
+    <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
         <version>2.3.1</version>
         <configuration>
           <archive>
-            <addMavenDescriptor>true</addMavenDescriptor>
+            <addMavenDescriptor>false</addMavenDescriptor>
             <manifest>
-              <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+              <addDefaultSpecificationEntries>false</addDefaultSpecificationEntries>
+              <addDefaultImplementationEntries>false</addDefaultImplementationEntries>
+              <addClasspath>true</addClasspath>
+              <classpathPrefix>../lib/</classpathPrefix>
             </manifest>
           </archive>
         </configuration>
