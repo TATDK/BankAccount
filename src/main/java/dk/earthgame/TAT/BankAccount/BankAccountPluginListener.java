@@ -8,6 +8,7 @@ import org.bukkit.plugin.Plugin;
 
 import com.nijikokun.bukkit.Permissions.Permissions;
 
+import dk.earthgame.TAT.SignUpdater.SignUpdater;
 import dk.earthgame.nijikokun.register.payment.Methods;
 
 /**
@@ -49,6 +50,11 @@ public class BankAccountPluginListener extends ServerListener {
 			this.plugin.settings.GroupManager = null;
 			this.plugin.console.warning("Lost connection with " + plugin + "!");
 		}
+		//SignUpdater
+		if (this.plugin.signupdater != null && plugin.equalsIgnoreCase("SignUpdater")) {
+			this.plugin.signupdater = null;
+			this.plugin.console.warning("Lost connection with " + plugin + "!");
+		}
 	}
 
 	@Override
@@ -80,6 +86,15 @@ public class BankAccountPluginListener extends ServerListener {
 				if (this.plugin.settings.checkJobId > 0) {
 					this.plugin.getServer().getScheduler().cancelTask(this.plugin.settings.checkJobId);
 				}
+			}
+		}
+
+		//SignUpdater
+		if (this.plugin.signupdater == null && plugin.equalsIgnoreCase("SignUpdater")) {
+			Plugin test = checkPlugin("SignUpdater");
+			if (test != null) {
+				this.plugin.signupdater = (SignUpdater)test;
+				this.plugin.console.info("Established connection with " + plugin + "!");
 			}
 		}
 	}

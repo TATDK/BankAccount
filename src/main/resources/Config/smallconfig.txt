@@ -77,3 +77,4 @@ Account:
 Debug:
     Loan: true
     Interest: true
+    Full: false

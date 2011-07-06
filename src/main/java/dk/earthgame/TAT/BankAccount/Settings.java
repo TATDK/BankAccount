@@ -85,6 +85,7 @@ public class Settings {
 	//Debug messages
 	boolean Debug_Loan;
 	boolean Debug_Interest;
+	boolean Debug_Full;
 	
 	public Settings(BankAccount plugin) {
 		this.plugin = plugin;
@@ -169,6 +170,7 @@ public class Settings {
 		//Debug
 		Debug_Interest = config.getBoolean("Debug.Interest", true);
 		Debug_Loan = config.getBoolean("Debug.Loan", true);
+		Debug_Full = config.getBoolean("Debug.Full", false);
 		
 		plugin.console.info("Properties Loaded");
 		try {

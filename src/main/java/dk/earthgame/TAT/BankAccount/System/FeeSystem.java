@@ -27,6 +27,8 @@ public class FeeSystem {
 	
 	/**
 	 * Check if the player have enough money to pay the fee
+	 * This is used when calculating on whole balance
+	 * 
 	 * @param balance
 	 * @since 0.5.2
 	 */
@@ -38,36 +40,53 @@ public class FeeSystem {
 	}
 	
 	/**
+	 * Check if the player have enough money to pay the fee
+	 * This is used when calculating part of balance
 	 * 
 	 * @param balance
 	 * @since 0.5.2
-	 * @return Fee calculated
 	 */
-	public double Fee(double balance) {
+	public boolean CanAfford (double amount, double balance) {
+		if (Fee(amount) != -1) {
+			if (Fee(amount)+amount <= balance) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * Calculate fee for an amount
+	 * 
+	 * @param balance
+	 * @since 0.5.2
+	 * @return Fee calculated - If -1 is returned, fee couldn't be calculated
+	 */
+	public double Fee(double amount) {
 		double fee = -1;
 		if (Fee_Mode != FeeModes.NONE) {
 			switch (Fee_Mode) {
 				case PERCENTAGE:
-					fee = balance*(Fee_Percentage/100);
+					fee = amount*(Fee_Percentage/100);
 					break;
 				case STATIC:
-					if (balance >= Fee_Static) {
+					if (amount >= Fee_Static) {
 						fee = Fee_Static;
 					}
 					break;
 				case SMART1:
-					fee = balance*(Fee_Percentage/100);
-					balance -= balance*(Fee_Percentage/100);
-					if (balance >= Fee_Static) {
+					fee = amount*(Fee_Percentage/100);
+					amount -= amount*(Fee_Percentage/100);
+					if (amount >= Fee_Static) {
 						fee += Fee_Static;
 					}
 					break;
 				case SMART2:
-					if (balance >= Fee_Static) {
-						balance -= Fee_Static;
+					if (amount >= Fee_Static) {
+						amount -= Fee_Static;
 						fee = Fee_Static;
 					}
-					fee += balance*(Fee_Percentage/100);
+					fee += amount*(Fee_Percentage/100);
 					break;
 			}
 		}
@@ -75,16 +94,19 @@ public class FeeSystem {
 	}
 	
 	/**
+	 * Get setting FeeMode
 	 * @since 0.5.2
 	 * @return How to calculate the fee
 	 */
 	public FeeModes getMode() { return Fee_Mode; }
 	/**
+	 * Get setting percentage
 	 * @since 0.5.2
 	 * @return % of money
 	 */
 	public double getPercentage() { return Fee_Percentage; }
 	/**
+	 * Get setting static
 	 * @since 0.5.2
 	 * @return Static amount of money
 	 */

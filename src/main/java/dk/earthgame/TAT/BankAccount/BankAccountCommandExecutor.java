@@ -9,10 +9,12 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import dk.earthgame.TAT.BankAccount.Settings.FeeModes;
 import dk.earthgame.TAT.BankAccount.System.CommandList;
 import dk.earthgame.TAT.BankAccount.System.PermissionNodes;
 import dk.earthgame.TAT.BankAccount.System.TransactionTypes;
 import dk.earthgame.TAT.BankAccount.System.UserSaves;
+import dk.earthgame.nijikokun.register.payment.Method.MethodAccount;
 
 /**
  * BankAccount executor for commands
@@ -65,6 +67,25 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   					if (plugin.accountExists(args[1])) {
   						sender.sendMessage("ATM: " + ChatColor.RED + "Accountname is taken");
   					} else {
+  						double feePaid = 0;
+  						if (plugin.settings.OpeningFee.getMode() != FeeModes.NONE) {
+  							MethodAccount account = plugin.Method.getAccount(sendername);
+  							double balance = account.balance();
+  							if (plugin.settings.OpeningFee.CanAfford(balance)) {
+  								feePaid = plugin.settings.OpeningFee.Fee(balance);
+  								if (!account.subtract(feePaid)) {
+  									plugin.printFullDebugWarning(sendername + " tried to create account - Error subtract fee");
+  									sender.sendMessage("ATM: " + ChatColor.RED + "Error subtract fee!");
+  									return true;
+  								} else {
+  									plugin.addTransaction(sendername, args[1], TransactionTypes.FEE_PLAYER, plugin.settings.OpeningFee.Fee(balance-Double.parseDouble(args[2])));
+  								}
+  							} else {
+  								plugin.printFullDebugWarning(sendername + " tried to create account - Not enough money to pay fee");
+								sender.sendMessage("ATM: " + ChatColor.RED + "You don't have enough money to open a bank account!");
+  								return true;
+  							}
+  						}
   						String players = "";
   						players += sendername;
   						if (args.length >= 3) {
@@ -72,7 +93,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   								players += ";" + args[i-1];
   							}
   						}
-  						if (plugin.openAccount(args[1], players, sendername)) {
+  						if (plugin.openAccount(args[1], players, sendername, feePaid)) {
   							plugin.addTransaction(sendername, args[1], TransactionTypes.OPEN, 0.00);
   							sender.sendMessage("ATM: " + ChatColor.GREEN + args[1] + " created");
   							players = "";
@@ -272,11 +293,37 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   							sender.sendMessage("ATM: " + ChatColor.RED + "Please enter value higher than 0");
   							return true;
   						}
+  						MethodAccount account = plugin.Method.getAccount(sendername);
+						double balance = account.balance();
+  						if (plugin.settings.DepositFee.getMode() != FeeModes.NONE) {
+  							if (plugin.settings.DepositFee.CanAfford(Double.parseDouble(args[2]),balance)) {
+  								if (!account.subtract(plugin.settings.DepositFee.Fee(balance-Double.parseDouble(args[2])))) {
+  									plugin.printFullDebugWarning(sendername + " tried to deposit - Error subtract fee");
+  									sender.sendMessage("ATM: " + ChatColor.RED + "Error subtract fee!");
+  									return true;
+  								} else {
+  									plugin.addTransaction(sendername, args[1], TransactionTypes.FEE_PLAYER, plugin.settings.DepositFee.Fee(balance-Double.parseDouble(args[2])));
+  								}
+  							} else {
+  								plugin.printFullDebugWarning(sendername + " tried to deposit - Not enough money to pay fee");
+								sender.sendMessage("ATM: " + ChatColor.RED + "You don't have enough money to pay fee!");
+  								return true;
+  							}
+  						}
+  						
+  						if (!account.hasEnough(Double.parseDouble(args[2]))) {
+  							plugin.addTransaction(sendername, args[1], TransactionTypes.TRANSACTION_CANCELED, Double.parseDouble(args[2]));
+  							plugin.printFullDebugInfo(sendername + " tried to deposit - Not enough money");
+  							sender.sendMessage("ATM: " + ChatColor.RED + "Couldn't deposit, you only have " + plugin.Method.format(balance));
+  						}
+  						
   						if (plugin.ATM(args[1], sendername, "deposit", Double.parseDouble(args[2]), "")) {
   							plugin.addTransaction(sendername, args[1], TransactionTypes.DEPOSIT, Double.parseDouble(args[2]));
+  							plugin.printFullDebugInfo(sendername + " deposit money");
   							sender.sendMessage("ATM: " + ChatColor.GREEN + plugin.Method.format(Double.parseDouble(args[2])) + " added to " + args[1]);
   						} else {
 							plugin.addTransaction(sendername, args[1], TransactionTypes.TRANSACTION_CANCELED, Double.parseDouble(args[2]));
+  							plugin.printFullDebugInfo(sendername + " tried to deposit - Error depositing money");
   							sender.sendMessage("ATM: " + ChatColor.RED + "Couldn't deposit, are you sure you have enough money?");
   						}
   					} else {
@@ -298,11 +345,32 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   						if (args.length >= 4) {
   							password = args[3];
   						}
-  						if (plugin.ATM(args[1], sendername, "withdraw", Double.parseDouble(args[2]), password)) {
-  							plugin.addTransaction(sendername, args[1], TransactionTypes.WITHDRAW, Double.parseDouble(args[2]));
-  							sender.sendMessage("ATM: " + ChatColor.GREEN + plugin.Method.format(Double.parseDouble(args[2])) + " withdrawed from " + args[1]);
+  						if (plugin.PasswordSystem.passwordCheck(args[1], password)) {
+  							if (plugin.settings.WithdrawFee.getMode() != FeeModes.NONE) {
+  	  							if (plugin.settings.WithdrawFee.CanAfford(Double.parseDouble(args[2]),plugin.getBalance(args[1]))) {
+  	  								if (!plugin.subtract(plugin.settings.WithdrawFee.Fee(Double.parseDouble(args[2])), args[1])) {
+  	  									plugin.printFullDebugWarning(sendername + " tried to withdraw - Error subtract fee");
+  	  									sender.sendMessage("ATM: " + ChatColor.RED + "Error subtract fee!");
+  	  									return true;
+  	  								} else {
+  	  									plugin.addTransaction(sendername, args[1], TransactionTypes.FEE_ACCOUNT, plugin.settings.WithdrawFee.Fee(Double.parseDouble(args[2])));
+  	  								}
+  	  							} else {
+  	  								plugin.printFullDebugWarning(sendername + " tried to withdraw - Not enough money to pay fee");
+  									sender.sendMessage("ATM: " + ChatColor.RED + "You don't have enough money to pay fee!");
+  	  								return true;
+  	  							}
+  	  						}
+  							if (plugin.ATM(args[1], sendername, "withdraw", Double.parseDouble(args[2]), password)) {
+  	  							plugin.addTransaction(sendername, args[1], TransactionTypes.WITHDRAW, Double.parseDouble(args[2]));
+  	  							plugin.printFullDebugInfo(sendername + " withdraw money");
+  	  							sender.sendMessage("ATM: " + ChatColor.GREEN + plugin.Method.format(Double.parseDouble(args[2])) + " withdrawed from " + args[1]);
+  	  						} else {
+  	  							plugin.printFullDebugWarning(sendername + " tried to withdraw - Error withdrawing money");
+  	  							sender.sendMessage("ATM: " + ChatColor.RED + "Couldn't withdraw, are you sure you have enough money on account?");
+  	  						}
   						} else {
-  							sender.sendMessage("ATM: " + ChatColor.RED + "Couldn't withdraw, are you sure you have enough money on account?");
+  							sender.sendMessage("ATM: " + ChatColor.RED + "Wrong password!");
   						}
   					} else {
   						sender.sendMessage("ATM: " + ChatColor.RED + "You don't have access to this account!");

@@ -21,6 +21,7 @@ public class BankAccountBlockListener extends BlockListener {
 	public void onSignChange(SignChangeEvent event) {
 		Player p = event.getPlayer();
 		if (!(p instanceof Player)) {
+			p.sendMessage("Not a player");
 			return;
 		}
 		
@@ -36,11 +37,15 @@ public class BankAccountBlockListener extends BlockListener {
 									if (!economyAccount.subtract(plugin.settings.DepositFee.Fee(balance))) {
 										SignError(event,p,"[BankAccount] Couldn't subtract sign creating fee from your account");
 									} else {
+										p.sendMessage("[BankAccount] Sign created");
 										plugin.addSign(p.getWorld(), event.getBlock().getLocation(), event.getLine(1));
 									}
 								} else {
 									SignError(event,p,"[BankAccount] You don't have enough money.");
 								}
+							} else {
+								p.sendMessage("[BankAccount] Sign created");
+								plugin.addSign(p.getWorld(), event.getBlock().getLocation(), event.getLine(1));
 							}
 						} else {
 							SignError(event,p,"[BankAccount] You don't have access to this account");
@@ -54,6 +59,8 @@ public class BankAccountBlockListener extends BlockListener {
 			} else {
 				SignError(event,p,"[BankAccount] You don't have access to create BankAccount signs");
 			}
+		} else {
+			p.sendMessage("Not balance sign");
 		}
 	}
 	

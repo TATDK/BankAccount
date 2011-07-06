@@ -178,7 +178,11 @@ Account:
 #   Interest: true = show informations from interest system // false = don't show informations from interest system
 #       Example: "[BankAccount] Running interest system
 #                 [BankAccount] Total given 0.00 Dollars in interest"
+#    Full: true = show all failures and success // false = don't show all failures and success
+#        Example: "[BankAccount] TAT created an account
+#                  [BankAccount] TAT couldn't create an account - Already exists"
 ##
 Debug:
     Loan: true
     Interest: true
+    Full: false

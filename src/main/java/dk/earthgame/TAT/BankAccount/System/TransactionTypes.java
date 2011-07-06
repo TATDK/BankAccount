@@ -23,7 +23,9 @@ public enum TransactionTypes {
 	BOUNTY_END				(15), //Bounty on user ended
 	OWNER_ADD				(16), //Owner added
 	OWNER_REMOVE			(17), //Owner removed
-	TRANSACTION_CANCELED	(18); //Transaction canceled due to max amount extended or similar
+	TRANSACTION_CANCELED	(18), //Transaction canceled due to max amount extended or similar
+	FEE_PLAYER				(19), //Fee payment paid by player
+	FEE_ACCOUNT				(20); //Fee payment paid by account
 	
 	private int code;
 	TransactionTypes(int code) {
