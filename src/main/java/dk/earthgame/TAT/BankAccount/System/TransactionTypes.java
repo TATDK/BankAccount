@@ -6,35 +6,35 @@ package dk.earthgame.TAT.BankAccount.System;
  * @since 0.5
  */
 public enum TransactionTypes {
-	OPEN					(1),  //Account created
-	DEPOSIT					(2),  //Deposit to account
-	WITHDRAW				(3),  //Withdraw from account
-	TRANSFER_DEPOSIT		(4),  //Transfer from this account
-	TRANSFER_WITHDRAW		(5),  //Transfer to this account
-	CLOSE					(6),  //Account closed
-	USER_ADD				(7),  //User added
-	USER_REMOVE				(8),  //User removed
-	PASSWORD				(9),  //Password set
-	LOAN_START				(10), //Loan created
-	LOAN_PAYMENT			(11), //Loan payment
-	LOAN_PAID				(12), //Loan finished and paid
-	LOAN_MISSING			(13), //Loan could not finish, missing money
-	BOUNTY_START			(14), //Bounty on user started
-	BOUNTY_END				(15), //Bounty on user ended
-	OWNER_ADD				(16), //Owner added
-	OWNER_REMOVE			(17), //Owner removed
-	TRANSACTION_CANCELED	(18), //Transaction canceled due to max amount extended or similar
-	FEE_PLAYER				(19), //Fee payment paid by player
-	FEE_ACCOUNT				(20); //Fee payment paid by account
-	
-	private int code;
-	TransactionTypes(int code) {
-		this.code = code;
-	}
-	/**
-	 * Get the transaction type number used in the database
-	 * @since 0.5
-	 * @return Transaction type number
-	 */
-	public int get() { return code; }
+    OPEN                    (1),  //Account created
+    DEPOSIT                 (2),  //Deposit to account
+    WITHDRAW                (3),  //Withdraw from account
+    TRANSFER_DEPOSIT        (4),  //Transfer from this account
+    TRANSFER_WITHDRAW       (5),  //Transfer to this account
+    CLOSE                   (6),  //Account closed
+    USER_ADD                (7),  //User added
+    USER_REMOVE             (8),  //User removed
+    PASSWORD                (9),  //Password set
+    LOAN_START              (10), //Loan created
+    LOAN_PAYMENT            (11), //Loan payment
+    LOAN_PAID               (12), //Loan finished and paid
+    LOAN_MISSING            (13), //Loan could not finish, missing money
+    BOUNTY_START            (14), //Bounty on user started
+    BOUNTY_END              (15), //Bounty on user ended
+    OWNER_ADD               (16), //Owner added
+    OWNER_REMOVE            (17), //Owner removed
+    TRANSACTION_CANCELED    (18), //Transaction canceled due to max amount extended or similar
+    FEE_PLAYER              (19), //Fee payment paid by player
+    FEE_ACCOUNT             (20); //Fee payment paid by account
+    
+    private int code;
+    TransactionTypes(int code) {
+        this.code = code;
+    }
+    /**
+     * Get the transaction type number used in the database
+     * @since 0.5
+     * @return Transaction type number
+     */
+    public int get() { return code; }
 };

@@ -10,5 +10,5 @@ import org.bukkit.command.CommandSender;
  * @author TAT
  */
 public class BankAccountDisabled implements CommandExecutor {
-	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) { return false; }
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) { return false; }
 }
