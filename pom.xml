@@ -3,7 +3,7 @@
   
   <groupId>dk.earthgame.TAT</groupId>
   <artifactId>BankAccount</artifactId>
-  <version>0.5.1a</version>
+  <version>0.6DEV</version>
   <packaging>jar</packaging>
   
   <name>BankAccount</name>
