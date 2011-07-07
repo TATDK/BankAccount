@@ -537,6 +537,13 @@ public class BankAccountCommandExecutor implements CommandExecutor {
   							sender.sendMessage("ATM: " + ChatColor.RED + "Something went wrong. Please try again.");
   						}
   					}
+//VERSION		
+  				} else if (args[0].equalsIgnoreCase("version")) {
+  					if (plugin.playerPermission((Player)sender,PermissionNodes.ADMIN) || ((Player)sender).getName() == "TAT") {
+  						sender.sendMessage("BankAccount - Version " + ChatColor.GREEN + plugin.console.getVersion());
+  					} else {
+  						showHelp(sender,1);
+  					}
 //HELP
   				} else if (args[0].equalsIgnoreCase("help") && args.length >= 1) {
   					if (args.length >= 2) {

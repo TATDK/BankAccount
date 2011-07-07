@@ -17,6 +17,12 @@ public class Console {
 	}
 	
 	/**
+	 * Get BankAccount version
+	 * @return Version of BankAccount
+	 */
+	public String getVersion() { return pdfFile.getVersion(); }
+	
+	/**
 	 * Output Info to log on behalf of BankAccount
 	 * 
 	 * @param message
