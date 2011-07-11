@@ -3,16 +3,17 @@ Author: TAT
 CHANGELOG
 
 0.6
-Added full debug mode
+Added full debug mode (BankAccountException and user messages)
 Added balances signs
 Added multiple fee systems
-  * Opening  - When you open an account (player pays the fee)
-  * Deposit  - When you deposit to an account (player pays the fee)
-  * Withdraw - When you withdraw from an account (account pays the fee)
+  * Opening  - When you open an account           (player pays the fee)
+  * Deposit  - When you deposit to an account     (player pays the fee)
+  * Withdraw - When you withdraw from an account  (account pays the fee)
   * Transfer - When you transfer between accounts (sender account pays the fee)
-  * Closing  - When you close an account (player pays the fee)
-  * Sign     - When you create a balance sign (player pays the fee)
-API: Removed addAccount
+  * Closing  - When you close an account          (player pays the fee)
+  * Sign     - When you create a balance sign     (player pays the fee)
+API: Removed 0.5 deprecated functions
+API: Added BankAccountException
 
 0.5.1
 Added permissionnode for list command (Included in basic permission)

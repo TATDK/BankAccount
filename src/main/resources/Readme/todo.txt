@@ -4,3 +4,4 @@ TODO
 
 - NPC Banker and Trader?? (Perhaps)
 - Multiple banks with own accounts
+- Item account

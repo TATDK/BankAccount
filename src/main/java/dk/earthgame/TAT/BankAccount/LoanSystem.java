@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 
+import dk.earthgame.TAT.BankAccount.System.BankAccountException;
 import dk.earthgame.TAT.BankAccount.System.TransactionTypes;
 import dk.earthgame.nijikokun.register.payment.Method.MethodAccount;
 
@@ -76,12 +77,16 @@ public class LoanSystem {
                     pairs.getValue().runLoan();
                     if (pairs.getValue().remaining <= 0) {
                         Loans.remove(pairs.getKey());
-                        if (plugin.getSaved(pairs.getKey()).getBounty() > 0.00) {
-                            plugin.addTransaction(pairs.getKey(), "", TransactionTypes.LOAN_MISSING, pairs.getValue().remaining);
-                        } else {
-                            if (plugin.settings.Debug_Loan)
-                                plugin.console.info(pairs.getKey() + " paid a part of the loan back");
-                            plugin.addTransaction(pairs.getKey(), "", TransactionTypes.LOAN_PAID, 0.00);
+                        try {
+                            if (plugin.getSaved(pairs.getKey()).getBounty() > 0.00) {
+                                plugin.addTransaction(pairs.getKey(), "", TransactionTypes.LOAN_MISSING, pairs.getValue().remaining);
+                            } else {
+                                if (plugin.settings.Debug_Loan)
+                                    plugin.console.info(pairs.getKey() + " paid a part of the loan back");
+                                plugin.addTransaction(pairs.getKey(), "", TransactionTypes.LOAN_PAID, 0.00);
+                            }
+                        } catch (BankAccountException e) {
+                            e.printStackTrace();
                         }
                     }
                 }

@@ -1,0 +1,35 @@
+*****************************
+    UPGRADE 0.5.1 => 0.6
+*****************************
+
+***** CONFIG UPGRADE *****
+Fee is now setup in another structure caused by multiple fee systems.
+It is now like below
+--------------------------------
+Fee:
+    Opening:
+        Mode: None
+        Percentage: 0
+        Static: 0
+    Deposit:
+        Mode: None
+        Percentage: 0
+        Static: 0
+    Withdraw:
+        Mode: None
+        Percentage: 0
+        Static: 0
+    Transfer:
+        Mode: None
+        Percentage: 0
+        Static: 0
+    Closing:
+        Mode: None
+        Percentage: 0
+        Static: 0
+    Sign:
+        Mode: None
+        Percentage: 0
+        Static: 0
+--------------------------------
+

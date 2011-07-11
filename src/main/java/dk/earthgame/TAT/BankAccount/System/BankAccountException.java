@@ -23,4 +23,12 @@ public class BankAccountException extends Exception {
     public BankAccountException(String e) {
         super(e);
     }
+    
+    /**
+     * Constructs a new BankAccountException.
+     * @param e Exception
+     */
+    public BankAccountException(Exception e) {
+    	super(e);
+    }
 }

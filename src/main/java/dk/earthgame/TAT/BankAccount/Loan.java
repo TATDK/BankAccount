@@ -10,6 +10,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 
+import dk.earthgame.TAT.BankAccount.System.BankAccountException;
 import dk.earthgame.TAT.BankAccount.System.TransactionTypes;
 import dk.earthgame.nijikokun.register.payment.Method.MethodAccount;
 
@@ -103,7 +104,11 @@ public class Loan {
                 messageTo.sendMessage("ATM: " + ChatColor.GREEN + "Your loan is fully paid off.");
             }
         }
-        plugin.addTransaction(player, null, TransactionTypes.LOAN_PAYMENT, subtract);
+        try {
+			plugin.addTransaction(player, null, TransactionTypes.LOAN_PAYMENT, subtract);
+		} catch (BankAccountException e) {
+			e.printStackTrace();
+		}
     }
     
     void manualPayment(double amount) {

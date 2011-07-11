@@ -25,6 +25,7 @@ import org.anjocaido.groupmanager.GroupManager;
 import com.nijikokun.bukkit.Permissions.Permissions;
 
 import dk.earthgame.TAT.BankAccount.Settings.FeeModes;
+import dk.earthgame.TAT.BankAccount.System.BankAccountException;
 import dk.earthgame.TAT.BankAccount.System.Font;
 import dk.earthgame.TAT.BankAccount.System.Password;
 import dk.earthgame.TAT.BankAccount.System.PermissionNodes;
@@ -72,18 +73,6 @@ public class BankAccount extends JavaPlugin {
     //#########################################################################//
     
     //SYSTEM
-    
-    void printFullDebugInfo(String message) {
-        if (settings.Debug_Full) {
-            console.info(message);
-        }
-    }
-    
-    void printFullDebugWarning(String message) {
-        if (settings.Debug_Full) {
-            console.warning(message);
-        }
-    }
     
     void foundEconomy() {
         if (LoanSystem.LoanActive && !LoanSystem.running) {
@@ -417,9 +406,10 @@ public class BankAccount extends JavaPlugin {
      * @param account Name of account
      * @param type Type of transaction (dk.earthgame.TAT.BankAccount.System.TransactionTypes)
      * @param amount amount of money the transaction (0.00 if money isn't a part of the transaction)
+     * @throws BankAccountException 
      * @since 0.5
      */
-    public void addTransaction(String player, String account, TransactionTypes type, Double amount) {
+    public void addTransaction(String player, String account, TransactionTypes type, Double amount) throws BankAccountException {
         if (settings.Transactions) {
             try {
                 int time = Math.round(new Date().getTime()/1000);
@@ -429,6 +419,7 @@ public class BankAccount extends JavaPlugin {
                     console.warning("Error #16-2: " + e.getMessage());
                 else
                     console.warning("Error #16-1: " + e.getErrorCode() + " - " + e.getSQLState());
+                throwException("SQL error adding transaction");
             }
         }
     }
@@ -461,8 +452,9 @@ public class BankAccount extends JavaPlugin {
      * @param accountname The name of the account
      * @since 0.5
      * @return If the account exists
+     * @throws BankAccountException 
      */
-    public boolean accountExists(String accountname) {
+    public boolean accountExists(String accountname) throws BankAccountException {
         ResultSet rs;
         int id = 0;
         try {
@@ -483,6 +475,7 @@ public class BankAccount extends JavaPlugin {
                 console.warning("Error #01-2: " + e.getMessage());
             else
                 console.warning("Error #01-1: " + e.getErrorCode() + " - " + e.getSQLState());
+            throwException("SQL error while looking up for account");
         }
         if (id > 0) {
             return true;
@@ -496,8 +489,9 @@ public class BankAccount extends JavaPlugin {
      * @since 0.5
      * @param player Username of the player
      * @return List of accounts 
+     * @throws BankAccountException 
      */
-    public List<String> accountList(String player) {
+    public List<String> accountList(String player) throws BankAccountException {
         List<String> accounts = new ArrayList<String>();
         ResultSet rs = null;
         try {
@@ -514,6 +508,7 @@ public class BankAccount extends JavaPlugin {
                 console.warning("Error #22-2: " + e.getMessage());
             else
                 console.warning("Error #22-1: " + e.getErrorCode() + " - " + e.getSQLState());
+        	throwException("SQL error getting account list");
         }
         //Be sure that rs is closed
         try {
@@ -533,8 +528,9 @@ public class BankAccount extends JavaPlugin {
      * @since 0.5
      * @param player The player
      * @return List of accounts
+     * @throws BankAccountException 
      */
-    public List<String> accountList(Player player) { return accountList(player.getName()); }
+    public List<String> accountList(Player player) throws BankAccountException { return accountList(player.getName()); }
     
     /**
      * Open a new account
@@ -545,8 +541,9 @@ public class BankAccount extends JavaPlugin {
      * @param feePaid 
      * @since 0.5.1
      * @return If the account is successfully created
+     * @throws BankAccountException 
      */
-    public boolean openAccount(String accountname,String players,String commandsender, double feePaid) {
+    public boolean openAccount(String accountname,String players,String commandsender, double feePaid) throws BankAccountException {
         double StartAmount = 0;
         if (settings.StartAmount_Active) {
             StartAmount += feePaid*settings.StartAmount_Fee;
@@ -555,14 +552,16 @@ public class BankAccount extends JavaPlugin {
         
         try {
             settings.stmt.executeUpdate("INSERT INTO `" + settings.SQL_account_table + "` (`accountname`,`cleanname`,`owners`,`users`,`amount`) VALUES ('" + accountname + "','" + accountname.toLowerCase() + "','" + players + "','','" + StartAmount + "')");
-            printFullDebugInfo(commandsender + " created account");
             return true;
         } catch(SQLException e) {
-            printFullDebugWarning(commandsender + " tried to create account - SQLError");
             if (!e.getMessage().equalsIgnoreCase(null))
-                console.warning("Error #02-2: " + e.getMessage());
+                console.warning("Error #02-3: " + e.getMessage());
             else
-                console.warning("Error #02-1: " + e.getErrorCode() + " - " + e.getSQLState());
+                console.warning("Error #02-2: " + e.getErrorCode() + " - " + e.getSQLState());
+        	throwException("SQL error opening account");
+        } catch (Exception e) {
+            console.warning("Error #02-1: " + e.toString());
+        	throwException("Intern error opening account");
         }
         return false;
     }
@@ -575,8 +574,9 @@ public class BankAccount extends JavaPlugin {
      * @param writeAccess Only look for owners
      * @since 0.5
      * @return If the player have access
+     * @throws BankAccountException 
      */
-    public boolean accessAccount(String accountname,Player player,boolean writeAccess) {
+    public boolean accessAccount(String accountname,Player player,boolean writeAccess) throws BankAccountException {
         if (!accountExists(accountname)) {
             //There is no spoon... I mean account
             return false;
@@ -617,8 +617,10 @@ public class BankAccount extends JavaPlugin {
                 console.warning("Error #03-3: " + e1.getMessage());
             else
                 console.warning("Error #03-2: " + e1.getErrorCode() + " - " + e1.getSQLState());
+        	throwException("SQL error checking access to account");
         } catch(Exception e) {
             console.warning("Error #03-1: " + e.toString());
+        	throwException("Intern error checking access to account");
         }
         return false;
     }
@@ -631,8 +633,9 @@ public class BankAccount extends JavaPlugin {
      * @param writeAccess Only look for owners
      * @since 0.5
      * @return If the player have access
+     * @throws BankAccountException 
      */
-    public boolean accessAccount(String accountname,String player,boolean writeAccess) {
+    public boolean accessAccount(String accountname,String player,boolean writeAccess) throws BankAccountException {
         try {
             ResultSet rs;
             rs = settings.stmt.executeQuery("SELECT `users`, `owners` FROM `" + settings.SQL_account_table + "` WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
@@ -659,8 +662,10 @@ public class BankAccount extends JavaPlugin {
                 console.warning("Error #03-3: " + e1.getMessage());
             else
                 console.warning("Error #03-2: " + e1.getErrorCode() + " - " + e1.getSQLState());
+        	throwException("SQL error checking access to account");
         } catch(Exception e) {
             console.warning("Error #03-1: " + e.toString());
+        	throwException("Intern error checking access to account");
         }
         return false;
     }
@@ -673,12 +678,12 @@ public class BankAccount extends JavaPlugin {
      * @since 0.5
      * @see #addOwner(String accountname,String player)
      * @return If the user is successfully added
+     * @throws BankAccountException 
      */
-    public boolean addUser(String accountname,String player) {
+    public boolean addUser(String accountname,String player) throws BankAccountException {
         try {
             String newPlayers = player;
             ResultSet rs;
-            printFullDebugInfo("Getting users of account");
             rs = settings.stmt.executeQuery("SELECT `users` FROM `" + settings.SQL_account_table + "` WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
             while(rs.next()) {
                 String[] players = rs.getString("users").split(";");
@@ -686,25 +691,18 @@ public class BankAccount extends JavaPlugin {
                     newPlayers += ";" + p;
                 }
             }
-            try {
-                printFullDebugInfo("Saving users to account");
-                settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `users` = '" + newPlayers + "' WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
-                printFullDebugInfo("Added user");
-                return true;
-            } catch(SQLException e) {
-                printFullDebugWarning("Tried to add user to account - SQLError saving new users");
-                if (!e.getMessage().equalsIgnoreCase(null))
-                    console.warning("Error #04-4: " + e.getMessage());
-                else
-                    console.warning("Error #04-3: " + e.getErrorCode() + " - " + e.getSQLState());
-            }
+            settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `users` = '" + newPlayers + "' WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
+            return true;
         } catch(SQLException e) {
-            printFullDebugWarning("Tried to add user to account - SQLError getting current users");
             if (!e.getMessage().equalsIgnoreCase(null))
-                console.warning("Error #04-2: " + e.getMessage());
+                console.warning("Error #04-3: " + e.getMessage());
             else
-                console.warning("Error #04-1: " + e.getErrorCode() + " - " + e.getSQLState());
-        }
+                console.warning("Error #04-2: " + e.getErrorCode() + " - " + e.getSQLState());
+            throwException("SQL error adding user");
+        } catch (Exception e) {
+        	console.warning("Error #04-1: " + e.toString());
+        	throwException("Intern error adding user");
+		}
         return false;
     }
     
@@ -716,12 +714,12 @@ public class BankAccount extends JavaPlugin {
      * @since 0.5
      * @see #removeOwner(String accountname,String player)
      * @return If the user is successfully removed
+     * @throws BankAccountException 
      */
-    public boolean removeUser(String accountname,String player) {
+    public boolean removeUser(String accountname,String player) throws BankAccountException {
         try {
             String newPlayers = "";
             ResultSet rs;
-            printFullDebugInfo("Getting users of account");
             rs = settings.stmt.executeQuery("SELECT `users` FROM `" + settings.SQL_account_table + "` WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
             while(rs.next()) {
                 String[] players = rs.getString("users").split(";");
@@ -734,25 +732,18 @@ public class BankAccount extends JavaPlugin {
                     }
                 }
             }
-            try {
-                printFullDebugInfo("Saving users to account");
-                settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `users` = '" + newPlayers + "' WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
-                printFullDebugInfo("Removed user");
-                return true;
-            } catch(SQLException e) {
-                printFullDebugWarning("Tried to remove user to account - SQLError saving new users");
-                if (!e.getMessage().equalsIgnoreCase(null))
-                    console.warning("Error #05-4: " + e.getMessage());
-                else
-                    console.warning("Error #05-3: " + e.getErrorCode() + " - " + e.getSQLState());
-            }
+            settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `users` = '" + newPlayers + "' WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
+            return true;
         } catch(SQLException e) {
-            printFullDebugWarning("Tried to remove user to account - SQLError getting current users");
             if (!e.getMessage().equalsIgnoreCase(null))
-                console.warning("Error #05-2: " + e.getMessage());
+                console.warning("Error #05-3: " + e.getMessage());
             else
-                console.warning("Error #05-1: " + e.getErrorCode() + " - " + e.getSQLState());
-        }
+                console.warning("Error #05-2: " + e.getErrorCode() + " - " + e.getSQLState());
+        	throwException("SQL error removing user");
+        } catch (Exception e) {
+        	console.warning("Error #05-1: " + e.toString());
+        	throwException("Intern error removing user");
+		}
         return false;
     }
     
@@ -764,12 +755,12 @@ public class BankAccount extends JavaPlugin {
      * @since 0.5
      * @see #addUser(String accountname,String player)
      * @return If the owner is successfully added
+     * @throws BankAccountException 
      */
-    public boolean addOwner(String accountname,String player) {
+    public boolean addOwner(String accountname,String player) throws BankAccountException {
         try {
             String newPlayers = player;
             ResultSet rs;
-            printFullDebugInfo("Getting owners of account");
             rs = settings.stmt.executeQuery("SELECT `owners` FROM `" + settings.SQL_account_table + "` WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
             while(rs.next()) {
                 String[] players = rs.getString("owners").split(";");
@@ -777,26 +768,18 @@ public class BankAccount extends JavaPlugin {
                     newPlayers += ";" + p;
                 }
             }
-            try {
-                printFullDebugInfo("Saving owners to account");
-                settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `owners` = '" + newPlayers + "' WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
-                printFullDebugInfo("Added owner");
-                return true;
-            } catch(SQLException e) {
-                printFullDebugWarning("Tried to add owner to account - SQLError saving new owners");
-                if (!e.getMessage().equalsIgnoreCase(null))
-                    console.warning("Error #xx-4: " + e.getMessage());
-                else
-                    console.warning("Error #xx-3: " + e.getErrorCode() + " - " + e.getSQLState());
-            }
+            return true;
         } catch(SQLException e) {
-            printFullDebugWarning("Tried to add owner to account - SQLError getting current owners");
             if (!e.getMessage().equalsIgnoreCase(null))
-                console.warning("Error #xx-2: " + e.getMessage());
+                console.warning("Error #xx-3: " + e.getMessage());
             else
-                console.warning("Error #xx-1: " + e.getErrorCode() + " - " + e.getSQLState());
-        }
-        return false;
+                console.warning("Error #xx-2: " + e.getErrorCode() + " - " + e.getSQLState());
+            throwException("SQL error adding owner");
+        } catch (Exception e) {
+        	console.warning("Error #xx-1: " + e.toString());
+        	throwException("Intern error adding owner");
+		}
+		return false;
     }
     
     /**
@@ -807,8 +790,9 @@ public class BankAccount extends JavaPlugin {
      * @since 0.5
      * @see #removeUser(String accountname,String player)
      * @return If the owner is successfully removed
+     * @throws BankAccountException 
      */
-    public boolean removeOwner(String accountname,String player) {
+    public boolean removeOwner(String accountname,String player) throws BankAccountException {
         try {
             String newPlayers = "";
             ResultSet rs;
@@ -824,22 +808,19 @@ public class BankAccount extends JavaPlugin {
                     }
                 }
             }
-            try {
-                settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `owners` = '" + newPlayers + "' WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
-                return true;
-            } catch(SQLException e) {
-                if (!e.getMessage().equalsIgnoreCase(null))
-                    console.warning("Error #xx-4: " + e.getMessage());
-                else
-                    console.warning("Error #xx-3: " + e.getErrorCode() + " - " + e.getSQLState());
-            }
+            settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `owners` = '" + newPlayers + "' WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
+            return true;
         } catch(SQLException e) {
             if (!e.getMessage().equalsIgnoreCase(null))
-                console.warning("Error #xx-2: " + e.getMessage());
+                console.warning("Error #xx-3: " + e.getMessage());
             else
-                console.warning("Error #xx-1: " + e.getErrorCode() + " - " + e.getSQLState());
-        }
-        return false;
+                console.warning("Error #xx-2: " + e.getErrorCode() + " - " + e.getSQLState());
+            throwException("SQL error removing owner");
+        } catch (Exception e) {
+        	console.warning("Error #xx-1: " + e.toString());
+        	throwException("Intern error removing owner");
+		}
+		return false;
     }
 
     /**
@@ -849,18 +830,23 @@ public class BankAccount extends JavaPlugin {
      * @param password The new password (Must be encrypted!)
      * @since 0.5
      * @return If the password is successfully set
+     * @throws BankAccountException 
      */
-    public boolean setPassword(String accountname,String password) {
+    public boolean setPassword(String accountname,String password) throws BankAccountException {
         try {
             settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `password` = '" + password + "' WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
             return true;
         } catch(SQLException e) {
             if (!e.getMessage().equalsIgnoreCase(null))
-                console.warning("Error #06-2: " + e.getMessage());
+                console.warning("Error #06-3: " + e.getMessage());
             else
-                console.warning("Error #06-1: " + e.getErrorCode() + " - " + e.getSQLState());
-        }
-        return false;
+                console.warning("Error #06-2: " + e.getErrorCode() + " - " + e.getSQLState());
+            throwException("SQL error setting password");
+        } catch (Exception e) {
+        	console.warning("Error #06-1: " + e.toString());
+        	throwException("Intern error setting password");
+		}
+		return false;
     }
 
     /**
@@ -873,8 +859,9 @@ public class BankAccount extends JavaPlugin {
      * @param password Password
      * @since 0.5
      * @return If the action is run successfully
+     * @throws BankAccountException 
      */
-    public boolean ATM(String accountname,String player,String type,Double amount,String password) {
+    public boolean ATM(String accountname,String player,String type,Double amount,String password) throws BankAccountException {
         try {
             double account = getBalance(accountname);
             MethodAccount economyAccount = Method.getAccount(player);
@@ -939,6 +926,7 @@ public class BankAccount extends JavaPlugin {
             }
         } catch(Exception e) {
             console.warning("Error #07-1: " + e.toString());
+        	throwException("Intern error using ATM");
         }
         return false;
     }
@@ -951,8 +939,9 @@ public class BankAccount extends JavaPlugin {
      * @param password Password
      * @since 0.5
      * @return If the account is successfully closed
+     * @throws BankAccountException 
      */
-    public boolean closeAccount(String accountname,String player,String password) {
+    public boolean closeAccount(String accountname,String player,String password) throws BankAccountException {
         if (PasswordSystem.passwordCheck(accountname, password)) {
             try {
                 MethodAccount economyAccount = Method.getAccount(player);
@@ -976,13 +965,15 @@ public class BankAccount extends JavaPlugin {
                     console.warning("Error #08-3: " + e.getMessage());
                 else
                     console.warning("Error #08-2: " + e.getErrorCode() + " - " + e.getSQLState());
-            } catch(Exception e) {
-                console.warning("Error #08-1: " + e.toString());
-            }
-            return false;
+                throwException("SQL error closing account");
+            } catch (Exception e) {
+            	console.warning("Error #08-1: " + e.toString());
+            	throwException("Intern error closing account");
+    		}
         } else {
             return false;
         }
+		return false;
     }
     
     /**
@@ -991,8 +982,9 @@ public class BankAccount extends JavaPlugin {
      * @param accountname Name of account
      * @since 0.5
      * @return String of users (seperated by comma and space(, ))
+     * @throws BankAccountException 
      */
-    public String getUsers(String accountname) {
+    public String getUsers(String accountname) throws BankAccountException {
         try {
             String output = "";
             ResultSet rs;
@@ -1012,10 +1004,12 @@ public class BankAccount extends JavaPlugin {
                 console.warning("Error #09-3: " + e1.getMessage());
             else
                 console.warning("Error #09-2: " + e1.getErrorCode() + " - " + e1.getSQLState());
-        } catch(Exception e) {
-            console.warning("Error #09-1: " + e.toString());
-        }
-        return "Error loading users";
+            throwException("SQL error getting users");
+        } catch (Exception e) {
+        	console.warning("Error #09-1: " + e.toString());
+        	throwException("Intern error getting users");
+		}
+		return null;
     }
     
     /**
@@ -1024,8 +1018,9 @@ public class BankAccount extends JavaPlugin {
      * @param accountname Name of account
      * @since 0.5
      * @return String of owners (seperated by comma and space(, ))
+     * @throws BankAccountException 
      */
-    public String getOwners(String accountname) {
+    public String getOwners(String accountname) throws BankAccountException {
         try {
             String output = "";
             ResultSet rs;
@@ -1045,10 +1040,12 @@ public class BankAccount extends JavaPlugin {
                 console.warning("Error #09-3: " + e1.getMessage());
             else
                 console.warning("Error #09-2: " + e1.getErrorCode() + " - " + e1.getSQLState());
-        } catch(Exception e) {
-            console.warning("Error #09-1: " + e.toString());
-        }
-        return "Error loading owners";
+            throwException("SQL error getting owners");
+        } catch (Exception e) {
+        	console.warning("Error #09-1: " + e.toString());
+        	throwException("Intern error getting owners");
+		}
+		return null;
     }
     
     /**
@@ -1057,8 +1054,9 @@ public class BankAccount extends JavaPlugin {
      * @param accountname Name of account
      * @since 0.5
      * @return double - Amount of money on account
+     * @throws BankAccountException 
      */
-    public double getBalance(String accountname) {
+    public double getBalance(String accountname) throws BankAccountException {
         try {
             ResultSet rs;
             rs = settings.stmt.executeQuery("SELECT `amount` FROM `" + settings.SQL_account_table + "` WHERE `cleanname` = '" + accountname.toLowerCase() +"'");
@@ -1070,9 +1068,11 @@ public class BankAccount extends JavaPlugin {
                 console.warning("Error #10-3: " + e1.getMessage());
             else
                 console.warning("Error #10-2: " + e1.getErrorCode() + " - " + e1.getSQLState());
-        } catch(Exception e) {
-            console.warning("Error #10-1: " + e.toString());
-        }
+            throwException("SQL error getting balance");
+        } catch (Exception e) {
+        	console.warning("Error #10-1: " + e.toString());
+        	throwException("Intern error getting balance");
+		}
         return 0;
     }
     
@@ -1082,18 +1082,23 @@ public class BankAccount extends JavaPlugin {
      * @param accountname Name of account
      * @since 0.5
      * @return If the account balance is successfully changed
+     * @throws BankAccountException 
      */
-    public boolean setBalance(double balance,String accountname) {
+    public boolean setBalance(double balance,String accountname) throws BankAccountException {
         try {
             settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `amount` = '" + balance + "' WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
             return true;
         } catch (SQLException e) {
             if (!e.getMessage().equalsIgnoreCase(null))
-                console.warning("Error #17-2: " + e.getMessage());
+                console.warning("Error #17-3: " + e.getMessage());
             else
-                console.warning("Error #17-1: " + e.getErrorCode() + " - " + e.getSQLState());
-        }
-        return false;
+                console.warning("Error #17-2: " + e.getErrorCode() + " - " + e.getSQLState());
+            throwException("SQL error setting balance");
+        } catch (Exception e) {
+        	console.warning("Error #17-1: " + e.toString());
+        	throwException("Intern error setting balance");
+		}
+		return false;
     }
     
     /**
@@ -1103,8 +1108,9 @@ public class BankAccount extends JavaPlugin {
      * @param accountname Name of account
      * @since 0.5
      * @return If the money is successfully added
+     * @throws BankAccountException 
      */
-    public boolean add(double amount,String accountname) {
+    public boolean add(double amount,String accountname) throws BankAccountException {
         double temp = getBalance(accountname);
         temp += amount;
         try {
@@ -1115,8 +1121,11 @@ public class BankAccount extends JavaPlugin {
                 console.warning("Error #18-2: " + e.getMessage());
             else
                 console.warning("Error #18-1: " + e.getErrorCode() + " - " + e.getSQLState());
-        }
-        return false;
+            throwException("SQL error adding money from account");
+        } catch (Exception e) {
+        	throwException("Intern error adding money from account");
+		}
+		return false;
     }
     
     /**
@@ -1126,8 +1135,9 @@ public class BankAccount extends JavaPlugin {
      * @param accountname Name of account
      * @since 0.5
      * @return If the money is successfully subtracted
+     * @throws BankAccountException 
      */
-    public boolean subtract(double amount,String accountname) {
+    public boolean subtract(double amount,String accountname) throws BankAccountException {
         double temp = getBalance(accountname);
         temp -= amount;
         try {
@@ -1138,8 +1148,9 @@ public class BankAccount extends JavaPlugin {
                 console.warning("Error #19-2: " + e.getMessage());
             else
                 console.warning("Error #19-1: " + e.getErrorCode() + " - " + e.getSQLState());
+            throwException("SQL error subtracting money from account");
         }
-        return false;
+		return false;
     }
     
     //AREAS
@@ -1149,8 +1160,9 @@ public class BankAccount extends JavaPlugin {
      * @param name Name of area
      * @since 0.5
      * @return If the area exists
+     * @throws BankAccountException 
      */
-    public boolean areaExists(String name) {
+    public boolean areaExists(String name) throws BankAccountException {
         ResultSet rs;
         int id = 0;
         try {
@@ -1169,15 +1181,19 @@ public class BankAccount extends JavaPlugin {
                 }
             } catch (SQLException e1) {
                 if (!e1.getMessage().equalsIgnoreCase(null))
-                    console.warning("Error #14-4: " + e1.getMessage());
+                    console.warning("Error #14-5: " + e1.getMessage());
                 else
-                    console.warning("Error #14-3: " + e1.getErrorCode() + " - " + e1.getSQLState());
+                    console.warning("Error #14-4: " + e1.getErrorCode() + " - " + e1.getSQLState());
             }
         } catch (SQLException e) {
             if (!e.getMessage().equalsIgnoreCase(null))
-                console.warning("Error #14-2: " + e.getMessage());
+                console.warning("Error #14-3: " + e.getMessage());
             else
-                console.warning("Error #14-1: " + e.getErrorCode() + " - " + e.getSQLState());
+                console.warning("Error #14-2: " + e.getErrorCode() + " - " + e.getSQLState());
+            throwException("SQL error checking area for existence");
+        } catch (Exception e) {
+            console.warning("Error #14-1: " + e.toString());
+            throwException("Intern error checking area for existence");
         }
         if (id > 0) {
             return true;
@@ -1192,8 +1208,9 @@ public class BankAccount extends JavaPlugin {
      * @param pos Position
      * @since 0.5
      * @return If the position is inside an area
+     * @throws BankAccountException 
      */
-    public boolean inArea(String world,Location pos) {
+    public boolean inArea(String world,Location pos) throws BankAccountException {
         try {
             ResultSet rs = settings.stmt.executeQuery("SELECT `x1`,`y1`,`z1`,`x2`,`y2`,`z2` FROM `" + settings.SQL_area_table + "` WHERE `world` = '" + world + "'");
             while (rs.next()) {
@@ -1216,9 +1233,13 @@ public class BankAccount extends JavaPlugin {
             }
         } catch(SQLException e) {
             if (!e.getMessage().equalsIgnoreCase(null))
-                console.warning("Error #15-2: " + e.getMessage());
+                console.warning("Error #15-3: " + e.getMessage());
             else
-                console.warning("Error #15-1: " + e.getErrorCode() + " - " + e.getSQLState());
+                console.warning("Error #15-2: " + e.getErrorCode() + " - " + e.getSQLState());
+            throwException("SQL error locating you in bank area");
+        } catch (Exception e) {
+            console.warning("Error #15-1: " + e.toString());
+            throwException("Intern error locating you in bank area");
         }
         return false;
     }
@@ -1232,21 +1253,26 @@ public class BankAccount extends JavaPlugin {
      * @param world Name of world
      * @since 0.5
      * @return If the area is successfully added
+     * @throws BankAccountException 
      */
-    public boolean setArea(String name,Location pos1,Location pos2,String world) {
+    public boolean setArea(String name,Location pos1,Location pos2,String world) throws BankAccountException {
         if (areaExists(name)) {
             return false;
         }
         try {
             settings.stmt.executeUpdate("INSERT INTO `" + settings.SQL_area_table + "` (`areaname`,`world`,`x1`, `y1`, `z1`, `x2`, `y2`, `z2`) VALUES ('" + name + "','" + world + "','" + pos1.getBlockX() + "','" + pos1.getBlockY() + "','" + pos1.getBlockZ() + "','" + pos2.getBlockX() + "','" + pos2.getBlockY() + "','" + pos2.getBlockZ() + "')");
             return true;
-        } catch(SQLException e) {
+        } catch (SQLException e) {
             if (!e.getMessage().equalsIgnoreCase(null))
-                console.warning("Error #12-2: " + e.getMessage());
+                console.warning("Error #12-3: " + e.getMessage());
             else
-                console.warning("Error #12-1: " + e.getErrorCode() + " - " + e.getSQLState());
+                console.warning("Error #12-2: " + e.getErrorCode() + " - " + e.getSQLState());
+            throwException("SQL error");
+        } catch (Exception e) {
+            console.warning("Error #12-1: " + e.toString());
+            throwException();
         }
-        return false;
+		return false;
     }
 
     /**
@@ -1255,8 +1281,9 @@ public class BankAccount extends JavaPlugin {
      * @param name Name of area
      * @since 0.5
      * @return If the area is successfully removed
+     * @throws BankAccountException 
      */
-    public boolean removeArea(String name) {
+    public boolean removeArea(String name) throws BankAccountException {
         try {
             settings.stmt.executeUpdate("DELETE FROM `" + settings.SQL_area_table + "` WHERE `areaname` = '" + name + "'");
             return true;
@@ -1265,10 +1292,12 @@ public class BankAccount extends JavaPlugin {
                 console.warning("Error #13-3: " + e.getMessage());
             else
                 console.warning("Error #13-2: " + e.getErrorCode() + " - " + e.getSQLState());
+            throwException("SQL error");
         } catch (Exception e) {
             console.warning("Error #13-1: " + e.toString());
+            throwException();
         }
-        return false;
+		return false;
     }
     
     /**
@@ -1277,8 +1306,10 @@ public class BankAccount extends JavaPlugin {
      * @param w World
      * @param l Location
      * @param accountname Name of account
+     * @throws BankAccountException 
+     * @throws IndexOutOfBoundsException 
      */
-    public void addSign(World w,Location l,String accountname) {
+    public void addSign(World w,Location l,String accountname) throws IndexOutOfBoundsException, BankAccountException {
         ((Sign)w.getBlockAt(l).getState()).setLine(0, "[BankAccount]");
         signs.put(new SignLocation(w, l), accountname);
         //updateSigns(accountname);
@@ -1297,8 +1328,10 @@ public class BankAccount extends JavaPlugin {
     
     /**
      * Update all signs
+     * @throws BankAccountException 
+     * @throws IndexOutOfBoundsException 
      */
-    public void updateSigns() {
+    public void updateSigns() throws IndexOutOfBoundsException, BankAccountException {
         HashMap<String, Double> balances = new HashMap<String, Double>();
         for (Map.Entry<SignLocation, String> sign: signs.entrySet()) {
             double balance = 0;
@@ -1333,8 +1366,10 @@ public class BankAccount extends JavaPlugin {
     /**
      * Update all signs that showing defined account
      * @param accountname Name of account
+     * @throws BankAccountException 
+     * @throws IndexOutOfBoundsException 
      */
-    public void updateSigns(String accountname) {
+    public void updateSigns(String accountname) throws IndexOutOfBoundsException, BankAccountException {
         double balance = getBalance(accountname);
         for (Map.Entry<SignLocation, String> sign: signs.entrySet()) {
             if (sign.getValue().equalsIgnoreCase(accountname)) {
@@ -1363,23 +1398,16 @@ public class BankAccount extends JavaPlugin {
         }
     }
     
-    /**
-     * Output Info to log on behalf of BankAccount
-     * 
-     * @deprecated
-     * @param message
-     * @since 0.5
-     * @see #console
-     */
-    public void consoleInfo(String message) { console.info(message); }
-
-    /**
-     * Output Warning to log on behalf of BankAccount
-     * 
-     * @deprecated
-     * @param message
-     * @since 0.5
-     * @see #console
-     */
-    public void consoleWarning(String message) { console.warning(message); }
+    private BankAccountException throwException(String msg) throws BankAccountException {
+    	if (settings.Debug_Full) {
+			try {
+				return new BankAccountException(msg);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+    	}
+		return null;
+    }
+    
+    private void throwException() throws BankAccountException { throwException(""); }
 }
