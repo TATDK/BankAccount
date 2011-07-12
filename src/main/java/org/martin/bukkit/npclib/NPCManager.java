@@ -14,6 +14,12 @@ import net.minecraft.server.WorldServer;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.entity.HumanEntity;
+import org.bukkit.event.Event.Priority;
+import org.bukkit.event.Event.Type;
+import org.bukkit.event.server.PluginDisableEvent;
+import org.bukkit.event.server.ServerListener;
+import org.bukkit.event.world.ChunkLoadEvent;
+import org.bukkit.event.world.WorldListener;
 
 import dk.earthgame.TAT.BankAccount.BankAccount;
 
@@ -24,12 +30,13 @@ import dk.earthgame.TAT.BankAccount.BankAccount;
 public class NPCManager {
     private HashMap<String, NPCEntity> npcs = new HashMap<String, NPCEntity>();
     private BServer server;
+    private int taskid;
     private BankAccount plugin;
 
     public NPCManager(BankAccount plugin) {
         this.plugin = plugin;
         server = BServer.getInstance(plugin);
-        plugin.getServer().getScheduler().scheduleAsyncRepeatingTask(plugin, new Runnable() {
+        taskid = plugin.getServer().getScheduler().scheduleAsyncRepeatingTask(plugin, new Runnable() {
             public void run() {
                 HashSet<String> toRemove = new HashSet<String>();
                 for (String i : npcs.keySet()) {
@@ -44,7 +51,31 @@ public class NPCManager {
                 }
             }
         }, 1L, 1L);
+        plugin.getServer().getPluginManager().registerEvent(Type.PLUGIN_DISABLE, new SL(), Priority.Normal, plugin);
+        plugin.getServer().getPluginManager().registerEvent(Type.CHUNK_LOAD, new WL(), Priority.Normal, plugin);	
     }
+
+	private class SL extends ServerListener {
+        @Override
+        public void onPluginDisable(PluginDisableEvent event) {
+            if (event.getPlugin() == plugin) {
+                despawnAll();
+                plugin.getServer().getScheduler().cancelTask(taskid);
+            }
+        }
+    }
+
+    private class WL extends WorldListener {
+        @Override
+        public void onChunkLoad(ChunkLoadEvent event) {
+            for (NPCEntity npc : npcs.values()) {
+                if (npc != null && event.getChunk() == npc.getBukkitEntity().getLocation().getBlock().getChunk()) {
+                    BWorld world = new BWorld(event.getWorld());
+                    world.getWorldServer().addEntity(npc);
+                }
+            }
+        }
+     }
 
     /**
      * Spawn NPC
@@ -77,7 +108,7 @@ public class NPCManager {
             }
             BWorld world = new BWorld(l.getWorld());
             NPCEntity npcEntity = new NPCEntity(server.getMCServer(), world.getWorldServer(), NPCname, new ItemInWorldManager(world.getWorldServer()));
-            npcEntity.setPositionRotation(l.getBlockX(), l.getBlockY(), l.getBlockZ(), l.getYaw(), l.getPitch());
+            npcEntity.setPositionRotation(l.getX(), l.getY(), l.getZ(), l.getYaw(), l.getPitch());
             world.getWorldServer().getChunkAt(l.getWorld().getChunkAt(l).getX(), l.getWorld().getChunkAt(l).getZ()).a(npcEntity);
             world.getWorldServer().addEntity(npcEntity);
             npcs.put(id, npcEntity);
@@ -128,6 +159,19 @@ public class NPCManager {
         for (String n : toRemove) {
             npcs.remove(n);
         }
+    }
+    
+    public void despawnAll() {
+    	for (NPCEntity npc : npcs.values()) {
+    		if (npc != null) {
+    			try {
+    				npc.world.removeEntity(npc);
+    			} catch (Exception e) {
+    				e.printStackTrace();
+    			}
+    		}
+    	}
+    	npcs.clear();
     }
     
     public void pathFindNPC(String id, Location l) {

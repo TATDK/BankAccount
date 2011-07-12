@@ -5,11 +5,10 @@ import java.util.TimerTask;
 
 import net.minecraft.server.Entity;
 import net.minecraft.server.EntityHuman;
-import net.minecraft.server.EntityLiving;
 import net.minecraft.server.EntityPlayer;
 import net.minecraft.server.Item;
-import net.minecraft.server.ItemInWorldManager;
 import net.minecraft.server.ItemStack;
+import net.minecraft.server.ItemInWorldManager;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.NetHandler;
 import net.minecraft.server.NetworkManager;
@@ -20,7 +19,9 @@ import net.minecraft.server.WorldServer;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.entity.EntityTargetEvent;
 import org.martin.bukkit.npclib.NPCPath.Node;
 
@@ -134,26 +135,8 @@ public class NPCEntity extends EntityPlayer {
 		super.c(entity);
 	}
 
-	@Override
-	public void die(Entity entity) {
-		System.out.println(entity);
-		super.die(entity);
-	}
-
-	@Override
-	public void a(EntityLiving entityliving) {
-		System.out.println(entityliving);
-		super.a(entityliving);
-	}
-
-	@Override
-	public void setPositionRotation(double x, double y, double z, float yaw, float pitch) {
-		super.setPositionRotation(x, y, z, yaw, pitch);
-	}
-
-	@Override
-	public void move(double x, double y, double z) {
-		super.move(x, y, z);
+	public PlayerInventory getInventory() {
+		return ((HumanEntity) getBukkitEntity()).getInventory();
 	}
 	
 	public void setItemInHand(Material m) {
