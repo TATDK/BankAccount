@@ -242,6 +242,18 @@ public class BankAccount extends JavaPlugin {
             console.info("Running interest every " + settings.interestTime + " minutes by " + settings.interestAmount + "%");
         }
         console.info("Established connection with economy!");
+
+        getServer().getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
+            public void run() {
+		        try {
+					updateSigns();
+		    		console.info("Signs updated");
+				} catch (BankAccountException e) {
+					console.warning("Error updating signs");
+					e.printStackTrace();
+				}
+            }
+        },20);
     }
 
     /**
@@ -323,6 +335,7 @@ public class BankAccount extends JavaPlugin {
         pm.registerEvent(Type.PLUGIN_DISABLE, pluginListener, Priority.Low, this);
         //Sign - Used for balance signs
         pm.registerEvent(Type.SIGN_CHANGE, blockListener, Priority.Normal, this);
+        pm.registerEvent(Type.BLOCK_BREAK, blockListener, Priority.Normal, this);
         
         console.enabled();
 
@@ -383,6 +396,8 @@ public class BankAccount extends JavaPlugin {
                 }
             }
         }
+
+        loadSigns();
     }
 
     /**
@@ -552,6 +567,7 @@ public class BankAccount extends JavaPlugin {
         
         try {
             settings.stmt.executeUpdate("INSERT INTO `" + settings.SQL_account_table + "` (`accountname`,`cleanname`,`owners`,`users`,`amount`) VALUES ('" + accountname + "','" + accountname.toLowerCase() + "','" + players + "','','" + StartAmount + "')");
+            updateSigns(accountname);
             return true;
         } catch(SQLException e) {
             if (!e.getMessage().equalsIgnoreCase(null))
@@ -872,6 +888,7 @@ public class BankAccount extends JavaPlugin {
                 } else if (economyAccount.hasEnough(amount)) {
                     add(amount, accountname);
                     economyAccount.subtract(amount);
+                    updateSigns(accountname);
                     return true;
                 } else {
                     return false;
@@ -890,6 +907,7 @@ public class BankAccount extends JavaPlugin {
                         }
                         subtract(amount, accountname);
                         economyAccount.add(amount);
+                        updateSigns(accountname);
                         return true;
                     } else {
                         return false;
@@ -916,6 +934,7 @@ public class BankAccount extends JavaPlugin {
                         }
                         subtract(amount, accountname);
                         add(amount, player);
+                        updateSigns(accountname);
                         return true;
                     } else {
                         return false;
@@ -959,6 +978,7 @@ public class BankAccount extends JavaPlugin {
                 }
                 settings.stmt.executeUpdate("DELETE FROM `" + settings.SQL_account_table + "` WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
                 economyAccount.add(accountBalance);
+                updateSigns(accountname);
                 return true;
             } catch(SQLException e) {
                 if (!e.getMessage().equalsIgnoreCase(null))
@@ -1087,6 +1107,7 @@ public class BankAccount extends JavaPlugin {
     public boolean setBalance(double balance,String accountname) throws BankAccountException {
         try {
             settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `amount` = '" + balance + "' WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
+            updateSigns(accountname);
             return true;
         } catch (SQLException e) {
             if (!e.getMessage().equalsIgnoreCase(null))
@@ -1115,6 +1136,7 @@ public class BankAccount extends JavaPlugin {
         temp += amount;
         try {
             settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `amount` = '" + temp + "' WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
+            updateSigns(accountname);
             return true;
         } catch (SQLException e) {
             if (!e.getMessage().equalsIgnoreCase(null))
@@ -1142,6 +1164,7 @@ public class BankAccount extends JavaPlugin {
         temp -= amount;
         try {
             settings.stmt.executeUpdate("UPDATE `" + settings.SQL_account_table + "` SET `amount` = '" + temp + "' WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
+            updateSigns(accountname);
             return true;
         } catch (SQLException e) {
             if (!e.getMessage().equalsIgnoreCase(null))
@@ -1309,11 +1332,61 @@ public class BankAccount extends JavaPlugin {
      * @throws BankAccountException 
      * @throws IndexOutOfBoundsException 
      */
-    public void addSign(World w,Location l,String accountname) throws IndexOutOfBoundsException, BankAccountException {
+    public void addSign(World w,Location l,String accountname) throws BankAccountException {
         ((Sign)w.getBlockAt(l).getState()).setLine(0, "[BankAccount]");
         signs.put(new SignLocation(w, l), accountname);
         //updateSigns(accountname);
         updateSigns();
+        saveSigns();
+    }
+    
+    /**
+     * Load signs from dat file
+     */
+	public void loadSigns() {
+    	File signFile = new File(getDataFolder(), "signs.dat");
+    	if (signFile.exists()) {
+    		try {
+    			FileReader fr = new FileReader(signFile);
+				BufferedReader reader = new BufferedReader(fr);
+				String s;
+				int line = 0;
+				signs.clear();
+				while ((s = reader.readLine()) != null) {
+					line++;
+					String[] args = s.split(",");
+					if (args.length == 5) {
+						signs.put(new SignLocation(getServer().getWorld(args[0]), new Location(getServer().getWorld(args[0]),Double.parseDouble(args[1]),Double.parseDouble(args[2]),Double.parseDouble(args[3]))),args[4]);
+					} else {
+						console.warning("Sign.dat contains errors on line " + line);
+					}
+				}
+				fr.close();
+			} catch (Exception e) {
+				console.warning("Error loading signs");
+				e.printStackTrace();
+			}
+    	}
+    }
+    
+    /**
+     * Save signs to dat file
+     */
+    public void saveSigns() {
+    	try {
+        	File signFile = new File(getDataFolder(), "signs.dat");
+    		FileWriter writer = new FileWriter(signFile);
+			for (Map.Entry<SignLocation, String> sign: signs.entrySet()) {
+				SignLocation location = sign.getKey();
+				String account = sign.getValue();
+				writer.write(location.getWorld().getName() + "," + location.locOutput() + "," + account + "\n");
+			}
+			writer.flush();
+			writer.close();
+		} catch (Exception e) {
+			console.warning("Can't save signs");
+			e.printStackTrace();
+		}
     }
     
     /**
@@ -1323,7 +1396,27 @@ public class BankAccount extends JavaPlugin {
      * @param l Location
      */
     public void removeSign(World w,Location l) {
-        signs.remove(new SignLocation(w, l));
+    	for (Map.Entry<SignLocation, String> sign: signs.entrySet()) {
+    		if (sign.getKey().getWorld().equals(w) && sign.getKey().getLocation().equals(l)) {
+    			signs.remove(sign.getKey());
+    		}
+    	}
+        saveSigns();
+    }
+    
+    /**
+     * Check if balance sign exists
+     * @param w World
+     * @param l Location
+     * @return true if the sign exists, otherwise false
+     */
+    public boolean signExists(World w,Location l) {
+    	for (Map.Entry<SignLocation, String> sign: signs.entrySet()) {
+    		if (sign.getKey().getWorld().equals(w) && sign.getKey().getLocation().equals(l)) {
+    			return true;
+    		}
+    	}
+		return false;
     }
     
     /**
@@ -1331,7 +1424,7 @@ public class BankAccount extends JavaPlugin {
      * @throws BankAccountException 
      * @throws IndexOutOfBoundsException 
      */
-    public void updateSigns() throws IndexOutOfBoundsException, BankAccountException {
+    public void updateSigns() throws BankAccountException {
         HashMap<String, Double> balances = new HashMap<String, Double>();
         for (Map.Entry<SignLocation, String> sign: signs.entrySet()) {
             double balance = 0;
@@ -1354,11 +1447,11 @@ public class BankAccount extends JavaPlugin {
                     }
                 } else {
                     removeSign(sl.getWorld(), sl.getLocation());
-                    console.warning("Sign in world " + sl.getWorld().getName() + " at " + sl.getLocation().getBlockX() + ", " + sl.getLocation().getBlockX() + ", " + sl.getLocation().getBlockX() + " can't be found");
+                    console.warning("Sign in world " + sl.getWorld().getName() + " at " + sl.locOutput(" ") + " can't be found");
                 }
             } else {
                 removeSign(sl.getWorld(), sl.getLocation());
-                console.warning("Sign in world " + sl.getWorld().getName() + " at " + sl.getLocation().getBlockX() + ", " + sl.getLocation().getBlockX() + ", " + sl.getLocation().getBlockX() + " can't be found");
+                console.warning("Sign in world " + sl.getWorld().getName() + " at " + sl.locOutput(" ") + " can't be found");
             }
         }
     }
@@ -1369,7 +1462,7 @@ public class BankAccount extends JavaPlugin {
      * @throws BankAccountException 
      * @throws IndexOutOfBoundsException 
      */
-    public void updateSigns(String accountname) throws IndexOutOfBoundsException, BankAccountException {
+    public void updateSigns(String accountname) throws BankAccountException {
         double balance = getBalance(accountname);
         for (Map.Entry<SignLocation, String> sign: signs.entrySet()) {
             if (sign.getValue().equalsIgnoreCase(accountname)) {
@@ -1386,11 +1479,11 @@ public class BankAccount extends JavaPlugin {
                         }
                     } else {
                         removeSign(sl.getWorld(), sl.getLocation());
-                        console.warning("Sign in world " + sl.getWorld().getName() + " at " + sl.getLocation().getBlockX() + ", " + sl.getLocation().getBlockX() + ", " + sl.getLocation().getBlockX() + " can't be found");
+                        console.warning("Sign in world " + sl.getWorld().getName() + " at " + sl.locOutput(" ") + " can't be found");
                     }
                 } else {
                     removeSign(sl.getWorld(), sl.getLocation());
-                    console.warning("Sign in world " + sl.getWorld().getName() + " at " + sl.getLocation().getBlockX() + ", " + sl.getLocation().getBlockX() + ", " + sl.getLocation().getBlockX() + " can't be found");
+                    console.warning("Sign in world " + sl.getWorld().getName() + " at " + sl.locOutput(" ") + " can't be found");
                 }
             } else {
                 console.info("Sign says: " + sign.getValue() + " - I'm looking for: " + accountname);
@@ -1399,8 +1492,10 @@ public class BankAccount extends JavaPlugin {
     }
     
     private BankAccountException throwException(String msg) throws BankAccountException {
+    	console.info("Check throwException");
     	if (settings.Debug_Full) {
 			try {
+				console.info("sending throwException");
 				return new BankAccountException(msg);
 			} catch (Exception e) {
 				e.printStackTrace();

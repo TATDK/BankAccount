@@ -2,7 +2,9 @@ package dk.earthgame.TAT.BankAccount;
 
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockListener;
 import org.bukkit.event.block.SignChangeEvent;
 
@@ -17,12 +19,21 @@ public class BankAccountBlockListener extends BlockListener {
     public BankAccountBlockListener(BankAccount instantiate) {
         plugin = instantiate;
     }
+    
+    @Override
+    public void onBlockBreak(BlockBreakEvent event) {
+    	if (event.getBlock().getState() instanceof Sign) {
+    		if (plugin.signExists(event.getBlock().getWorld(), event.getBlock().getLocation())) {
+    			plugin.removeSign(event.getBlock().getWorld(), event.getBlock().getLocation());
+    			event.getPlayer().sendMessage("[BankAccount] Sign removed");
+    		} 
+    	}
+    }
 
     @Override
     public void onSignChange(SignChangeEvent event) {
         Player p = event.getPlayer();
         if (!(p instanceof Player)) {
-            p.sendMessage("Not a player");
             return;
         }
         
@@ -64,8 +75,6 @@ public class BankAccountBlockListener extends BlockListener {
             } else {
                 SignError(event,p,"[BankAccount] You don't have access to create BankAccount signs");
             }
-        } else {
-            p.sendMessage("Not balance sign");
         }
     }
     

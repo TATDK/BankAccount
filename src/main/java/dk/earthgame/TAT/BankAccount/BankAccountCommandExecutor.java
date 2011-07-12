@@ -70,7 +70,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                           sender.sendMessage("ATM: " + ChatColor.RED + "Accountname to long");
                       }
                       try {
-                        if (plugin.accountExists(args[1])) {
+                          if (plugin.accountExists(args[1])) {
                               sender.sendMessage("ATM: " + ChatColor.RED + "Accountname is taken");
                           } else {
                               double feePaid = 0;
@@ -112,9 +112,9 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                                   sender.sendMessage("ATM: " + ChatColor.RED + "Couldn't create bank account");
                               }
                           }
-                    } catch (BankAccountException e) {
-                        sender.sendMessage(e.getMessage());
-                    }
+                      } catch (BankAccountException e) {
+                          sender.sendMessage(e.getMessage());
+                      }
 //BALANCE
                   } else if (args[0].equalsIgnoreCase("balance") && args.length >= 2) {
                       if (!plugin.playerPermission((Player)sender,PermissionNodes.OPEN)) {
@@ -123,7 +123,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                       }
                       
                       try {
-                        if (!plugin.accountExists(args[1])) {
+                          if (!plugin.accountExists(args[1])) {
                               sender.sendMessage("ATM: " + ChatColor.RED + "Account not found");
                           } else {
                               if (plugin.accessAccount(args[1], (Player)sender, false)) {
@@ -132,9 +132,9 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                                   sender.sendMessage("ATM: " + ChatColor.RED + "You don't have access to this account!");
                               }
                           }
-                    } catch (BankAccountException e) {
-                        sender.sendMessage(e.getMessage());
-                    }
+                      } catch (BankAccountException e) {
+                          sender.sendMessage(e.getMessage());
+                      }
 //INFO
                   } else if (args[0].equalsIgnoreCase("info") && args.length >= 2) {
                       if (!plugin.playerPermission((Player)sender,PermissionNodes.OPEN)) {
@@ -143,7 +143,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                       }
                       
                       try {
-                        if (!plugin.accountExists(args[1])) {
+                          if (!plugin.accountExists(args[1])) {
                               sender.sendMessage("ATM: " + ChatColor.RED + "Account not found");
                           } else {
                               if (plugin.accessAccount(args[1], (Player)sender, false)) {
@@ -154,9 +154,9 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                                   sender.sendMessage("ATM: " + ChatColor.RED + "You don't have access to this account!");
                               }
                           }
-                    } catch (BankAccountException e) {
-                        sender.sendMessage(e.getMessage());
-                    }
+                      } catch (BankAccountException e) {
+                          sender.sendMessage(e.getMessage());
+                      }
 //LIST
                   } else if (args[0].equalsIgnoreCase("list")) {
                       if (!plugin.playerPermission((Player)sender,PermissionNodes.LIST)) {
