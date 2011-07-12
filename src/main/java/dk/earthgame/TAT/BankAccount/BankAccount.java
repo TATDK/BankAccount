@@ -1420,11 +1420,24 @@ public class BankAccount extends JavaPlugin {
     }
     
     /**
+     * Check if SignUpdater is set
+     * @return true if SignUpdater is set, otherwise false + console warning
+     */
+    public boolean checkSignUpdater() {
+    	if (signupdater == null) {
+    		console.warning("Missing plugin -> SignUpdater");
+    		return false;
+    	}
+    	return true;
+    }
+    
+    /**
      * Update all signs
      * @throws BankAccountException 
      * @throws IndexOutOfBoundsException 
      */
     public void updateSigns() throws BankAccountException {
+    	checkSignUpdater();
         HashMap<String, Double> balances = new HashMap<String, Double>();
         for (Map.Entry<SignLocation, String> sign: signs.entrySet()) {
             double balance = 0;
@@ -1463,6 +1476,7 @@ public class BankAccount extends JavaPlugin {
      * @throws IndexOutOfBoundsException 
      */
     public void updateSigns(String accountname) throws BankAccountException {
+    	checkSignUpdater();
         double balance = getBalance(accountname);
         for (Map.Entry<SignLocation, String> sign: signs.entrySet()) {
             if (sign.getValue().equalsIgnoreCase(accountname)) {
