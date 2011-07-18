@@ -1,4 +1,4 @@
-package dk.earthgame.TAT.BankAccount;
+package dk.earthgame.TAT.BankAccount.Listeners;
 
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -8,9 +8,10 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockListener;
 import org.bukkit.event.block.SignChangeEvent;
 
-import dk.earthgame.TAT.BankAccount.Settings.FeeModes;
+import dk.earthgame.TAT.BankAccount.BankAccount;
+import dk.earthgame.TAT.BankAccount.Enum.FeeModes;
+import dk.earthgame.TAT.BankAccount.Enum.PermissionNodes;
 import dk.earthgame.TAT.BankAccount.System.BankAccountException;
-import dk.earthgame.TAT.BankAccount.System.PermissionNodes;
 import dk.earthgame.nijikokun.register.payment.Method.MethodAccount;
 
 public class BankAccountBlockListener extends BlockListener {
@@ -23,8 +24,8 @@ public class BankAccountBlockListener extends BlockListener {
     @Override
     public void onBlockBreak(BlockBreakEvent event) {
     	if (event.getBlock().getState() instanceof Sign) {
-    		if (plugin.signExists(event.getBlock().getWorld(), event.getBlock().getLocation())) {
-    			plugin.removeSign(event.getBlock().getWorld(), event.getBlock().getLocation());
+    		if (plugin.BalanceSign.signExists(event.getBlock().getWorld(), event.getBlock().getLocation())) {
+    			plugin.BalanceSign.removeSign(event.getBlock().getWorld(), event.getBlock().getLocation());
     			event.getPlayer().sendMessage("[BankAccount] Sign removed");
     		} 
     	}
@@ -51,14 +52,14 @@ public class BankAccountBlockListener extends BlockListener {
 						                    SignError(event,p,"[BankAccount] Couldn't subtract sign creating fee from your account");
 						                } else {
 						                    p.sendMessage("[BankAccount] Sign created");
-						                    plugin.addSign(p.getWorld(), event.getBlock().getLocation(), event.getLine(1));
+						                    plugin.BalanceSign.addSign(p.getWorld(), event.getBlock().getLocation(), event.getLine(1));
 						                }
 						            } else {
 						                SignError(event,p,"[BankAccount] You don't have enough money.");
 						            }
 						        } else {
 						            p.sendMessage("[BankAccount] Sign created");
-						            plugin.addSign(p.getWorld(), event.getBlock().getLocation(), event.getLine(1));
+						            plugin.BalanceSign.addSign(p.getWorld(), event.getBlock().getLocation(), event.getLine(1));
 						        }
 						    } else {
 						        SignError(event,p,"[BankAccount] You don't have access to this account");

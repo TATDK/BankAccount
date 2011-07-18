@@ -1,4 +1,4 @@
-package dk.earthgame.TAT.BankAccount;
+package dk.earthgame.TAT.BankAccount.Listeners;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;

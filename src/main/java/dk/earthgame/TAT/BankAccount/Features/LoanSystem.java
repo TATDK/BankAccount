@@ -1,4 +1,4 @@
-package dk.earthgame.TAT.BankAccount;
+package dk.earthgame.TAT.BankAccount.Features;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -10,8 +10,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 
+import dk.earthgame.TAT.BankAccount.BankAccount;
+import dk.earthgame.TAT.BankAccount.Enum.TransactionTypes;
 import dk.earthgame.TAT.BankAccount.System.BankAccountException;
-import dk.earthgame.TAT.BankAccount.System.TransactionTypes;
 import dk.earthgame.nijikokun.register.payment.Method.MethodAccount;
 
 /**
@@ -21,13 +22,13 @@ import dk.earthgame.nijikokun.register.payment.Method.MethodAccount;
 public class LoanSystem {
     private BankAccount plugin;
     public boolean LoanActive;
-    boolean running;
+    public boolean running;
     HashMap<String,Loan> Loans = new HashMap<String,Loan>();
-    double Fixed_rate;
-    HashMap<Double, Double> Rates = new HashMap<Double, Double>();
-    double Max_amount;
-    int PaymentTime;
-    int PaymentParts;
+    public double Fixed_rate;
+    public HashMap<Double, Double> Rates = new HashMap<Double, Double>();
+    public double Max_amount;
+    public int PaymentTime;
+    public int PaymentParts;
     int runTime = 1;
     private int JobId;
     
@@ -41,6 +42,8 @@ public class LoanSystem {
      * @since 0.5
      */
     public void startupRunner() {
+    	if (running)
+    		return;
         ResultSet rs;
         try {
             rs = plugin.settings.stmt.executeQuery("SELECT `player`,`totalamount`,`remaining`,`part`,`parts`,`timeleft`,`timepayment` FROM `" + plugin.settings.SQL_loan_table + "`");

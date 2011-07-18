@@ -47,7 +47,7 @@ public class SignLocation {
     /**
      * Get location in output separated simply by comma (,)
      * @return Location of sign (x,y,z)
-     * @see locOutput(String sep)
+     * @see #locOutput(String)
      */
     public String locOutput() {
     	return locOutput("");

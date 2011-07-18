@@ -8,6 +8,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.HashMap;
 
 import org.anjocaido.groupmanager.GroupManager;
@@ -15,6 +16,7 @@ import org.bukkit.util.config.Configuration;
 
 import com.nijiko.permissions.PermissionHandler;
 
+import dk.earthgame.TAT.BankAccount.Enum.FeeModes;
 import dk.earthgame.TAT.BankAccount.System.FeeSystem;
 import dk.earthgame.TAT.BankAccount.System.Upgrade;
 
@@ -26,16 +28,15 @@ public class Settings {
     private BankAccount plugin;
     
     Configuration config;
-    int interestTime;
-    double interestAmount;
-    int interestNeededOnline;
-    double interestOfflineAmount;
-    int interestJobId;
-    int checkJobId;
-    int AreaWandId;
+    public int interestTime;
+    public double interestAmount;
+    public int interestNeededOnline;
+    public double interestOfflineAmount;
+    public int checkJobId;
+    public int AreaWandId;
     boolean MultiBanks;
     //MySQL
-    boolean UseMySQL = false;
+    public boolean UseMySQL = false;
     String MySQL_host;
     String MySQL_port;
     String MySQL_username;
@@ -43,48 +44,41 @@ public class Settings {
     String MySQL_database;
     //SQL
     public Connection con;
-    public java.sql.Statement selectStmt;
-    public java.sql.Statement updateStmt;
-    public java.sql.Statement stmt;
+    public Statement selectStmt;
+    public Statement updateStmt;
+    public Statement stmt;
     public String SQL_account_table;
-    String SQL_area_table;
-    String SQL_loan_table;
-    String SQL_transaction_table;
-    String SQL_banks_table;
+    public String SQL_area_table;
+    public String SQL_loan_table;
+    public String SQL_transaction_table;
+    public String SQL_banks_table;
     //Permissions
     boolean UseOP;
-    PermissionHandler Permissions = null;
-    boolean UsePermissions;
-    GroupManager GroupManager = null;
-    boolean UseGroupManager;
+    public PermissionHandler Permissions = null;
+    public boolean UsePermissions;
+    public GroupManager GroupManager = null;
+    public boolean UseGroupManager;
     boolean Areas;
     boolean SuperAdmins;
     boolean DepositAll;
     //Transaction
     public boolean Transactions;
     //Fee
-    public enum FeeModes {
-        NONE,
-        PERCENTAGE,
-        STATIC,
-        SMART1,
-        SMART2;
-    }
-    FeeSystem OpeningFee;
-    FeeSystem DepositFee;
-    FeeSystem WithdrawFee;
-    FeeSystem TransferFee;
-    FeeSystem ClosingFee;
-    FeeSystem SignFee;
+    public FeeSystem OpeningFee;
+    public FeeSystem DepositFee;
+    public FeeSystem WithdrawFee;
+    public FeeSystem TransferFee;
+    public FeeSystem ClosingFee;
+    public FeeSystem SignFee;
     //Start Amount
     boolean StartAmount_Active;
     double StartAmount_Fee;
     double StartAmount_Static;
     //Account
-    double MaxAmount;
+    public double MaxAmount;
     //Debug messages
-    boolean Debug_Loan;
-    boolean Debug_Interest;
+    public boolean Debug_Loan;
+    public boolean Debug_Interest;
     boolean Debug_Full;
     
     public Settings(BankAccount plugin) {

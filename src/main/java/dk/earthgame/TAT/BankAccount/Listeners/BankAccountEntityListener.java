@@ -1,4 +1,4 @@
-package dk.earthgame.TAT.BankAccount;
+package dk.earthgame.TAT.BankAccount.Listeners;
 
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -7,6 +7,7 @@ import org.bukkit.event.entity.EntityDamageByProjectileEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityListener;
 
+import dk.earthgame.TAT.BankAccount.BankAccount;
 import dk.earthgame.nijikokun.register.payment.Method.MethodAccount;
 
 public class BankAccountEntityListener extends EntityListener {

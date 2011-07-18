@@ -1,0 +1,117 @@
+package dk.earthgame.TAT.BankAccount.Listeners;
+
+import org.anjocaido.groupmanager.GroupManager;
+import org.bukkit.event.server.PluginDisableEvent;
+import org.bukkit.event.server.PluginEnableEvent;
+import org.bukkit.event.server.ServerListener;
+import org.bukkit.plugin.Plugin;
+
+import com.nijikokun.bukkit.Permissions.Permissions;
+
+import dk.earthgame.TAT.BankAccount.BankAccount;
+import dk.earthgame.TAT.BankAccount.System.BankAccountException;
+import dk.earthgame.TAT.SignUpdater.SignUpdater;
+import dk.earthgame.nijikokun.register.payment.Methods;
+
+/**
+ * BankAccount hook with other plugins
+ * @author TAT
+ */
+public class BankAccountPluginListener extends ServerListener {
+    private BankAccount plugin;
+    public Methods Methods;
+
+    public BankAccountPluginListener(BankAccount plugin) {
+        this.plugin = plugin;
+        this.Methods = new Methods("iConomy");
+    }
+    
+    Plugin checkPlugin(String pluginname) {
+        return plugin.getServer().getPluginManager().getPlugin(pluginname);
+    }
+
+    @Override
+    public void onPluginDisable(PluginDisableEvent event) {
+        String pluginname = event.getPlugin().getDescription().getName();
+        //Register (Economy API)
+        if (Methods != null && Methods.hasMethod()) {
+            boolean check = Methods.checkDisabled(event.getPlugin());
+
+            if(check) {
+                plugin.console.info("Payment method was disabled.");
+                plugin.console.warning("Stopping BankAccount - Reason: Missing economy plugin!");
+                plugin.getServer().getPluginManager().disablePlugin(event.getPlugin());
+            }
+        }
+        //Permissions
+        if (plugin.settings.Permissions != null && pluginname.equalsIgnoreCase("Permissions")) {
+            plugin.settings.Permissions = null;
+            plugin.console.warning("Lost connection with " + plugin + "!");
+        }
+        //GroupManager
+        if (plugin.settings.GroupManager != null && pluginname.equalsIgnoreCase("GroupManager")) {
+            plugin.settings.GroupManager = null;
+            plugin.console.warning("Lost connection with " + plugin + "!");
+        }
+        //SignUpdater
+        if (plugin.signupdater != null && pluginname.equalsIgnoreCase("SignUpdater")) {
+            plugin.signupdater = null;
+            plugin.console.warning("Lost connection with " + plugin + "!");
+        }
+    }
+
+    @Override
+    public void onPluginEnable(PluginEnableEvent event) {
+        String pluginname = event.getPlugin().getDescription().getName();
+        //Register (Economy API)
+        if (!Methods.hasMethod()) {
+            if(Methods.setMethod(event.getPlugin())) {
+                plugin.Method = Methods.getMethod();
+                plugin.console.info("Payment method found (" + plugin.Method.getName() + " version: " + plugin.Method.getVersion() + ")");
+                plugin.LoanSystem.startupRunner();
+                plugin.Interest.startupInterest();
+                plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+                    public void run() {
+                        try {
+                        	plugin.BalanceSign.updateSigns();
+                        	plugin.console.info("Signs updated");
+                        } catch (BankAccountException e) {
+                        	plugin.console.warning("Error updating signs");
+                            e.printStackTrace();
+                        }
+                    }
+                },20);
+            }
+        }
+        
+        //Permissions
+        if (plugin.settings.Permissions == null && pluginname.equalsIgnoreCase("Permissions") && plugin.settings.UsePermissions) {
+            Plugin test = checkPlugin(pluginname);
+            if (test != null) {
+                ((Permissions)test).getDatabase();
+                this.plugin.settings.Permissions = ((Permissions)test).getHandler();
+                this.plugin.console.info("Established connection with " + plugin + "!");
+            }
+        }
+        //GroupManager
+        if (plugin.settings.GroupManager == null && pluginname.equalsIgnoreCase("GroupManager") && plugin.settings.UseGroupManager) {
+            Plugin test = checkPlugin(pluginname);
+            if (test != null) {
+                this.plugin.settings.GroupManager = (GroupManager)test;
+                this.plugin.console.info("Established connection with " + plugin + "!");
+                if (this.plugin.settings.checkJobId > 0) {
+                    this.plugin.getServer().getScheduler().cancelTask(this.plugin.settings.checkJobId);
+                }
+            }
+        }
+
+        //SignUpdater
+        if (plugin.signupdater == null && pluginname.equalsIgnoreCase("SignUpdater")) {
+            Plugin test = checkPlugin(pluginname);
+            if (test != null) {
+                this.plugin.signupdater = (SignUpdater)test;
+                this.plugin.console.info("Established connection with " + plugin + "!");
+            }
+        }
+    }
+}

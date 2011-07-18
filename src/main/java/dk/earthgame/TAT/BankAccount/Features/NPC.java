@@ -1,4 +1,4 @@
-package dk.earthgame.TAT.BankAccount;
+package dk.earthgame.TAT.BankAccount.Features;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -8,15 +8,17 @@ import org.bukkit.event.entity.EntityTargetEvent;
 import org.martin.bukkit.npclib.*;
 import org.martin.bukkit.npclib.NPCEntityTargetEvent.NPCTargetReason;
 
+import dk.earthgame.TAT.BankAccount.BankAccount;
+
 /**
  * NPCs behavior on player interaction
  * @author TAT
  */
-public class BankAccountNPC extends EntityListener {
+public class NPC extends EntityListener {
     @SuppressWarnings("unused")
     private BankAccount plugin;
     
-    public BankAccountNPC(BankAccount instantiate) {
+    public NPC(BankAccount instantiate) {
         plugin = instantiate;
     }
 

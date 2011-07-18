@@ -1,10 +1,11 @@
-package dk.earthgame.TAT.BankAccount;
+package dk.earthgame.TAT.BankAccount.Listeners;
 
 import org.bukkit.Location;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerListener;
 
+import dk.earthgame.TAT.BankAccount.BankAccount;
 import dk.earthgame.TAT.BankAccount.System.UserSaves;
 
 public class BankAccountPlayerListener extends PlayerListener {

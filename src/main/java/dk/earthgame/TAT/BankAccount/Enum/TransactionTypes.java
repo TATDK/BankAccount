@@ -1,4 +1,4 @@
-package dk.earthgame.TAT.BankAccount.System;
+package dk.earthgame.TAT.BankAccount.Enum;
 
 /**
  * Transaction types used by BankAccount

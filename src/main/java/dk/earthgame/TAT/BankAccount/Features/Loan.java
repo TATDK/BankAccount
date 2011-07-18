@@ -1,4 +1,4 @@
-package dk.earthgame.TAT.BankAccount;
+package dk.earthgame.TAT.BankAccount.Features;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -10,8 +10,9 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 
+import dk.earthgame.TAT.BankAccount.BankAccount;
+import dk.earthgame.TAT.BankAccount.Enum.TransactionTypes;
 import dk.earthgame.TAT.BankAccount.System.BankAccountException;
-import dk.earthgame.TAT.BankAccount.System.TransactionTypes;
 import dk.earthgame.nijikokun.register.payment.Method.MethodAccount;
 
 /**

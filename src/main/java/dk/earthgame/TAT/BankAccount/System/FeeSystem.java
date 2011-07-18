@@ -1,6 +1,6 @@
 package dk.earthgame.TAT.BankAccount.System;
 
-import dk.earthgame.TAT.BankAccount.Settings.FeeModes;
+import dk.earthgame.TAT.BankAccount.Enum.FeeModes;
 
 /**
  * System for different fee situations
@@ -58,7 +58,7 @@ public class FeeSystem {
     /**
      * Calculate fee for an amount
      * 
-     * @param balance
+     * @param amount
      * @since 0.5.2
      * @return Fee calculated - If -1 is returned, fee couldn't be calculated
      */

@@ -9,11 +9,12 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import dk.earthgame.TAT.BankAccount.Settings.FeeModes;
+import dk.earthgame.TAT.BankAccount.Enum.CommandList;
+import dk.earthgame.TAT.BankAccount.Enum.FeeModes;
+import dk.earthgame.TAT.BankAccount.Enum.PermissionNodes;
+import dk.earthgame.TAT.BankAccount.Enum.TransactionTypes;
+import dk.earthgame.TAT.BankAccount.Features.Loan;
 import dk.earthgame.TAT.BankAccount.System.BankAccountException;
-import dk.earthgame.TAT.BankAccount.System.CommandList;
-import dk.earthgame.TAT.BankAccount.System.PermissionNodes;
-import dk.earthgame.TAT.BankAccount.System.TransactionTypes;
 import dk.earthgame.TAT.BankAccount.System.UserSaves;
 import dk.earthgame.nijikokun.register.payment.Method.MethodAccount;
 
@@ -50,7 +51,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                       CommandList foundCommand = CommandList.valueOf(args[0].toUpperCase());
                       if (foundCommand != null) {
                           try {
-                              if (foundCommand.getRequireArea() && !plugin.inArea(((Player)sender).getWorld().getName(), ((Player)sender).getLocation())) {
+                              if (foundCommand.getRequireArea() && !plugin.BankAreas.inArea(((Player)sender).getWorld().getName(), ((Player)sender).getLocation())) {
                                   sender.sendMessage("ATM: You're not in bank area");
                                   return true;
                               }
@@ -90,24 +91,24 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                                       return true;
                                   }
                               }
-                              String players = "";
-                              players += sendername;
+                              String owners = "";
+                              owners += sendername;
                               if (args.length >= 3) {
                                   for (int i = 3;i<=args.length;i++) {
-                                      players += ";" + args[i-1];
+                                      owners += ";" + args[i-1];
                                   }
                               }
-                              if (plugin.openAccount(args[1], players, sendername, feePaid)) {
+                              if (plugin.openAccount(args[1], owners, feePaid)) {
                                   plugin.addTransaction(sendername, args[1], TransactionTypes.OPEN, 0.00);
                                   sender.sendMessage("ATM: " + ChatColor.GREEN + args[1] + " created");
-                                  players = "";
-                                    players += sendername;
-                                    if (args.length >= 3) {
-                                        for (int i = 3;i<=args.length;i++) {
-                                            players += "," + args[i-1];
-                                        }
-                                    }
-                                  sender.sendMessage(ChatColor.WHITE + "Players: " + ChatColor.GREEN + players);
+                                  owners = "";
+                                  owners += sendername;
+                                  if (args.length >= 3) {
+                                      for (int i = 3;i<=args.length;i++) {
+                                          owners += "," + args[i-1];
+                                      }
+                                  }
+                                  sender.sendMessage(ChatColor.WHITE + "Owners: " + ChatColor.GREEN + owners);
                               } else {
                                   sender.sendMessage("ATM: " + ChatColor.RED + "Couldn't create bank account");
                               }
@@ -127,7 +128,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                               sender.sendMessage("ATM: " + ChatColor.RED + "Account not found");
                           } else {
                               if (plugin.accessAccount(args[1], (Player)sender, false)) {
-                                  sender.sendMessage("ATM: Balance of " + args[1] + ": " + ChatColor.GREEN + plugin.Method.format(plugin.getBalance(args[1])));
+                                  sender.sendMessage("ATM: Balance of " + args[1] + ": " + ChatColor.GREEN + plugin.Method.format(plugin.getAccount(args[1]).getBalance()));
                               } else {
                                   sender.sendMessage("ATM: " + ChatColor.RED + "You don't have access to this account!");
                               }
@@ -147,9 +148,9 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                               sender.sendMessage("ATM: " + ChatColor.RED + "Account not found");
                           } else {
                               if (plugin.accessAccount(args[1], (Player)sender, false)) {
-                                  sender.sendMessage("ATM: Balance of " + args[1] + ": " + ChatColor.GREEN + plugin.Method.format(plugin.getBalance(args[1])));
-                                  sender.sendMessage(ChatColor.WHITE + "Owners: " + ChatColor.GREEN + plugin.getOwners(args[1]));
-                                  sender.sendMessage(ChatColor.WHITE + "Users: " + ChatColor.GREEN + plugin.getUsers(args[1]));
+                                  sender.sendMessage("ATM: Balance of " + args[1] + ": " + ChatColor.GREEN + plugin.Method.format(plugin.getAccount(args[1]).getBalance()));
+                                  sender.sendMessage(ChatColor.WHITE + "Owners: " + ChatColor.GREEN + plugin.getAccount(args[1]).getOwners());
+                                  sender.sendMessage(ChatColor.WHITE + "Users: " + ChatColor.GREEN + plugin.getAccount(args[1]).getUsers());
                               } else {
                                   sender.sendMessage("ATM: " + ChatColor.RED + "You don't have access to this account!");
                               }
@@ -207,7 +208,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                           if (!plugin.accountExists(args[1])) {
                               sender.sendMessage("ATM: " + ChatColor.RED + "Account not found");
                           } else if (plugin.accessAccount(args[1], (Player)sender, true)) {
-                              if (plugin.addUser(args[1], args[2])) {
+                              if (plugin.getAccount(args[1]).addUser(args[2])) {
                                   plugin.addTransaction(sendername, args[1], TransactionTypes.USER_ADD, 0.00);
                                   sender.sendMessage("ATM: " + ChatColor.GREEN + args[2] + " added to account");
                               } else {
@@ -230,7 +231,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                           if (!plugin.accountExists(args[1])) {
                               sender.sendMessage("ATM: " + ChatColor.RED + "Account not found");
                           } else if (plugin.accessAccount(args[1], (Player)sender, true)) {
-                              if (plugin.removeUser(args[1], args[2])) {
+                              if (plugin.getAccount(args[1]).removeUser(args[2])) {
                                   plugin.addTransaction(sendername, args[1], TransactionTypes.USER_REMOVE, 0.00);
                                   sender.sendMessage("ATM: " + ChatColor.GREEN + args[2] + " removed from account");
                               } else {
@@ -253,7 +254,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                           if (!plugin.accountExists(args[1])) {
                               sender.sendMessage("ATM: " + ChatColor.RED + "Account not found");
                           } else if (plugin.accessAccount(args[1], (Player)sender, true)) {
-                              if (plugin.addOwner(args[1], args[2])) {
+                              if (plugin.getAccount(args[1]).addOwner(args[2])) {
                                   plugin.addTransaction(sendername, args[1], TransactionTypes.OWNER_ADD, 0.00);
                                   sender.sendMessage("ATM: " + ChatColor.GREEN + args[2] + " added to account");
                               } else {
@@ -276,7 +277,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                           if (!plugin.accountExists(args[1])) {
                               sender.sendMessage("ATM: " + ChatColor.RED + "Account not found");
                           } else if (plugin.accessAccount(args[1], (Player)sender, true)) {
-                              if (plugin.removeOwner(args[1], args[2])) {
+                              if (plugin.getAccount(args[1]).removeOwner(args[2])) {
                                   plugin.addTransaction(sendername, args[1], TransactionTypes.OWNER_REMOVE, 0.00);
                                   sender.sendMessage("ATM: " + ChatColor.GREEN + args[2] + " removed from account");
                               } else {
@@ -305,7 +306,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                             }
                             password = plugin.PasswordSystem.passwordCrypt(password);
                             if (!password.equalsIgnoreCase("Error")) {
-                                if (plugin.setPassword(args[1], password)) {
+                                if (plugin.getAccount(args[1]).setPassword(password)) {
                                     plugin.addTransaction(sendername, args[1], TransactionTypes.PASSWORD, 0.00);
                                     sender.sendMessage("ATM: " + ChatColor.GREEN + "Password set for account");
                                 } else {
@@ -356,7 +357,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                                   sender.sendMessage("ATM: " + ChatColor.RED + "Couldn't deposit, you only have " + plugin.Method.format(balance));
                               }
                               
-                              if (plugin.ATM(args[1], sendername, "deposit", Double.parseDouble(args[2]), "")) {
+                              if (plugin.getAccount(args[1]).ATM(sendername, "deposit", Double.parseDouble(args[2]), "")) {
                                   plugin.addTransaction(sendername, args[1], TransactionTypes.DEPOSIT, Double.parseDouble(args[2]));
                                   sender.sendMessage("ATM: " + ChatColor.GREEN + plugin.Method.format(Double.parseDouble(args[2])) + " added to " + args[1]);
                               } else {
@@ -388,8 +389,8 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                               }
                               if (plugin.PasswordSystem.passwordCheck(args[1], password)) {
                                   if (plugin.settings.WithdrawFee.getMode() != FeeModes.NONE) {
-                                        if (plugin.settings.WithdrawFee.CanAfford(Double.parseDouble(args[2]),plugin.getBalance(args[1]))) {
-                                            if (!plugin.subtract(plugin.settings.WithdrawFee.Fee(Double.parseDouble(args[2])), args[1])) {
+                                        if (plugin.settings.WithdrawFee.CanAfford(Double.parseDouble(args[2]),plugin.getAccount(args[1]).getBalance())) {
+                                            if (!plugin.getAccount(args[1]).subtract(plugin.settings.WithdrawFee.Fee(Double.parseDouble(args[2])))) {
                                                 sender.sendMessage("ATM: " + ChatColor.RED + "Error subtract fee!");
                                                 return true;
                                             } else {
@@ -400,7 +401,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                                             return true;
                                         }
                                     }
-                                  if (plugin.ATM(args[1], sendername, "withdraw", Double.parseDouble(args[2]), password)) {
+                                  if (plugin.getAccount(args[1]).ATM(sendername, "withdraw", Double.parseDouble(args[2]), password)) {
                                         plugin.addTransaction(sendername, args[1], TransactionTypes.WITHDRAW, Double.parseDouble(args[2]));
                                         sender.sendMessage("ATM: " + ChatColor.GREEN + plugin.Method.format(Double.parseDouble(args[2])) + " withdrawed from " + args[1]);
                                     } else {
@@ -433,7 +434,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                                 if (args.length >= 5) {
                                     password = args[4];
                                 }
-                                if (plugin.ATM(args[1], args[2], "transfer", Double.parseDouble(args[3]), password)) {
+                                if (plugin.getAccount(args[1]).ATM(args[2], "transfer", Double.parseDouble(args[3]), password)) {
                                     plugin.addTransaction(sendername, args[1], TransactionTypes.TRANSFER_WITHDRAW, Double.parseDouble(args[3]));
                                     plugin.addTransaction("SYSTEM", args[2], TransactionTypes.TRANSFER_DEPOSIT, Double.parseDouble(args[3]));
                                     sender.sendMessage("ATM: " + ChatColor.GREEN + plugin.Method.format(Double.parseDouble(args[3])) + " transfered from " + args[1] + " to " + args[2]);
@@ -532,8 +533,8 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                               if (args.length >= 3) {
                                   password = args[2];
                               }
-                              double money = plugin.getBalance(args[1]);
-                              if (plugin.closeAccount(args[1], sendername, password)) {
+                              double money = plugin.getAccount(args[1]).getBalance();
+                              if (plugin.getAccount(args[1]).closeAccount(sendername, password)) {
                                   if (money > 0) {
                                       plugin.addTransaction(sendername, args[1], TransactionTypes.WITHDRAW, money);
                                       sender.sendMessage("ATM: " + plugin.Method.format(money) + " withdrawed");
@@ -573,7 +574,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                           UserSaves mySave = plugin.getSaved(sendername);
                           if (mySave.getPosition(1) != null && mySave.getPosition(2) != null) {
 	                          try {
-                        	  	  if (plugin.setArea(args[1], mySave.getPosition(1), mySave.getPosition(2), ((Player)sender).getWorld().getName())) {
+                        	  	  if (plugin.BankAreas.setArea(args[1], mySave.getPosition(1), mySave.getPosition(2), ((Player)sender).getWorld().getName())) {
 	                                  sender.sendMessage("ATM: " + ChatColor.GREEN + "Area added");
 	                              } else {
 	                                  sender.sendMessage("ATM: " + ChatColor.RED + "Something went wrong. Please try again.");
@@ -592,7 +593,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                           return true;
                       } else {
                           try {
-                              if (plugin.removeArea(args[1])) {
+                              if (plugin.BankAreas.removeArea(args[1])) {
                                   sender.sendMessage("ATM: " + ChatColor.GREEN + "Area removed");
                               } else {
                                   sender.sendMessage("ATM: " + ChatColor.RED + "Something went wrong. Please try again.");
