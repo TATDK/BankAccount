@@ -65,7 +65,7 @@ public class BankAccount extends JavaPlugin {
     BankAccountEntityListener entityListener = new BankAccountEntityListener(this);
     
     //Economy
-    public Method Method = null;
+    Method Method = null;
     
     //NPC
     //NPCManager m = new NPCManager(this);
@@ -245,13 +245,13 @@ public class BankAccount extends JavaPlugin {
 
         getServer().getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
             public void run() {
-		        try {
-					updateSigns();
-		    		console.info("Signs updated");
-				} catch (BankAccountException e) {
-					console.warning("Error updating signs");
-					e.printStackTrace();
-				}
+                try {
+                    updateSigns();
+                    console.info("Signs updated");
+                } catch (BankAccountException e) {
+                    console.warning("Error updating signs");
+                    e.printStackTrace();
+                }
             }
         },20);
     }
@@ -388,10 +388,10 @@ public class BankAccount extends JavaPlugin {
             }
         }
         if (signupdater == null) {
-        	Plugin test = getServer().getPluginManager().getPlugin("SignUpdater");
+            Plugin test = getServer().getPluginManager().getPlugin("SignUpdater");
             if (test != null) {
                 if (test.isEnabled()) {
-                	signupdater = (SignUpdater)test;
+                    signupdater = (SignUpdater)test;
                     console.info("Established connection with SignUpdater!");
                 }
             }
@@ -523,7 +523,7 @@ public class BankAccount extends JavaPlugin {
                 console.warning("Error #22-2: " + e.getMessage());
             else
                 console.warning("Error #22-1: " + e.getErrorCode() + " - " + e.getSQLState());
-        	throwException("SQL error getting account list");
+            throwException("SQL error getting account list");
         }
         //Be sure that rs is closed
         try {
@@ -574,10 +574,10 @@ public class BankAccount extends JavaPlugin {
                 console.warning("Error #02-3: " + e.getMessage());
             else
                 console.warning("Error #02-2: " + e.getErrorCode() + " - " + e.getSQLState());
-        	throwException("SQL error opening account");
+            throwException("SQL error opening account");
         } catch (Exception e) {
             console.warning("Error #02-1: " + e.toString());
-        	throwException("Intern error opening account");
+            throwException("Intern error opening account");
         }
         return false;
     }
@@ -633,10 +633,10 @@ public class BankAccount extends JavaPlugin {
                 console.warning("Error #03-3: " + e1.getMessage());
             else
                 console.warning("Error #03-2: " + e1.getErrorCode() + " - " + e1.getSQLState());
-        	throwException("SQL error checking access to account");
+            throwException("SQL error checking access to account");
         } catch(Exception e) {
             console.warning("Error #03-1: " + e.toString());
-        	throwException("Intern error checking access to account");
+            throwException("Intern error checking access to account");
         }
         return false;
     }
@@ -678,10 +678,10 @@ public class BankAccount extends JavaPlugin {
                 console.warning("Error #03-3: " + e1.getMessage());
             else
                 console.warning("Error #03-2: " + e1.getErrorCode() + " - " + e1.getSQLState());
-        	throwException("SQL error checking access to account");
+            throwException("SQL error checking access to account");
         } catch(Exception e) {
             console.warning("Error #03-1: " + e.toString());
-        	throwException("Intern error checking access to account");
+            throwException("Intern error checking access to account");
         }
         return false;
     }
@@ -716,9 +716,9 @@ public class BankAccount extends JavaPlugin {
                 console.warning("Error #04-2: " + e.getErrorCode() + " - " + e.getSQLState());
             throwException("SQL error adding user");
         } catch (Exception e) {
-        	console.warning("Error #04-1: " + e.toString());
-        	throwException("Intern error adding user");
-		}
+            console.warning("Error #04-1: " + e.toString());
+            throwException("Intern error adding user");
+        }
         return false;
     }
     
@@ -755,11 +755,11 @@ public class BankAccount extends JavaPlugin {
                 console.warning("Error #05-3: " + e.getMessage());
             else
                 console.warning("Error #05-2: " + e.getErrorCode() + " - " + e.getSQLState());
-        	throwException("SQL error removing user");
+            throwException("SQL error removing user");
         } catch (Exception e) {
-        	console.warning("Error #05-1: " + e.toString());
-        	throwException("Intern error removing user");
-		}
+            console.warning("Error #05-1: " + e.toString());
+            throwException("Intern error removing user");
+        }
         return false;
     }
     
@@ -792,10 +792,10 @@ public class BankAccount extends JavaPlugin {
                 console.warning("Error #xx-2: " + e.getErrorCode() + " - " + e.getSQLState());
             throwException("SQL error adding owner");
         } catch (Exception e) {
-        	console.warning("Error #xx-1: " + e.toString());
-        	throwException("Intern error adding owner");
-		}
-		return false;
+            console.warning("Error #xx-1: " + e.toString());
+            throwException("Intern error adding owner");
+        }
+        return false;
     }
     
     /**
@@ -833,10 +833,10 @@ public class BankAccount extends JavaPlugin {
                 console.warning("Error #xx-2: " + e.getErrorCode() + " - " + e.getSQLState());
             throwException("SQL error removing owner");
         } catch (Exception e) {
-        	console.warning("Error #xx-1: " + e.toString());
-        	throwException("Intern error removing owner");
-		}
-		return false;
+            console.warning("Error #xx-1: " + e.toString());
+            throwException("Intern error removing owner");
+        }
+        return false;
     }
 
     /**
@@ -859,10 +859,10 @@ public class BankAccount extends JavaPlugin {
                 console.warning("Error #06-2: " + e.getErrorCode() + " - " + e.getSQLState());
             throwException("SQL error setting password");
         } catch (Exception e) {
-        	console.warning("Error #06-1: " + e.toString());
-        	throwException("Intern error setting password");
-		}
-		return false;
+            console.warning("Error #06-1: " + e.toString());
+            throwException("Intern error setting password");
+        }
+        return false;
     }
 
     /**
@@ -945,7 +945,7 @@ public class BankAccount extends JavaPlugin {
             }
         } catch(Exception e) {
             console.warning("Error #07-1: " + e.toString());
-        	throwException("Intern error using ATM");
+            throwException("Intern error using ATM");
         }
         return false;
     }
@@ -987,13 +987,13 @@ public class BankAccount extends JavaPlugin {
                     console.warning("Error #08-2: " + e.getErrorCode() + " - " + e.getSQLState());
                 throwException("SQL error closing account");
             } catch (Exception e) {
-            	console.warning("Error #08-1: " + e.toString());
-            	throwException("Intern error closing account");
-    		}
+                console.warning("Error #08-1: " + e.toString());
+                throwException("Intern error closing account");
+            }
         } else {
             return false;
         }
-		return false;
+        return false;
     }
     
     /**
@@ -1026,10 +1026,10 @@ public class BankAccount extends JavaPlugin {
                 console.warning("Error #09-2: " + e1.getErrorCode() + " - " + e1.getSQLState());
             throwException("SQL error getting users");
         } catch (Exception e) {
-        	console.warning("Error #09-1: " + e.toString());
-        	throwException("Intern error getting users");
-		}
-		return null;
+            console.warning("Error #09-1: " + e.toString());
+            throwException("Intern error getting users");
+        }
+        return null;
     }
     
     /**
@@ -1062,10 +1062,10 @@ public class BankAccount extends JavaPlugin {
                 console.warning("Error #09-2: " + e1.getErrorCode() + " - " + e1.getSQLState());
             throwException("SQL error getting owners");
         } catch (Exception e) {
-        	console.warning("Error #09-1: " + e.toString());
-        	throwException("Intern error getting owners");
-		}
-		return null;
+            console.warning("Error #09-1: " + e.toString());
+            throwException("Intern error getting owners");
+        }
+        return null;
     }
     
     /**
@@ -1090,9 +1090,9 @@ public class BankAccount extends JavaPlugin {
                 console.warning("Error #10-2: " + e1.getErrorCode() + " - " + e1.getSQLState());
             throwException("SQL error getting balance");
         } catch (Exception e) {
-        	console.warning("Error #10-1: " + e.toString());
-        	throwException("Intern error getting balance");
-		}
+            console.warning("Error #10-1: " + e.toString());
+            throwException("Intern error getting balance");
+        }
         return 0;
     }
     
@@ -1116,10 +1116,10 @@ public class BankAccount extends JavaPlugin {
                 console.warning("Error #17-2: " + e.getErrorCode() + " - " + e.getSQLState());
             throwException("SQL error setting balance");
         } catch (Exception e) {
-        	console.warning("Error #17-1: " + e.toString());
-        	throwException("Intern error setting balance");
-		}
-		return false;
+            console.warning("Error #17-1: " + e.toString());
+            throwException("Intern error setting balance");
+        }
+        return false;
     }
     
     /**
@@ -1145,9 +1145,9 @@ public class BankAccount extends JavaPlugin {
                 console.warning("Error #18-1: " + e.getErrorCode() + " - " + e.getSQLState());
             throwException("SQL error adding money from account");
         } catch (Exception e) {
-        	throwException("Intern error adding money from account");
-		}
-		return false;
+            throwException("Intern error adding money from account");
+        }
+        return false;
     }
     
     /**
@@ -1173,7 +1173,7 @@ public class BankAccount extends JavaPlugin {
                 console.warning("Error #19-1: " + e.getErrorCode() + " - " + e.getSQLState());
             throwException("SQL error subtracting money from account");
         }
-		return false;
+        return false;
     }
     
     //AREAS
@@ -1295,7 +1295,7 @@ public class BankAccount extends JavaPlugin {
             console.warning("Error #12-1: " + e.toString());
             throwException();
         }
-		return false;
+        return false;
     }
 
     /**
@@ -1320,7 +1320,7 @@ public class BankAccount extends JavaPlugin {
             console.warning("Error #13-1: " + e.toString());
             throwException();
         }
-		return false;
+        return false;
     }
     
     /**
@@ -1329,6 +1329,7 @@ public class BankAccount extends JavaPlugin {
      * @param w World
      * @param l Location
      * @param accountname Name of account
+     * @since 0.6
      * @throws BankAccountException 
      * @throws IndexOutOfBoundsException 
      */
@@ -1342,51 +1343,55 @@ public class BankAccount extends JavaPlugin {
     
     /**
      * Load signs from dat file
+     * 
+     * @since 0.6
      */
-	public void loadSigns() {
-    	File signFile = new File(getDataFolder(), "signs.dat");
-    	if (signFile.exists()) {
-    		try {
-    			FileReader fr = new FileReader(signFile);
-				BufferedReader reader = new BufferedReader(fr);
-				String s;
-				int line = 0;
-				signs.clear();
-				while ((s = reader.readLine()) != null) {
-					line++;
-					String[] args = s.split(",");
-					if (args.length == 5) {
-						signs.put(new SignLocation(getServer().getWorld(args[0]), new Location(getServer().getWorld(args[0]),Double.parseDouble(args[1]),Double.parseDouble(args[2]),Double.parseDouble(args[3]))),args[4]);
-					} else {
-						console.warning("Sign.dat contains errors on line " + line);
-					}
-				}
-				fr.close();
-			} catch (Exception e) {
-				console.warning("Error loading signs");
-				e.printStackTrace();
-			}
-    	}
+    public void loadSigns() {
+        File signFile = new File(getDataFolder(), "signs.dat");
+        if (signFile.exists()) {
+            try {
+                FileReader fr = new FileReader(signFile);
+                BufferedReader reader = new BufferedReader(fr);
+                String s;
+                int line = 0;
+                signs.clear();
+                while ((s = reader.readLine()) != null) {
+                    line++;
+                    String[] args = s.split(",");
+                    if (args.length == 5) {
+                        signs.put(new SignLocation(getServer().getWorld(args[0]), new Location(getServer().getWorld(args[0]),Double.parseDouble(args[1]),Double.parseDouble(args[2]),Double.parseDouble(args[3]))),args[4]);
+                    } else {
+                        console.warning("Sign.dat contains errors on line " + line);
+                    }
+                }
+                fr.close();
+            } catch (Exception e) {
+                console.warning("Error loading signs");
+                e.printStackTrace();
+            }
+        }
     }
     
     /**
      * Save signs to dat file
+     * 
+     * @since 0.6
      */
     public void saveSigns() {
-    	try {
-        	File signFile = new File(getDataFolder(), "signs.dat");
-    		FileWriter writer = new FileWriter(signFile);
-			for (Map.Entry<SignLocation, String> sign: signs.entrySet()) {
-				SignLocation location = sign.getKey();
-				String account = sign.getValue();
-				writer.write(location.getWorld().getName() + "," + location.locOutput() + "," + account + "\n");
-			}
-			writer.flush();
-			writer.close();
-		} catch (Exception e) {
-			console.warning("Can't save signs");
-			e.printStackTrace();
-		}
+        try {
+            File signFile = new File(getDataFolder(), "signs.dat");
+            FileWriter writer = new FileWriter(signFile);
+            for (Map.Entry<SignLocation, String> sign: signs.entrySet()) {
+                SignLocation location = sign.getKey();
+                String account = sign.getValue();
+                writer.write(location.getWorld().getName() + "," + location.locOutput() + "," + account + "\n");
+            }
+            writer.flush();
+            writer.close();
+        } catch (Exception e) {
+            console.warning("Can't save signs");
+            e.printStackTrace();
+        }
     }
     
     /**
@@ -1394,50 +1399,57 @@ public class BankAccount extends JavaPlugin {
      * 
      * @param w World
      * @param l Location
+     * @since 0.6
      */
     public void removeSign(World w,Location l) {
-    	for (Map.Entry<SignLocation, String> sign: signs.entrySet()) {
-    		if (sign.getKey().getWorld().equals(w) && sign.getKey().getLocation().equals(l)) {
-    			signs.remove(sign.getKey());
-    		}
-    	}
+        for (Map.Entry<SignLocation, String> sign: signs.entrySet()) {
+            if (sign.getKey().getWorld().equals(w) && sign.getKey().getLocation().equals(l)) {
+                signs.remove(sign.getKey());
+            }
+        }
         saveSigns();
     }
     
     /**
      * Check if balance sign exists
+     * 
      * @param w World
      * @param l Location
+     * @since 0.6
      * @return true if the sign exists, otherwise false
      */
     public boolean signExists(World w,Location l) {
-    	for (Map.Entry<SignLocation, String> sign: signs.entrySet()) {
-    		if (sign.getKey().getWorld().equals(w) && sign.getKey().getLocation().equals(l)) {
-    			return true;
-    		}
-    	}
-		return false;
+        for (Map.Entry<SignLocation, String> sign: signs.entrySet()) {
+            if (sign.getKey().getWorld().equals(w) && sign.getKey().getLocation().equals(l)) {
+                return true;
+            }
+        }
+        return false;
     }
     
     /**
      * Check if SignUpdater is set
+     * 
+     * @since 0.6
      * @return true if SignUpdater is set, otherwise false + console warning
      */
     public boolean checkSignUpdater() {
-    	if (signupdater == null) {
-    		console.warning("Missing plugin -> SignUpdater");
-    		return false;
-    	}
-    	return true;
+        if (signupdater == null) {
+            console.warning("Missing plugin -> SignUpdater");
+            return false;
+        }
+        return true;
     }
     
     /**
      * Update all signs
+     * 
+     * @since 0.6
      * @throws BankAccountException 
      * @throws IndexOutOfBoundsException 
      */
     public void updateSigns() throws BankAccountException {
-    	checkSignUpdater();
+        checkSignUpdater();
         HashMap<String, Double> balances = new HashMap<String, Double>();
         for (Map.Entry<SignLocation, String> sign: signs.entrySet()) {
             double balance = 0;
@@ -1452,31 +1464,33 @@ public class BankAccount extends JavaPlugin {
                 Sign foundSign = (Sign) sl.getBlock().getState();
                 if (foundSign.getLine(0).equalsIgnoreCase("[BankAccount]")) {
                     if (accountExists(sign.getValue())) {
-                    	String[] lines = {foundSign.getLine(0), sign.getValue(), Method.format(balance), ""};
-                    	signupdater.AddSignUpdate(UpdaterPriority.NORMAL, foundSign, lines);
+                        String[] lines = {foundSign.getLine(0), sign.getValue(), Method.format(balance), ""};
+                        signupdater.AddSignUpdate(UpdaterPriority.NORMAL, foundSign, lines);
                     } else {
-                    	String[] lines = {foundSign.getLine(0), sign.getValue(), "Account closed", ""};
-                    	signupdater.AddSignUpdate(UpdaterPriority.NORMAL, foundSign, lines);
+                        String[] lines = {foundSign.getLine(0), sign.getValue(), "Account closed", ""};
+                        signupdater.AddSignUpdate(UpdaterPriority.NORMAL, foundSign, lines);
                     }
                 } else {
                     removeSign(sl.getWorld(), sl.getLocation());
-                    console.warning("Sign in world " + sl.getWorld().getName() + " at " + sl.locOutput(" ") + " can't be found");
+                    console.warning("Sign in world " + sl.getWorld().getName() + " at " + sl.locOutput(" ") + " can't be found - removed");
                 }
             } else {
                 removeSign(sl.getWorld(), sl.getLocation());
-                console.warning("Sign in world " + sl.getWorld().getName() + " at " + sl.locOutput(" ") + " can't be found");
+                console.warning("Sign in world " + sl.getWorld().getName() + " at " + sl.locOutput(" ") + " can't be found - removed");
             }
         }
     }
     
     /**
      * Update all signs that showing defined account
+     * 
+     * @since 0.6
      * @param accountname Name of account
      * @throws BankAccountException 
      * @throws IndexOutOfBoundsException 
      */
     public void updateSigns(String accountname) throws BankAccountException {
-    	checkSignUpdater();
+        checkSignUpdater();
         double balance = getBalance(accountname);
         for (Map.Entry<SignLocation, String> sign: signs.entrySet()) {
             if (sign.getValue().equalsIgnoreCase(accountname)) {
@@ -1485,38 +1499,45 @@ public class BankAccount extends JavaPlugin {
                     Sign foundSign = (Sign) sl.getBlock().getState();
                     if (foundSign.getLine(0).equalsIgnoreCase("[BankAccount]")) {
                         if (accountExists(foundSign.getLine(1))) {
-                        	String[] lines = {foundSign.getLine(0), sign.getValue(), Method.format(balance), ""};
-                        	signupdater.AddSignUpdate(UpdaterPriority.NORMAL, foundSign, lines);
+                            String[] lines = {foundSign.getLine(0), sign.getValue(), Method.format(balance), ""};
+                            signupdater.AddSignUpdate(UpdaterPriority.NORMAL, foundSign, lines);
                         } else {
-                        	String[] lines = {foundSign.getLine(0), sign.getValue(), "Account closed", ""};
-                        	signupdater.AddSignUpdate(UpdaterPriority.NORMAL, foundSign, lines);
+                            String[] lines = {foundSign.getLine(0), sign.getValue(), "Account closed", ""};
+                            signupdater.AddSignUpdate(UpdaterPriority.NORMAL, foundSign, lines);
                         }
                     } else {
                         removeSign(sl.getWorld(), sl.getLocation());
-                        console.warning("Sign in world " + sl.getWorld().getName() + " at " + sl.locOutput(" ") + " can't be found");
+                        console.warning("Sign in world " + sl.getWorld().getName() + " at " + sl.locOutput(" ") + " can't be found - removed");
                     }
                 } else {
                     removeSign(sl.getWorld(), sl.getLocation());
-                    console.warning("Sign in world " + sl.getWorld().getName() + " at " + sl.locOutput(" ") + " can't be found");
+                    console.warning("Sign in world " + sl.getWorld().getName() + " at " + sl.locOutput(" ") + " can't be found - removed");
                 }
-            } else {
-                console.info("Sign says: " + sign.getValue() + " - I'm looking for: " + accountname);
             }
         }
     }
     
-    private BankAccountException throwException(String msg) throws BankAccountException {
-    	console.info("Check throwException");
-    	if (settings.Debug_Full) {
-			try {
-				console.info("sending throwException");
-				return new BankAccountException(msg);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-    	}
-		return null;
+    /**
+     * Throw a BankAccountException with a specific message in case full debug is enabled
+     * 
+     * @param msg Message
+     * @since 0.6
+     * @see throwException()
+     * @throws BankAccountException
+     */
+    private void throwException(String msg) throws BankAccountException {
+        console.info("Check throwException");
+        if (settings.Debug_Full) {
+            throw new BankAccountException(msg);
+        }
     }
     
+    /**
+     * Throw a BankAccountException with a blank message in case full debug is enabled
+     * 
+     * @since 0.6
+     * @see throwException(String msg)
+     * @throws BankAccountException
+     */
     private void throwException() throws BankAccountException { throwException(""); }
 }
