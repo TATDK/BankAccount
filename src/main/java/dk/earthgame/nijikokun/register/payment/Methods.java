@@ -29,7 +29,7 @@ public class Methods {
     /**
      * Allows you to set which economy plugin is most preferred.
      * 
-     * @param preferred
+     * @param preferred Preferred economy plugin
      */
     public Methods(String preferred) {
         this._init();
@@ -42,7 +42,8 @@ public class Methods {
     private void _init() {
         this.addMethod("iConomy", new dk.earthgame.nijikokun.register.payment.methods.iCo4());
         this.addMethod("iConomy", new dk.earthgame.nijikokun.register.payment.methods.iCo5());
-        this.addMethod("BOSEconomy", new dk.earthgame.nijikokun.register.payment.methods.BOSE());
+        this.addMethod("BOSEconomy", new dk.earthgame.nijikokun.register.payment.methods.BOSE6());
+        this.addMethod("BOSEconomy", new dk.earthgame.nijikokun.register.payment.methods.BOSE7());
         this.addMethod("Essentials", new dk.earthgame.nijikokun.register.payment.methods.EE17());
     }
 
@@ -76,7 +77,7 @@ public class Methods {
 
         int count = 0;
         boolean match = false;
-        Plugin plugin = null;
+        Plugin plugin;
         PluginManager manager = method.getServer().getPluginManager();
 
         for(String name: this.getDependencies()) {
