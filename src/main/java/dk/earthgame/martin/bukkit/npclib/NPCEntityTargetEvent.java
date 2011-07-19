@@ -1,4 +1,4 @@
-package org.martin.bukkit.npclib;
+package dk.earthgame.martin.bukkit.npclib;
 
 import org.bukkit.entity.Entity;
 import org.bukkit.event.entity.EntityTargetEvent;

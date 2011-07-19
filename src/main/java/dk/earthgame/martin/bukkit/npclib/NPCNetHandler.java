@@ -1,4 +1,4 @@
-package org.martin.bukkit.npclib;
+package dk.earthgame.martin.bukkit.npclib;
 
 import net.minecraft.server.EntityPlayer;
 import net.minecraft.server.MinecraftServer;

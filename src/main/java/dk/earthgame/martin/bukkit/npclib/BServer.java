@@ -1,4 +1,4 @@
-package org.martin.bukkit.npclib;
+package dk.earthgame.martin.bukkit.npclib;
 
 import java.util.HashMap;
 import java.util.List;

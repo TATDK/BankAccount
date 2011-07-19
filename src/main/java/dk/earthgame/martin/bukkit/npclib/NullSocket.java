@@ -1,4 +1,4 @@
-package org.martin.bukkit.npclib;
+package dk.earthgame.martin.bukkit.npclib;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

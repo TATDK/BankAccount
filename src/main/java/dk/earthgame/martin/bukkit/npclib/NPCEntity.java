@@ -1,4 +1,4 @@
-package org.martin.bukkit.npclib;
+package dk.earthgame.martin.bukkit.npclib;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -23,7 +23,8 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.entity.EntityTargetEvent;
-import org.martin.bukkit.npclib.NPCPath.Node;
+
+import dk.earthgame.martin.bukkit.npclib.NPCPath.Node;
 
 /**
  *

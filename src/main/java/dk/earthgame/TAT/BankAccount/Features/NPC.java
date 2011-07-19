@@ -5,10 +5,10 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityListener;
 import org.bukkit.event.entity.EntityTargetEvent;
 
-import org.martin.bukkit.npclib.*;
-import org.martin.bukkit.npclib.NPCEntityTargetEvent.NPCTargetReason;
-
 import dk.earthgame.TAT.BankAccount.BankAccount;
+import dk.earthgame.martin.bukkit.npclib.NPCEntity;
+import dk.earthgame.martin.bukkit.npclib.NPCEntityTargetEvent;
+import dk.earthgame.martin.bukkit.npclib.NPCEntityTargetEvent.NPCTargetReason;
 
 /**
  * NPCs behavior on player interaction
