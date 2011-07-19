@@ -3,15 +3,16 @@ package dk.earthgame.TAT.BankAccount.Features;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import dk.earthgame.TAT.BankAccount.BankAccount;
 import dk.earthgame.TAT.BankAccount.Enum.FeeModes;
 import dk.earthgame.TAT.BankAccount.System.BankAccountException;
 import dk.earthgame.nijikokun.register.payment.Method.MethodAccount;
 
-public class BankAccount {
-	private dk.earthgame.TAT.BankAccount.BankAccount plugin;
+public class Account {
+	private BankAccount plugin;
 	private String accountname;
 	
-	public BankAccount(dk.earthgame.TAT.BankAccount.BankAccount instantiate, String accountname) {
+	public Account(BankAccount instantiate, String accountname) {
 		plugin = instantiate;
 		this.accountname = accountname;
 	}
@@ -250,7 +251,7 @@ public class BankAccount {
                 }
             } else if (type == "transfer") {
                 if (plugin.PasswordSystem.passwordCheck(accountname, password)) {
-                	BankAccount reciever = plugin.getAccount(player);
+                	Account reciever = plugin.getAccount(player);
                     //Player = receiver account
                     double receiver_account = reciever.getBalance();
                     if (plugin.settings.MaxAmount > 0 && (receiver_account+amount) > plugin.settings.MaxAmount) {

@@ -22,6 +22,7 @@ import com.nijikokun.bukkit.Permissions.Permissions;
 import dk.earthgame.TAT.BankAccount.Enum.PermissionNodes;
 import dk.earthgame.TAT.BankAccount.Enum.TransactionTypes;
 import dk.earthgame.TAT.BankAccount.Features.ATMSign;
+import dk.earthgame.TAT.BankAccount.Features.Account;
 import dk.earthgame.TAT.BankAccount.Features.BalanceSign;
 import dk.earthgame.TAT.BankAccount.Features.BankAreas;
 import dk.earthgame.TAT.BankAccount.Features.LoanSystem;
@@ -513,9 +514,9 @@ public class BankAccount extends JavaPlugin {
         return false;
     }
     
-    public dk.earthgame.TAT.BankAccount.Features.BankAccount getAccount(String accountname) throws BankAccountException {
+    public Account getAccount(String accountname) throws BankAccountException {
     	if (accountExists(accountname)) {
-    		return new dk.earthgame.TAT.BankAccount.Features.BankAccount(this, accountname);
+    		return new Account(this, accountname);
     	} else {
     		return null;
     	}
