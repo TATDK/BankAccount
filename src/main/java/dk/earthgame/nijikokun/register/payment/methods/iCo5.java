@@ -10,6 +10,13 @@ import dk.earthgame.nijikokun.register.payment.Method;
 
 import org.bukkit.plugin.Plugin;
 
+/**
+ * iConomy 5 Implementation of Method
+ *
+ * @author Nijikokun <nijikokun@shortmail.com> (@nijikokun)
+ * @copyright (c) 2011
+ * @license AOL license <http://aol.nexua.org>
+ */
 @SuppressWarnings("static-access")
 public class iCo5 implements Method {
     private iConomy iConomy;
@@ -26,7 +33,7 @@ public class iCo5 implements Method {
         return "5";
     }
 
-	public String format(double amount) {
+    public String format(double amount) {
         return this.iConomy.format(amount);
     }
 
@@ -35,15 +42,15 @@ public class iCo5 implements Method {
     }
 
     public boolean hasBank(String bank) {
-        return (!hasBanks()) ? false : this.iConomy.Banks.exists(bank);
+        return (hasBanks()) && this.iConomy.Banks.exists(bank);
     }
 
-	public boolean hasAccount(String name) {
+    public boolean hasAccount(String name) {
         return this.iConomy.hasAccount(name);
     }
 
-	public boolean hasBankAccount(String bank, String name) {
-        return (!hasBank(bank)) ? false : this.iConomy.getBank(bank).hasAccount(name);
+    public boolean hasBankAccount(String bank, String name) {
+        return (hasBank(bank)) && this.iConomy.getBank(bank).hasAccount(name);
     }
 
     public MethodAccount getAccount(String name) {
@@ -53,7 +60,7 @@ public class iCo5 implements Method {
     public MethodBankAccount getBankAccount(String bank, String name) {
         return new iCoBankAccount(this.iConomy.getBank(bank).getAccount(name));
     }
-	
+
     public boolean isCompatible(Plugin plugin) {
         return plugin.getDescription().getName().equalsIgnoreCase("iconomy") && plugin.getClass().getName().equals("com.iConomy.iConomy") && plugin instanceof iConomy;
     }
