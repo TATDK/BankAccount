@@ -6,7 +6,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerListener;
 
 import dk.earthgame.TAT.BankAccount.BankAccount;
-import dk.earthgame.TAT.BankAccount.System.UserSaves;
+import dk.earthgame.TAT.BankAccount.System.UserSave;
 
 public class BankAccountPlayerListener extends PlayerListener {
     private BankAccount plugin;
@@ -17,7 +17,7 @@ public class BankAccountPlayerListener extends PlayerListener {
     @Override
     public void onPlayerInteract(PlayerInteractEvent event) {
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-            UserSaves mySave = plugin.getSaved(event.getPlayer().getName());
+            UserSave mySave = plugin.UserSaves.getSaved(event.getPlayer().getName());
             if (event.getPlayer().getItemInHand().getTypeId() == plugin.settings.AreaWandId && mySave.isSelecting()) {
                 Location pos = event.getClickedBlock().getLocation();
                 if (mySave.setPosition(pos) == 2) {

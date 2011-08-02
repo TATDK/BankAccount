@@ -29,14 +29,25 @@ public class Upgrade {
             runUpgrade05(plugin, UseMySQL, Upgrade05);
         }
         
-        //Upgrade 0.5
+        //Upgrade 0.5.1
         File Upgrade051 = new File(plugin.getDataFolder(), "SQLUpgrade051");
         if (Upgrade051.exists()) {
             runUpgrade051(plugin, UseMySQL, Upgrade051);
         }
+        
+        //Upgrade 0.6
+        File Upgrade06 = new File(plugin.getDataFolder(), "SQLUpgrade06");
+        if (Upgrade06.exists()) {
+            runUpgrade06(plugin, UseMySQL, Upgrade06);
+        } else {
+        	Upgrade06 = new File(plugin.getDataFolder(), "SQLUpgrade06.txt");
+            if (Upgrade06.exists()) {
+                runUpgrade06(plugin, UseMySQL, Upgrade06);
+            }
+        }
     }
-    
-    //UPGRADES
+
+	//UPGRADES
 //0.3c
     private void runUpgrade03c(BankAccount plugin, boolean UseMySQL, File file) {
         try {
@@ -92,7 +103,6 @@ public class Upgrade {
 //0.5.1
     private void runUpgrade051(BankAccount plugin, boolean UseMySQL, File file) {
         try {
-            
             if (UseMySQL) {
                 //MySQL
                 plugin.settings.stmt.execute("ALTER TABLE  `" + plugin.settings.SQL_account_table + "` ADD  `cleanname` LONGTEXT NOT NULL AFTER  `accountname`");
@@ -134,4 +144,29 @@ public class Upgrade {
             plugin.console.warning(e.toString());
         }
     }
+
+//0.6
+    private void runUpgrade06(BankAccount plugin, boolean UseMySQL, File file) {
+    	try {
+            if (UseMySQL) {
+                //MySQL
+                plugin.settings.stmt.execute("ALTER TABLE  `" + plugin.settings.SQL_account_table + "` ADD  `bank` INT( 255 ) NOT NULL DEFAULT '0' AFTER  `amount`");
+                plugin.console.info("MySQL Tables upgraded to v.0.6");
+            } else {
+                //SQLite
+                plugin.settings.stmt.execute("ALTER TABLE  `" + plugin.settings.SQL_account_table + "` ADD  `bank` INT( 255 ) NOT NULL DEFAULT '0'");
+                plugin.console.info("SQLite Tables upgraded to v.0.6");
+            }
+            if (file != null) {
+                if (file.delete()) {
+                    plugin.console.info("SQLUpgrade06 deleted");
+                } else {
+                    plugin.console.warning("SQLUpgrade06 could not be deleted, please remove it yourself");
+                }
+            }
+        } catch (SQLException e) {
+            plugin.console.warning("Could not upgrade tables to v.0.5.1");
+            plugin.console.warning(e.toString());
+        }
+	}
 }

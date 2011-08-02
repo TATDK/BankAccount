@@ -1,107 +1,95 @@
 package dk.earthgame.TAT.BankAccount.System;
 
-import org.bukkit.Location;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.util.HashMap;
+import java.util.Map;
+
+import dk.earthgame.TAT.BankAccount.BankAccount;
 
 /**
- * Saved informations of an user
+ * Manager for UserSave
  * @author TAT
- * @since 0.5
+ * @since 0.6
  */
 public class UserSaves {
-    private double bounty;
-    private boolean selecting;
-    private static Location pos1;
-    private static Location pos2;
+    private BankAccount plugin;
+	private HashMap<String,UserSave> UserSaves = new HashMap<String,UserSave>();
     
-    public UserSaves() {
+	public UserSaves(BankAccount instantiate) {
+		plugin = instantiate;
+	}
+	
+	/**
+     * Get the saved data of a player
+     * 
+     * @param player The username of the player
+     * @since 0.5
+     * @return UserSaves - the saved data
+     */
+    public UserSave getSaved(String player) {
+        if (UserSaves.containsKey(player)) {
+            return UserSaves.get(player);
+        }
         
+        UserSave save = new UserSave(this);
+        UserSaves.put(player, save);
+        save();
+        return save;
     }
     
     /**
-     * Change the bounty 
+     * Load signs from dat file
      * 
-     * @param bounty New bounty on the user's head
-     * @since 0.5
+     * @since 0.6
      */
-    public void setBounty(double bounty) {
-        this.bounty = bounty;
-    }
-    
-    /**
-     * Get the bounty
-     * 
-     * @since 0.5
-     * @return double - Bounty on the user's head
-     */
-    public double getBounty() {
-        return bounty;
-    }
-    
-    /**
-     * Get if the user is selecting
-     * 
-     * @since 0.5
-     * @return boolean
-     */
-    public boolean isSelecting() {
-        return selecting;
-    }
-    
-    /**
-     * Set if the user is selecting
-     * 
-     * @param isSelecting Is the user selecting
-     * @since 0.5
-     */
-    public void isSelecting(boolean isSelecting) {
-        selecting = isSelecting;
-    }
-    
-    /**
-     * Clear the saved positions
-     * 
-     * @since 0.5
-     */
-    public void clearPositions() {
-        pos1 = null;
-        pos2 = null;
-    }
-    
-    /**
-     * Set the next available position
-     * 
-     * @param pos Location of the next position
-     * @since 0.5
-     * @return position set - 1: Position 1 set - 2: Position 2 set
-     */
-    public int setPosition(Location pos) {
-        if (pos1 == null) {
-            pos1 = pos;
-            return 1;
-        } else if (pos2 == null) {
-            pos2 = pos;
-            return 2;
-        } else {
-            pos2 = null;
-            pos1 = pos;
-            return 1;
+    public void load() {
+        File signFile = new File(plugin.getDataFolder(), "UserSaves.dat");
+        if (signFile.exists()) {
+            try {
+                FileReader fr = new FileReader(signFile);
+                BufferedReader reader = new BufferedReader(fr);
+                String s;
+                int line = 0;
+                UserSaves.clear();
+                while ((s = reader.readLine()) != null) {
+                    line++;
+                    String[] args = s.split(",");
+                    if (args.length == 2) {
+                    	UserSaves.put(args[0],new UserSave(this, Double.parseDouble(args[1])));
+                    } else {
+                        plugin.console.warning("UserSaves.dat contains errors on line " + line);
+                    }
+                }
+                fr.close();
+            } catch (Exception e) {
+                plugin.console.warning("Error loading UserSaves");
+                e.printStackTrace();
+            }
         }
     }
     
     /**
-     * Get the set position
+     * Save saves to dat file
      * 
-     * @param position Position 1 or 2
-     * @since 0.5
-     * @return Location of the position - Returns null if position isn't set
+     * @since 0.6
      */
-    public Location getPosition(int position) {
-        if (position == 1 && pos1 != null) {
-            return pos1;
-        } else if (position == 2 && pos2 != null) {
-            return pos2;
-        } else {
-            return null;
+    public void save() {
+        try {
+            File signFile = new File(plugin.getDataFolder(), "UserSaves.dat");
+            FileWriter writer = new FileWriter(signFile);
+            for (Map.Entry<String, UserSave> usersave: UserSaves.entrySet()) {
+                String p = usersave.getKey();
+                UserSave s = usersave.getValue();
+                writer.write(p + "," + s.getBounty() + "\n");
+            }
+            writer.flush();
+            writer.close();
+        } catch (Exception e) {
+            plugin.console.warning("Can't save UserSaves");
+            e.printStackTrace();
         }
     }
 }

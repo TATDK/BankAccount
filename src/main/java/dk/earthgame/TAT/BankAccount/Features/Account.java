@@ -1,16 +1,20 @@
 package dk.earthgame.TAT.BankAccount.Features;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import dk.earthgame.TAT.BankAccount.BankAccount;
 import dk.earthgame.TAT.BankAccount.Enum.FeeModes;
-import dk.earthgame.TAT.BankAccount.System.BankAccountException;
 import dk.earthgame.nijikokun.register.payment.Method.MethodAccount;
 
+/**
+ * 
+ * @author TAT
+ *
+ */
 public class Account {
 	private BankAccount plugin;
 	private String accountname;
+	private Bank bank;
 	
 	public Account(BankAccount instantiate, String accountname) {
 		plugin = instantiate;
@@ -26,6 +30,21 @@ public class Account {
 		return accountname;
 	}
 	
+	public Bank getBank() {
+		if (bank == null) {
+			if (plugin.settings.Areas) {
+				try {
+					bank = new Bank(plugin,plugin.SQLWorker.getInt("bank", plugin.settings.SQL_account_table, "`accountname` = " + accountname));
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			} else {
+				bank = new Bank(plugin,"Global");
+			}
+		}
+		return bank;
+	}
+	
 	/**
      * Add user to account
      * 
@@ -33,30 +52,23 @@ public class Account {
      * @since 0.5
      * @see #addOwner(String player)
      * @return If the user is successfully added
-     * @throws BankAccountException 
      */
-    public boolean addUser(String player) throws BankAccountException {
+    public boolean addUser(String player) {
         try {
-            String newPlayers = player;
-            ResultSet rs;
-            rs = plugin.settings.stmt.executeQuery("SELECT `users` FROM `" + plugin.settings.SQL_account_table + "` WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
-            while(rs.next()) {
-                String[] players = rs.getString("users").split(";");
-                for (String p : players) {
-                    newPlayers += ";" + p;
-                }
+            String newUsers = player;
+            String[] users = plugin.SQLWorker.getString("users", plugin.settings.SQL_account_table, "`cleanname` = '" + accountname.toLowerCase() + "'").split(";");
+            for (String u : users) {
+                newUsers += ";" + u;
             }
-            plugin.settings.stmt.executeUpdate("UPDATE `" + plugin.settings.SQL_account_table + "` SET `users` = '" + newPlayers + "' WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
+            plugin.SQLWorker.executeUpdate("UPDATE `" + plugin.settings.SQL_account_table + "` SET `users` = '" + newUsers + "' WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
             return true;
         } catch(SQLException e) {
             if (!e.getMessage().equalsIgnoreCase(null))
             	plugin.console.warning("Error #04-3: " + e.getMessage());
             else
             	plugin.console.warning("Error #04-2: " + e.getErrorCode() + " - " + e.getSQLState());
-            plugin.throwException("SQL error adding user");
         } catch (Exception e) {
         	plugin.console.warning("Error #04-1: " + e.toString());
-        	plugin.throwException("Intern error adding user");
         }
         return false;
     }
@@ -68,35 +80,28 @@ public class Account {
      * @since 0.5
      * @see #removeOwner(String player)
      * @return If the user is successfully removed
-     * @throws BankAccountException 
      */
-    public boolean removeUser(String player) throws BankAccountException {
+    public boolean removeUser(String player) {
         try {
-            String newPlayers = "";
-            ResultSet rs;
-            rs = plugin.settings.stmt.executeQuery("SELECT `users` FROM `" + plugin.settings.SQL_account_table + "` WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
-            while(rs.next()) {
-                String[] players = rs.getString("users").split(";");
-                for (String p : players) {
-                    if (!p.equalsIgnoreCase(player)) {
-                        if (!newPlayers.equalsIgnoreCase("")) {
-                            newPlayers += ";";
-                        }
-                        newPlayers += p;    
+            String newUsers = "";
+            String[] users = plugin.SQLWorker.getString("users", plugin.settings.SQL_account_table, "`cleanname` = '" + accountname.toLowerCase() + "'").split(";");
+            for (String u : users) {
+                if (!u.equalsIgnoreCase(player)) {
+                    if (!newUsers.equalsIgnoreCase("")) {
+                        newUsers += ";";
                     }
+                    newUsers += u;    
                 }
             }
-            plugin.settings.stmt.executeUpdate("UPDATE `" + plugin.settings.SQL_account_table + "` SET `users` = '" + newPlayers + "' WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
+            plugin.SQLWorker.executeUpdate("UPDATE `" + plugin.settings.SQL_account_table + "` SET `users` = '" + newUsers + "' WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
             return true;
         } catch(SQLException e) {
             if (!e.getMessage().equalsIgnoreCase(null))
             	plugin.console.warning("Error #05-3: " + e.getMessage());
             else
             	plugin.console.warning("Error #05-2: " + e.getErrorCode() + " - " + e.getSQLState());
-            plugin.throwException("SQL error removing user");
         } catch (Exception e) {
         	plugin.console.warning("Error #05-1: " + e.toString());
-        	plugin.throwException("Intern error removing user");
         }
         return false;
     }
@@ -108,29 +113,23 @@ public class Account {
      * @since 0.5
      * @see #addUser(String player)
      * @return If the owner is successfully added
-     * @throws BankAccountException 
      */
-    public boolean addOwner(String player) throws BankAccountException {
+    public boolean addOwner(String player) {
         try {
-            String newPlayers = player;
-            ResultSet rs;
-            rs = plugin.settings.stmt.executeQuery("SELECT `owners` FROM `" + plugin.settings.SQL_account_table + "` WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
-            while(rs.next()) {
-                String[] players = rs.getString("owners").split(";");
-                for (String p : players) {
-                    newPlayers += ";" + p;
-                }
+            String newOwners = player;
+            String[] owners = plugin.SQLWorker.getString("owners", plugin.settings.SQL_account_table, "`cleanname` = '" + accountname.toLowerCase() + "'").split(";");
+            for (String o : owners) {
+                newOwners += ";" + o;
             }
+            plugin.SQLWorker.executeUpdate("UPDATE `" + plugin.settings.SQL_account_table + "` SET `owners` = '" + newOwners + "' WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
             return true;
         } catch(SQLException e) {
             if (!e.getMessage().equalsIgnoreCase(null))
             	plugin.console.warning("Error #xx-3: " + e.getMessage());
             else
             	plugin.console.warning("Error #xx-2: " + e.getErrorCode() + " - " + e.getSQLState());
-            plugin.throwException("SQL error adding owner");
         } catch (Exception e) {
         	plugin.console.warning("Error #xx-1: " + e.toString());
-            plugin.throwException("Intern error adding owner");
         }
         return false;
     }
@@ -142,35 +141,28 @@ public class Account {
      * @since 0.5
      * @see #removeUser(String player)
      * @return If the owner is successfully removed
-     * @throws BankAccountException 
      */
-    public boolean removeOwner(String player) throws BankAccountException {
+    public boolean removeOwner(String player) {
         try {
-            String newPlayers = "";
-            ResultSet rs;
-            rs = plugin.settings.stmt.executeQuery("SELECT `owners` FROM `" + plugin.settings.SQL_account_table + "` WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
-            while(rs.next()) {
-                String[] players = rs.getString("owners").split(";");
-                for (String p : players) {
-                    if (!p.equalsIgnoreCase(player)) {
-                        if (!newPlayers.equalsIgnoreCase("")) {
-                            newPlayers += ";";
-                        }
-                        newPlayers += p;    
+            String newOwners = "";
+            String[] owners = plugin.SQLWorker.getString("owners", plugin.settings.SQL_account_table, "`cleanname` = '" + accountname.toLowerCase() + "'").split(";");
+            for (String o : owners) {
+                if (!o.equalsIgnoreCase(player)) {
+                    if (!newOwners.equalsIgnoreCase("")) {
+                        newOwners += ";";
                     }
+                    newOwners += o;    
                 }
             }
-            plugin.settings.stmt.executeUpdate("UPDATE `" + plugin.settings.SQL_account_table + "` SET `owners` = '" + newPlayers + "' WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
+            plugin.SQLWorker.executeUpdate("UPDATE `" + plugin.settings.SQL_account_table + "` SET `owners` = '" + newOwners + "' WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
             return true;
         } catch(SQLException e) {
             if (!e.getMessage().equalsIgnoreCase(null))
             	plugin.console.warning("Error #xx-3: " + e.getMessage());
             else
             	plugin.console.warning("Error #xx-2: " + e.getErrorCode() + " - " + e.getSQLState());
-            plugin.throwException("SQL error removing owner");
         } catch (Exception e) {
         	plugin.console.warning("Error #xx-1: " + e.toString());
-            plugin.throwException("Intern error removing owner");
         }
         return false;
     }
@@ -181,21 +173,18 @@ public class Account {
      * @param password The new password (Must be encrypted!)
      * @since 0.5
      * @return If the password is successfully set
-     * @throws BankAccountException 
      */
-    public boolean setPassword(String password) throws BankAccountException {
+    public boolean setPassword(String password) {
         try {
-        	plugin.settings.stmt.executeUpdate("UPDATE `" + plugin.settings.SQL_account_table + "` SET `password` = '" + password + "' WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
+        	plugin.SQLWorker.executeUpdate("UPDATE `" + plugin.settings.SQL_account_table + "` SET `password` = '" + password + "' WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
             return true;
         } catch(SQLException e) {
             if (!e.getMessage().equalsIgnoreCase(null))
             	plugin.console.warning("Error #06-3: " + e.getMessage());
             else
             	plugin.console.warning("Error #06-2: " + e.getErrorCode() + " - " + e.getSQLState());
-            plugin.throwException("SQL error setting password");
         } catch (Exception e) {
         	plugin.console.warning("Error #06-1: " + e.toString());
-            plugin.throwException("Intern error setting password");
         }
         return false;
     }
@@ -209,9 +198,8 @@ public class Account {
      * @param password Password
      * @since 0.5
      * @return If the action is run successfully
-     * @throws BankAccountException 
      */
-    public boolean ATM(String player,String type,Double amount,String password) throws BankAccountException {
+    public boolean ATM(String player,String type,Double amount,String password) {
         try {
             double account = getBalance();
             MethodAccount economyAccount = plugin.Method.getAccount(player);
@@ -222,7 +210,7 @@ public class Account {
                 } else if (economyAccount.hasEnough(amount)) {
                     add(amount);
                     economyAccount.subtract(amount);
-                    plugin.BalanceSign.updateSigns(accountname);
+                    plugin.BalanceSign.update(accountname);
                     return true;
                 } else {
                     return false;
@@ -232,7 +220,7 @@ public class Account {
                     if ((account - amount) >= 0) {
                         if (plugin.settings.WithdrawFee.getMode() != FeeModes.NONE) {
                             if (plugin.settings.WithdrawFee.CanAfford(account - amount)) {
-                                if (!subtract(plugin.settings.WithdrawFee.Fee(account - amount))) {
+                                if (!subtract(plugin.settings.WithdrawFee.CalculateFee(account - amount))) {
                                     return false;
                                 }
                             } else {
@@ -241,7 +229,7 @@ public class Account {
                         }
                         subtract(amount);
                         economyAccount.add(amount);
-                        plugin.BalanceSign.updateSigns(accountname);
+                        plugin.BalanceSign.update(accountname);
                         return true;
                     } else {
                         return false;
@@ -260,7 +248,7 @@ public class Account {
                     } else if ((account - amount) >= 0) {
                         if (plugin.settings.TransferFee.getMode() != FeeModes.NONE) {
                             if (plugin.settings.TransferFee.CanAfford(account - amount)) {
-                                if (!subtract(plugin.settings.TransferFee.Fee(account - amount))) {
+                                if (!subtract(plugin.settings.TransferFee.CalculateFee(account - amount))) {
                                     return false;
                                 }
                             } else {
@@ -269,7 +257,7 @@ public class Account {
                         }
                         subtract(amount);
                         reciever.add(amount);
-                        plugin.BalanceSign.updateSigns(accountname);
+                        plugin.BalanceSign.update(accountname);
                         return true;
                     } else {
                         return false;
@@ -280,7 +268,6 @@ public class Account {
             }
         } catch(Exception e) {
         	plugin.console.warning("Error #07-1: " + e.toString());
-        	plugin.throwException("Intern error using ATM");
         }
         return false;
     }
@@ -294,35 +281,34 @@ public class Account {
      * @return If the account is successfully closed
      * @throws BankAccountException 
      */
-    public boolean closeAccount(String player,String password) throws BankAccountException {
+    public boolean close(String player,String password) {
         if (plugin.PasswordSystem.passwordCheck(accountname, password)) {
             try {
                 MethodAccount economyAccount = plugin.Method.getAccount(player);
                 double accountBalance = getBalance();
                 if (plugin.settings.ClosingFee.getMode() != FeeModes.NONE) {
                     if (plugin.settings.ClosingFee.CanAfford(accountBalance)) {
-                        if (!subtract(plugin.settings.ClosingFee.Fee(accountBalance))) {
+                        if (!subtract(plugin.settings.ClosingFee.CalculateFee(accountBalance))) {
                             return false;
                         } else {
-                            accountBalance -= plugin.settings.ClosingFee.Fee(accountBalance);
+                            accountBalance -= plugin.settings.ClosingFee.CalculateFee(accountBalance);
                         }
                     } else {
                         return false;
                     }
                 }
-                plugin.settings.stmt.executeUpdate("DELETE FROM `" + plugin.settings.SQL_account_table + "` WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
+                plugin.SQLWorker.executeDelete("DELETE FROM `" + plugin.settings.SQL_account_table + "` WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
                 economyAccount.add(accountBalance);
-                plugin.BalanceSign.updateSigns(accountname);
+                plugin.BalanceSign.update(accountname);
+                plugin.knownAccounts.remove(accountname);
                 return true;
             } catch(SQLException e) {
                 if (!e.getMessage().equalsIgnoreCase(null))
                 	plugin.console.warning("Error #08-3: " + e.getMessage());
                 else
                 	plugin.console.warning("Error #08-2: " + e.getErrorCode() + " - " + e.getSQLState());
-                plugin.throwException("SQL error closing account");
             } catch (Exception e) {
             	plugin.console.warning("Error #08-1: " + e.toString());
-                plugin.throwException("Intern error closing account");
             }
         } else {
             return false;
@@ -337,19 +323,15 @@ public class Account {
      * @return String of users (seperated by comma and space(, ))
      * @throws BankAccountException 
      */
-    public String getUsers() throws BankAccountException {
+    public String getUsers() {
         try {
             String output = "";
-            ResultSet rs;
-            rs = plugin.settings.stmt.executeQuery("SELECT `users` FROM `" + plugin.settings.SQL_account_table + "` WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
-            while(rs.next()) {
-                String[] users = rs.getString("users").split(";");
-                for (String user : users) {
-                    if (!output.equalsIgnoreCase("")) {
-                        output += ", ";
-                    }
-                    output += user;    
+            String[] users = plugin.SQLWorker.getString("users", plugin.settings.SQL_account_table, "`cleanname` = '" + accountname.toLowerCase() + "'").split(";");
+            for (String u : users) {
+                if (!output.equalsIgnoreCase("")) {
+                    output += ", ";
                 }
+                output += u;    
             }
             return output;
         } catch (SQLException e1) {
@@ -357,10 +339,8 @@ public class Account {
             	plugin.console.warning("Error #09-3: " + e1.getMessage());
             else
             	plugin.console.warning("Error #09-2: " + e1.getErrorCode() + " - " + e1.getSQLState());
-            plugin.throwException("SQL error getting users");
         } catch (Exception e) {
         	plugin.console.warning("Error #09-1: " + e.toString());
-            plugin.throwException("Intern error getting users");
         }
         return null;
     }
@@ -372,19 +352,15 @@ public class Account {
      * @return String of owners (seperated by comma and space(, ))
      * @throws BankAccountException 
      */
-    public String getOwners() throws BankAccountException {
+    public String getOwners() {
         try {
             String output = "";
-            ResultSet rs;
-            rs = plugin.settings.stmt.executeQuery("SELECT `owners` FROM `" + plugin.settings.SQL_account_table + "` WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
-            while(rs.next()) {
-                String[] owners = rs.getString("owners").split(";");
-                for (String owner : owners) {
-                    if (!output.equalsIgnoreCase("")) {
-                        output += ", ";
-                    }
-                    output += owner;    
+            String[] owners = plugin.SQLWorker.getString("owners", plugin.settings.SQL_account_table, "`cleanname` = '" + accountname.toLowerCase() + "'").split(";");
+            for (String o : owners) {
+                if (!output.equalsIgnoreCase("")) {
+                    output += ", ";
                 }
+                output += o;    
             }
             return output;
         } catch (SQLException e1) {
@@ -392,10 +368,8 @@ public class Account {
             	plugin.console.warning("Error #09-3: " + e1.getMessage());
             else
             	plugin.console.warning("Error #09-2: " + e1.getErrorCode() + " - " + e1.getSQLState());
-            plugin.throwException("SQL error getting owners");
         } catch (Exception e) {
         	plugin.console.warning("Error #09-1: " + e.toString());
-            plugin.throwException("Intern error getting owners");
         }
         return null;
     }
@@ -407,22 +381,16 @@ public class Account {
      * @return double - Amount of money on account
      * @throws BankAccountException 
      */
-    public double getBalance() throws BankAccountException {
+    public double getBalance() {
         try {
-            ResultSet rs;
-            rs = plugin.settings.stmt.executeQuery("SELECT `amount` FROM `" + plugin.settings.SQL_account_table + "` WHERE `cleanname` = '" + accountname.toLowerCase() +"'");
-            while (rs.next()) {
-                return rs.getDouble("amount");
-            }
+            return plugin.SQLWorker.getDouble("amount", plugin.settings.SQL_account_table, "`cleanname` = '" + accountname.toLowerCase() +"'");
         } catch (SQLException e1) {
             if (!e1.getMessage().equalsIgnoreCase(null))
             	plugin.console.warning("Error #10-3: " + e1.getMessage());
             else
             	plugin.console.warning("Error #10-2: " + e1.getErrorCode() + " - " + e1.getSQLState());
-            plugin.throwException("SQL error getting balance");
         } catch (Exception e) {
         	plugin.console.warning("Error #10-1: " + e.toString());
-        	plugin.throwException("Intern error getting balance");
         }
         return 0;
     }
@@ -434,20 +402,18 @@ public class Account {
      * @return If the account balance is successfully changed
      * @throws BankAccountException 
      */
-    public boolean setBalance(double balance) throws BankAccountException {
+    public boolean setBalance(double balance) {
         try {
-        	plugin.settings.stmt.executeUpdate("UPDATE `" + plugin.settings.SQL_account_table + "` SET `amount` = '" + balance + "' WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
-            plugin.BalanceSign.updateSigns(accountname);
+        	plugin.SQLWorker.executeUpdate("UPDATE `" + plugin.settings.SQL_account_table + "` SET `amount` = '" + balance + "' WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
+            plugin.BalanceSign.update(accountname);
             return true;
         } catch (SQLException e) {
             if (!e.getMessage().equalsIgnoreCase(null))
             	plugin.console.warning("Error #17-3: " + e.getMessage());
             else
             	plugin.console.warning("Error #17-2: " + e.getErrorCode() + " - " + e.getSQLState());
-            plugin.throwException("SQL error setting balance");
         } catch (Exception e) {
         	plugin.console.warning("Error #17-1: " + e.toString());
-            plugin.throwException("Intern error setting balance");
         }
         return false;
     }
@@ -460,21 +426,18 @@ public class Account {
      * @return If the money is successfully added
      * @throws BankAccountException 
      */
-    public boolean add(double amount) throws BankAccountException {
+    public boolean add(double amount) {
         double temp = getBalance();
         temp += amount;
         try {
-        	plugin.settings.stmt.executeUpdate("UPDATE `" + plugin.settings.SQL_account_table + "` SET `amount` = '" + temp + "' WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
-            plugin.BalanceSign.updateSigns(accountname);
+        	plugin.SQLWorker.executeUpdate("UPDATE `" + plugin.settings.SQL_account_table + "` SET `amount` = '" + temp + "' WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
+            plugin.BalanceSign.update(accountname);
             return true;
         } catch (SQLException e) {
             if (!e.getMessage().equalsIgnoreCase(null))
             	plugin.console.warning("Error #18-2: " + e.getMessage());
             else
             	plugin.console.warning("Error #18-1: " + e.getErrorCode() + " - " + e.getSQLState());
-            plugin.throwException("SQL error adding money from account");
-        } catch (Exception e) {
-        	plugin.throwException("Intern error adding money from account");
         }
         return false;
     }
@@ -487,19 +450,18 @@ public class Account {
      * @return If the money is successfully subtracted
      * @throws BankAccountException 
      */
-    public boolean subtract(double amount) throws BankAccountException {
+    public boolean subtract(double amount) {
         double temp = getBalance();
         temp -= amount;
         try {
-            plugin.settings.stmt.executeUpdate("UPDATE `" + plugin.settings.SQL_account_table + "` SET `amount` = '" + temp + "' WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
-            plugin.BalanceSign.updateSigns(accountname);
+            plugin.SQLWorker.executeUpdate("UPDATE `" + plugin.settings.SQL_account_table + "` SET `amount` = '" + temp + "' WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
+            plugin.BalanceSign.update(accountname);
             return true;
         } catch (SQLException e) {
             if (!e.getMessage().equalsIgnoreCase(null))
             	plugin.console.warning("Error #19-2: " + e.getMessage());
             else
             	plugin.console.warning("Error #19-1: " + e.getErrorCode() + " - " + e.getSQLState());
-            plugin.throwException("SQL error subtracting money from account");
         }
         return false;
     }

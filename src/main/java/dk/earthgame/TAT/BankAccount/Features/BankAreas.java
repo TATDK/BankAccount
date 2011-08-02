@@ -6,8 +6,6 @@ import java.sql.SQLException;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
 
-import dk.earthgame.TAT.BankAccount.System.BankAccountException;
-
 public class BankAreas {
 	private dk.earthgame.TAT.BankAccount.BankAccount plugin;
 	
@@ -23,7 +21,7 @@ public class BankAreas {
      * @return If the area exists
      * @throws BankAccountException 
      */
-    public boolean areaExists(String name) throws BankAccountException {
+    public boolean areaExists(String name) {
         ResultSet rs;
         int id = 0;
         try {
@@ -51,10 +49,8 @@ public class BankAreas {
             	plugin.console.warning("Error #14-3: " + e.getMessage());
             else
             	plugin.console.warning("Error #14-2: " + e.getErrorCode() + " - " + e.getSQLState());
-            plugin.throwException("SQL error checking area for existence");
         } catch (Exception e) {
         	plugin.console.warning("Error #14-1: " + e.toString());
-        	plugin.throwException("Intern error checking area for existence");
         }
         if (id > 0) {
             return true;
@@ -71,7 +67,7 @@ public class BankAreas {
      * @return If the position is inside an area
      * @throws BankAccountException 
      */
-    public boolean inArea(String world,Location pos) throws BankAccountException {
+    public boolean inArea(String world,Location pos) {
         try {
             ResultSet rs = plugin.settings.stmt.executeQuery("SELECT `x1`,`y1`,`z1`,`x2`,`y2`,`z2` FROM `" + plugin.settings.SQL_area_table + "` WHERE `world` = '" + world + "'");
             while (rs.next()) {
@@ -97,10 +93,8 @@ public class BankAreas {
             	plugin.console.warning("Error #15-3: " + e.getMessage());
             else
             	plugin.console.warning("Error #15-2: " + e.getErrorCode() + " - " + e.getSQLState());
-            plugin.throwException("SQL error locating you in bank area");
         } catch (Exception e) {
         	plugin.console.warning("Error #15-1: " + e.toString());
-        	plugin.throwException("Intern error locating you in bank area");
         }
         return false;
     }
@@ -116,7 +110,7 @@ public class BankAreas {
      * @return If the area is successfully added
      * @throws BankAccountException 
      */
-    public boolean setArea(String name,Location pos1,Location pos2,String world) throws BankAccountException {
+    public boolean setArea(String name,Location pos1,Location pos2,String world) {
         if (areaExists(name)) {
             return false;
         }
@@ -128,10 +122,8 @@ public class BankAreas {
             	plugin.console.warning("Error #12-3: " + e.getMessage());
             else
             	plugin.console.warning("Error #12-2: " + e.getErrorCode() + " - " + e.getSQLState());
-            plugin.throwException("SQL error");
         } catch (Exception e) {
         	plugin.console.warning("Error #12-1: " + e.toString());
-        	plugin.throwException();
         }
         return false;
     }
@@ -144,7 +136,7 @@ public class BankAreas {
      * @return If the area is successfully removed
      * @throws BankAccountException 
      */
-    public boolean removeArea(String name) throws BankAccountException {
+    public boolean removeArea(String name) {
         try {
         	plugin.settings.stmt.executeUpdate("DELETE FROM `" + plugin.settings.SQL_area_table + "` WHERE `areaname` = '" + name + "'");
             return true;
@@ -153,10 +145,8 @@ public class BankAreas {
             	plugin.console.warning("Error #13-3: " + e.getMessage());
             else
             	plugin.console.warning("Error #13-2: " + e.getErrorCode() + " - " + e.getSQLState());
-            plugin.throwException("SQL error");
         } catch (Exception e) {
         	plugin.console.warning("Error #13-1: " + e.toString());
-        	plugin.throwException();
         }
         return false;
     }

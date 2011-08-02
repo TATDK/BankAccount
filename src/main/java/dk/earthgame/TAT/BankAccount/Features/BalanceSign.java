@@ -12,7 +12,6 @@ import org.bukkit.World;
 import org.bukkit.block.Sign;
 
 import dk.earthgame.TAT.BankAccount.BankAccount;
-import dk.earthgame.TAT.BankAccount.System.BankAccountException;
 import dk.earthgame.TAT.BankAccount.System.SignLocation;
 import dk.earthgame.TAT.SignUpdater.UpdaterPriority;
 
@@ -29,7 +28,7 @@ public class BalanceSign {
      * 
      * @since 0.6
      */
-    public void loadSigns() {
+    public void load() {
         File signFile = new File(plugin.getDataFolder(), "BalanceSigns.dat");
         if (signFile.exists()) {
             try {
@@ -60,7 +59,7 @@ public class BalanceSign {
      * 
      * @since 0.6
      */
-    public void saveSigns() {
+    public void save() {
         try {
             File signFile = new File(plugin.getDataFolder(), "BalanceSigns.dat");
             FileWriter writer = new FileWriter(signFile);
@@ -87,11 +86,11 @@ public class BalanceSign {
      * @throws BankAccountException 
      * @throws IndexOutOfBoundsException 
      */
-    public void addSign(World w,Location l,String accountname) throws BankAccountException {
+    public void add(World w,Location l,String accountname) {
         ((Sign)w.getBlockAt(l).getState()).setLine(0, "[BankAccount]");
         signs.put(new SignLocation(w, l), accountname);
-        updateSigns(accountname);
-        saveSigns();
+        update(accountname);
+        save();
     }
     
     /**
@@ -101,13 +100,13 @@ public class BalanceSign {
      * @param l Location
      * @since 0.6
      */
-    public void removeSign(World w,Location l) {
+    public void remove(World w,Location l) {
         for (Map.Entry<SignLocation, String> sign: signs.entrySet()) {
             if (sign.getKey().getWorld().equals(w) && sign.getKey().getLocation().equals(l)) {
                 signs.remove(sign.getKey());
             }
         }
-        saveSigns();
+        save();
     }
     
     /**
@@ -118,7 +117,7 @@ public class BalanceSign {
      * @since 0.6
      * @return true if the sign exists, otherwise false
      */
-    public boolean signExists(World w,Location l) {
+    public boolean exists(World w,Location l) {
         for (Map.Entry<SignLocation, String> sign: signs.entrySet()) {
             if (sign.getKey().getWorld().equals(w) && sign.getKey().getLocation().equals(l)) {
                 return true;
@@ -148,7 +147,7 @@ public class BalanceSign {
      * @throws BankAccountException 
      * @throws IndexOutOfBoundsException 
      */
-    public void updateSigns() throws BankAccountException {
+    public void update() {
         checkSignUpdater();
         HashMap<String, Double> balances = new HashMap<String, Double>();
         for (Map.Entry<SignLocation, String> sign: signs.entrySet()) {
@@ -171,11 +170,11 @@ public class BalanceSign {
                         plugin.signupdater.AddSignUpdate(UpdaterPriority.NORMAL, foundSign, lines);
                     }
                 } else {
-                    removeSign(sl.getWorld(), sl.getLocation());
+                    remove(sl.getWorld(), sl.getLocation());
                     plugin.console.warning("Sign in world " + sl.getWorld().getName() + " at " + sl.locOutput(" ") + " can't be found - removed");
                 }
             } else {
-                removeSign(sl.getWorld(), sl.getLocation());
+                remove(sl.getWorld(), sl.getLocation());
                 plugin.console.warning("Sign in world " + sl.getWorld().getName() + " at " + sl.locOutput(" ") + " can't be found - removed");
             }
         }
@@ -189,7 +188,7 @@ public class BalanceSign {
      * @throws BankAccountException 
      * @throws IndexOutOfBoundsException 
      */
-    public void updateSigns(String accountname) throws BankAccountException {
+    public void update(String accountname) {
         checkSignUpdater();
         double balance = plugin.getAccount(accountname).getBalance();
         for (Map.Entry<SignLocation, String> sign: signs.entrySet()) {
@@ -206,11 +205,11 @@ public class BalanceSign {
                             plugin.signupdater.AddSignUpdate(UpdaterPriority.NORMAL, foundSign, lines);
                         }
                     } else {
-                        removeSign(sl.getWorld(), sl.getLocation());
+                        remove(sl.getWorld(), sl.getLocation());
                         plugin.console.warning("Sign in world " + sl.getWorld().getName() + " at " + sl.locOutput(" ") + " can't be found - removed");
                     }
                 } else {
-                    removeSign(sl.getWorld(), sl.getLocation());
+                    remove(sl.getWorld(), sl.getLocation());
                     plugin.console.warning("Sign in world " + sl.getWorld().getName() + " at " + sl.locOutput(" ") + " can't be found - removed");
                 }
             }

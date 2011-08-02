@@ -12,7 +12,6 @@ import org.bukkit.entity.Player;
 
 import dk.earthgame.TAT.BankAccount.BankAccount;
 import dk.earthgame.TAT.BankAccount.Enum.TransactionTypes;
-import dk.earthgame.TAT.BankAccount.System.BankAccountException;
 import dk.earthgame.nijikokun.register.payment.Method.MethodAccount;
 
 /**
@@ -105,11 +104,8 @@ public class Loan {
                 messageTo.sendMessage("ATM: " + ChatColor.GREEN + "Your loan is fully paid off.");
             }
         }
-        try {
-			plugin.addTransaction(player, null, TransactionTypes.LOAN_PAYMENT, subtract);
-		} catch (BankAccountException e) {
-			e.printStackTrace();
-		}
+
+		plugin.SQLWorker.addTransaction(player, null, TransactionTypes.LOAN_PAYMENT, subtract);
     }
     
     void manualPayment(double amount) {
@@ -126,7 +122,7 @@ public class Loan {
             while((s=br.readLine()) .indexOf("pvp")==-1);
             if (s.split("=")[1].equalsIgnoreCase("true")) {
                 //Set bounty
-                plugin.getSaved(player).setBounty(amount);
+                plugin.UserSaves.getSaved(player).setBounty(amount);
             } else {
                 //Subtract the money and let the user be in dept
                 account.subtract(amount);

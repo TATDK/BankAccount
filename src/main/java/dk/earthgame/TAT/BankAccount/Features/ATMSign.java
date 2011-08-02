@@ -12,7 +12,6 @@ import org.bukkit.World;
 import org.bukkit.block.Sign;
 
 import dk.earthgame.TAT.BankAccount.BankAccount;
-import dk.earthgame.TAT.BankAccount.System.BankAccountException;
 import dk.earthgame.TAT.BankAccount.System.SignLocation;
 
 public class ATMSign {
@@ -84,7 +83,7 @@ public class ATMSign {
      * @throws BankAccountException 
      * @throws IndexOutOfBoundsException 
      */
-    public void add(World w,Location l) throws BankAccountException {
+    public void add(World w,Location l) {
         ((Sign)w.getBlockAt(l).getState()).setLine(0, "[BankAccount]");
         signs.put(new SignLocation(w, l),0);
         saveSigns();

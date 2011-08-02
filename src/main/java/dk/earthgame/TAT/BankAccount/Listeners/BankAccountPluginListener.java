@@ -9,7 +9,6 @@ import org.bukkit.plugin.Plugin;
 import com.nijikokun.bukkit.Permissions.Permissions;
 
 import dk.earthgame.TAT.BankAccount.BankAccount;
-import dk.earthgame.TAT.BankAccount.System.BankAccountException;
 import dk.earthgame.TAT.SignUpdater.SignUpdater;
 import dk.earthgame.nijikokun.register.payment.Methods;
 
@@ -72,13 +71,8 @@ public class BankAccountPluginListener extends ServerListener {
                 plugin.Interest.startupInterest();
                 plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
                     public void run() {
-                        try {
-                        	plugin.BalanceSign.updateSigns();
-                        	plugin.console.info("Signs updated");
-                        } catch (BankAccountException e) {
-                        	plugin.console.warning("Error updating signs");
-                            e.printStackTrace();
-                        }
+                    	plugin.BalanceSign.update();
+                    	plugin.console.info("Signs updated");
                     }
                 },20);
             }

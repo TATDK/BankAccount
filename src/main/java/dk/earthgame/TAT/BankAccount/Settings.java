@@ -17,7 +17,8 @@ import org.bukkit.util.config.Configuration;
 import com.nijiko.permissions.PermissionHandler;
 
 import dk.earthgame.TAT.BankAccount.Enum.FeeModes;
-import dk.earthgame.TAT.BankAccount.System.FeeSystem;
+import dk.earthgame.TAT.BankAccount.Features.AccountFee;
+import dk.earthgame.TAT.BankAccount.Features.PlayerFee;
 import dk.earthgame.TAT.BankAccount.System.Upgrade;
 
 /**
@@ -34,7 +35,7 @@ public class Settings {
     public double interestOfflineAmount;
     public int checkJobId;
     public int AreaWandId;
-    boolean MultiBanks;
+    public boolean MultiBanks;
     //MySQL
     public boolean UseMySQL = false;
     String MySQL_host;
@@ -53,33 +54,32 @@ public class Settings {
     public String SQL_transaction_table;
     public String SQL_banks_table;
     //Permissions
-    boolean UseOP;
+    public boolean UseOP;
     public PermissionHandler Permissions = null;
     public boolean UsePermissions;
     public GroupManager GroupManager = null;
     public boolean UseGroupManager;
-    boolean Areas;
-    boolean SuperAdmins;
-    boolean DepositAll;
+    public boolean Areas;
+    public boolean SuperAdmins;
+    public boolean DepositAll;
     //Transaction
     public boolean Transactions;
     //Fee
-    public FeeSystem OpeningFee;
-    public FeeSystem DepositFee;
-    public FeeSystem WithdrawFee;
-    public FeeSystem TransferFee;
-    public FeeSystem ClosingFee;
-    public FeeSystem SignFee;
+    public PlayerFee OpeningFee;
+    public PlayerFee DepositFee;
+    public AccountFee WithdrawFee;
+    public AccountFee TransferFee;
+    public PlayerFee ClosingFee;
+    public PlayerFee SignFee;
     //Start Amount
-    boolean StartAmount_Active;
-    double StartAmount_Fee;
-    double StartAmount_Static;
+    public boolean StartAmount_Active;
+    public double StartAmount_Fee;
+    public double StartAmount_Static;
     //Account
     public double MaxAmount;
     //Debug messages
     public boolean Debug_Loan;
     public boolean Debug_Interest;
-    boolean Debug_Full;
     
     public Settings(BankAccount plugin) {
         this.plugin = plugin;
@@ -138,9 +138,7 @@ public class Settings {
         //Area
         Areas = config.getBoolean("Areas.Active",false);
         AreaWandId = config.getInt("Areas.AreaWandid",339);
-        /* FEATURE: Multiple banks
         MultiBanks = config.getBoolean("Areas.MultipleBanks", false);
-        */
         //Loan
         plugin.LoanSystem.LoanActive = config.getBoolean("Loan.Active", false);
         plugin.LoanSystem.Fixed_rate = config.getDouble("Loan.Fixed-rate", 0);
@@ -149,12 +147,12 @@ public class Settings {
         plugin.LoanSystem.PaymentTime = config.getInt("Loan.Payment-time", 60);
         plugin.LoanSystem.PaymentParts = config.getInt("Loan.Payment-parts", 3);
         //Fee
-        OpeningFee = new FeeSystem(stringToType(config.getString("Fee.Opening.Mode","NONE")), config.getDouble("Fee.Opening.Percentage",0), config.getDouble("Fee.Opening.Static",0));
-        DepositFee = new FeeSystem(stringToType(config.getString("Fee.Deposit.Mode","NONE")), config.getDouble("Fee.Deposit.Percentage",0), config.getDouble("Fee.Deposit.Static",0));
-        WithdrawFee = new FeeSystem(stringToType(config.getString("Fee.Withdraw.Mode","NONE")), config.getDouble("Fee.Withdraw.Percentage",0), config.getDouble("Fee.Withdraw.Static",0));
-        TransferFee = new FeeSystem(stringToType(config.getString("Fee.Transfer.Mode","NONE")), config.getDouble("Fee.Transfer.Percentage",0), config.getDouble("Fee.Transfer.Static",0));
-        ClosingFee = new FeeSystem(stringToType(config.getString("Fee.Closing.Mode","NONE")), config.getDouble("Fee.Closing.Percentage",0), config.getDouble("Fee.Closing.Static",0));
-        SignFee = new FeeSystem(stringToType(config.getString("Fee.Sign.Mode","NONE")), config.getDouble("Fee.Sign.Percentage",0), config.getDouble("Fee.Sign.Static",0));
+        OpeningFee = new PlayerFee(stringToType(config.getString("Fee.Opening.Mode","NONE")), config.getDouble("Fee.Opening.Percentage",0), config.getDouble("Fee.Opening.Static",0), plugin);
+        DepositFee = new PlayerFee(stringToType(config.getString("Fee.Deposit.Mode","NONE")), config.getDouble("Fee.Deposit.Percentage",0), config.getDouble("Fee.Deposit.Static",0), plugin);
+        WithdrawFee = new AccountFee(stringToType(config.getString("Fee.Withdraw.Mode","NONE")), config.getDouble("Fee.Withdraw.Percentage",0), config.getDouble("Fee.Withdraw.Static",0), plugin);
+        TransferFee = new AccountFee(stringToType(config.getString("Fee.Transfer.Mode","NONE")), config.getDouble("Fee.Transfer.Percentage",0), config.getDouble("Fee.Transfer.Static",0), plugin);
+        ClosingFee = new PlayerFee(stringToType(config.getString("Fee.Closing.Mode","NONE")), config.getDouble("Fee.Closing.Percentage",0), config.getDouble("Fee.Closing.Static",0), plugin);
+        SignFee = new PlayerFee(stringToType(config.getString("Fee.Sign.Mode","NONE")), config.getDouble("Fee.Sign.Percentage",0), config.getDouble("Fee.Sign.Static",0), plugin);
         //Start Amount
         StartAmount_Active = config.getBoolean("StartAmount.Active", false);
         StartAmount_Fee = config.getDouble("StartAmount.Fee", 0);
@@ -164,9 +162,9 @@ public class Settings {
         //Debug
         Debug_Interest = config.getBoolean("Debug.Interest", true);
         Debug_Loan = config.getBoolean("Debug.Loan", true);
-        Debug_Full = config.getBoolean("Debug.Full", false);
         
         plugin.console.info("Properties Loaded");
+        //Load class
         try {
             if (UseMySQL) {
                 Class.forName("com.mysql.jdbc.Driver");
@@ -176,6 +174,7 @@ public class Settings {
         } catch (ClassNotFoundException e2) {
             e2.printStackTrace();
         }
+        //Try connect to database
         try {
             if (UseMySQL) {
                 con = DriverManager.getConnection("jdbc:mysql://" + MySQL_host + ":" + MySQL_port + "/" + MySQL_database, MySQL_username, MySQL_password);
@@ -194,11 +193,13 @@ public class Settings {
                     stmt       = con.createStatement(ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_READ_ONLY);
                     plugin.console.info("Connected to SQLite");
                 }
+                
+                //Check if the tables exists, else create them
                 boolean checkAccount = false;
                 boolean checkArea = false;
                 boolean checkLoan = false;
                 boolean checkTransaction = false;
-                //boolean checkBanks = false;
+                boolean checkBanks = false;
                 try {
                     ResultSet tables = con.getMetaData().getTables(null, null, null, null);
                     while (tables.next()) {
@@ -212,7 +213,7 @@ public class Settings {
                         } else if (tablename.equalsIgnoreCase(SQL_transaction_table)) {
                             checkTransaction = true;
                         } else if (tablename.equalsIgnoreCase(SQL_banks_table)) {
-                            //checkBanks = true;
+                            checkBanks = true;
                         }
                     }
                 } catch (SQLException e3) {
@@ -256,7 +257,6 @@ public class Settings {
                         }
                         stmt.execute(query);
                     }
-                    /*
                     if (!checkBanks && MultiBanks) {
                         //BANKS TABLE
                         String query = "";
@@ -266,7 +266,6 @@ public class Settings {
                         }
                         stmt.execute(query);
                     }
-                    */
                     //Run upgrades of SQL tables
                     new Upgrade(plugin, UseMySQL);
                 } catch (SQLException e3) {

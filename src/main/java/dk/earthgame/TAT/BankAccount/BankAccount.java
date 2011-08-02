@@ -4,10 +4,7 @@ import java.io.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Priority;
@@ -19,11 +16,12 @@ import org.anjocaido.groupmanager.GroupManager;
 
 import com.nijikokun.bukkit.Permissions.Permissions;
 
+import dk.earthgame.TAT.BankAccount.Enum.FeeModes;
 import dk.earthgame.TAT.BankAccount.Enum.PermissionNodes;
-import dk.earthgame.TAT.BankAccount.Enum.TransactionTypes;
 import dk.earthgame.TAT.BankAccount.Features.ATMSign;
 import dk.earthgame.TAT.BankAccount.Features.Account;
 import dk.earthgame.TAT.BankAccount.Features.BalanceSign;
+import dk.earthgame.TAT.BankAccount.Features.Bank;
 import dk.earthgame.TAT.BankAccount.Features.BankAreas;
 import dk.earthgame.TAT.BankAccount.Features.LoanSystem;
 import dk.earthgame.TAT.BankAccount.Features.Interest;
@@ -32,13 +30,14 @@ import dk.earthgame.TAT.BankAccount.Listeners.BankAccountDisabled;
 import dk.earthgame.TAT.BankAccount.Listeners.BankAccountEntityListener;
 import dk.earthgame.TAT.BankAccount.Listeners.BankAccountPlayerListener;
 import dk.earthgame.TAT.BankAccount.Listeners.BankAccountPluginListener;
-import dk.earthgame.TAT.BankAccount.System.BankAccountException;
 import dk.earthgame.TAT.BankAccount.System.Font;
 import dk.earthgame.TAT.BankAccount.System.Password;
-import dk.earthgame.TAT.BankAccount.System.UserSaves;
 import dk.earthgame.TAT.BankAccount.System.Console;
+import dk.earthgame.TAT.BankAccount.System.SQLWorker;
+import dk.earthgame.TAT.BankAccount.System.UserSaves;
 import dk.earthgame.TAT.SignUpdater.SignUpdater;
 import dk.earthgame.nijikokun.register.payment.Method;
+import dk.earthgame.nijikokun.register.payment.Method.MethodAccount;
 
 /**
  * BankAccount for Bukkit
@@ -46,24 +45,24 @@ import dk.earthgame.nijikokun.register.payment.Method;
  */
 public class BankAccount extends JavaPlugin {
     protected final Plugin thisPlugin = this;
-    
-    //System
+    public Settings settings = new Settings(this);
     File myFolder;
-    private HashMap<String,UserSaves> UserSaves = new HashMap<String,UserSaves>();
     
-    //Features
+//System
+    Font font = new Font();
+    public Console console;
+    public Password PasswordSystem = new Password(this);
+    public SQLWorker SQLWorker = new SQLWorker(this);
+    public UserSaves UserSaves = new UserSaves(this);
+    
+//Features
     public ATMSign ATMSign = new ATMSign(this);
     public BalanceSign BalanceSign = new BalanceSign(this);
     public BankAreas BankAreas = new BankAreas(this);
     public Interest Interest = new Interest(this);
     public LoanSystem LoanSystem = new LoanSystem(this);
-    public Password PasswordSystem = new Password(this);
-    public Settings settings = new Settings(this);
-    public Console console;
-    Font font = new Font();
-    public SignUpdater signupdater;
     
-    //Listeners
+//Listeners
     BankAccountCommandExecutor cmdExecutor   = new BankAccountCommandExecutor(this);
     BankAccountDisabled disabledExecutor     = new BankAccountDisabled();
     BankAccountPluginListener pluginListener = new BankAccountPluginListener(this);
@@ -71,15 +70,22 @@ public class BankAccount extends JavaPlugin {
     BankAccountPlayerListener playerListener = new BankAccountPlayerListener(this);
     BankAccountEntityListener entityListener = new BankAccountEntityListener(this);
     
-    //Economy
+//Resource saver
+    public List<String> knownAccounts = new ArrayList<String>();
+    public List<String> knownBanks = new ArrayList<String>();
+    
+//Third-part plugin
+    public SignUpdater signupdater;
+    
+//Economy
     public Method Method = null;
     
-    //NPC
+//NPC
     //NPCManager m = new NPCManager(this);
 
     //#########################################################################//
     
-    //SYSTEM
+//SYSTEM
     /**
      * Check if a player have a PermissionNode
      * @param player The player
@@ -90,36 +96,27 @@ public class BankAccount extends JavaPlugin {
      */
     private boolean checkPermission(Player player,PermissionNodes node,boolean extraLookup) {
         if (player != null) {
-            if (settings.UsePermissions) {
-                if (settings.Permissions.has(player, node.getNode())) {
+        	//Permission
+            if (settings.UsePermissions)
+                if (settings.Permissions.has(player, node.getNode()))
                     return true;
-                }
-            }
-            if (settings.UseGroupManager) {
-                if (settings.GroupManager.getWorldsHolder().getWorldPermissions(player).has(player, node.getNode())) {
+            //GroupManager
+            if (settings.UseGroupManager)
+                if (settings.GroupManager.getWorldsHolder().getWorldPermissions(player).has(player, node.getNode()))
                     return true;
-                }
-            }
-            if (settings.UseOP) {
-                if (player.isOp()) {
+            if (settings.UseOP)
+                if (player.isOp())
                     return true;
-                }
-            }
             if (node != PermissionNodes.ACCESS && !extraLookup) {
-                if (node != PermissionNodes.ADMIN) {
-                    if (checkPermission(player,PermissionNodes.ADMIN, true)) {
+                if (node != PermissionNodes.ADMIN)
+                    if (checkPermission(player,PermissionNodes.ADMIN, true))
                         return true;
-                    }
-                }
-                if (node != PermissionNodes.EXTENDED) {
-                    if (checkPermission(player,PermissionNodes.EXTENDED, true)) {
+                if (node != PermissionNodes.EXTENDED)
+                    if (checkPermission(player,PermissionNodes.EXTENDED, true))
                         return true;
-                    }
-                }
-                if (node == PermissionNodes.OPEN || node == PermissionNodes.DEPOSIT || node == PermissionNodes.WITHDRAW || node == PermissionNodes.LIST) {
+                if (node == PermissionNodes.OPEN || node == PermissionNodes.DEPOSIT || node == PermissionNodes.WITHDRAW || node == PermissionNodes.LIST)
                     if (checkPermission(player, PermissionNodes.BASIC, true))
                         return true;
-                }
             }
         }
         return false;
@@ -133,9 +130,7 @@ public class BankAccount extends JavaPlugin {
      * @since 0.5
      * @return If the player have the permission
      */
-    public boolean playerPermission(Player player,PermissionNodes node) {
-        return checkPermission(player, node, false);
-    }
+    public boolean playerPermission(Player player,PermissionNodes node) { return checkPermission(player, node, false); }
     
     /**
      * Setting up BankAccount
@@ -147,6 +142,8 @@ public class BankAccount extends JavaPlugin {
         // Register our events
         getCommand("account").setExecutor(cmdExecutor);
         getCommand("account").setUsage("/account help - Show help to BankAccount");
+        getCommand("bank").setExecutor(cmdExecutor);
+        getCommand("bank").setUsage("/bank help - Show help to BankAccount");
         
         PluginManager pm = getServer().getPluginManager();
         //RightClick - Used for area selection
@@ -220,7 +217,8 @@ public class BankAccount extends JavaPlugin {
             }
         }
 
-        BalanceSign.loadSigns();
+        BalanceSign.load();
+        UserSaves.load();
     }
 
     /**
@@ -231,86 +229,43 @@ public class BankAccount extends JavaPlugin {
         Interest.shutdownInterest();
         getCommand("account").setExecutor(disabledExecutor);
         getCommand("account").setUsage(ChatColor.RED + "BankAccount is disabled");
+        getCommand("bank").setExecutor(disabledExecutor);
+        getCommand("bank").setUsage(ChatColor.RED + "BankAccount is disabled");
         console.disabled();
     }
-
-    /**
-     * Add a transaction to the database
-     * 
-     * @param player Username of the player
-     * @param account Name of account
-     * @param type Type of transaction (dk.earthgame.TAT.BankAccount.System.TransactionTypes)
-     * @param amount amount of money the transaction (0.00 if money isn't a part of the transaction)
-     * @throws BankAccountException 
-     * @since 0.5
-     */
-    public void addTransaction(String player, String account, TransactionTypes type, Double amount) throws BankAccountException {
-        if (settings.Transactions) {
-            try {
-                int time = Math.round(new Date().getTime()/1000);
-                settings.stmt.executeUpdate("INSERT INTO `" + settings.SQL_transaction_table + "` (`player`,`account`,`type`,`amount`,`time`) VALUES ('" + player + "','" + account + "','" + type.get() + "','" + amount + "','" + time +"')");
-            } catch(SQLException e) {
-                if (!e.getMessage().equalsIgnoreCase(null))
-                    console.warning("Error #16-2: " + e.getMessage());
-                else
-                    console.warning("Error #16-1: " + e.getErrorCode() + " - " + e.getSQLState());
-                throwException("SQL error adding transaction");
-            }
-        }
-    }
     
-    //USERSAVES
-    
-    /**
-     * Get the saved data of a player
-     * 
-     * @param player The username of the player
-     * @since 0.5
-     * @return UserSaves - the saved data
-     */
-    public UserSaves getSaved(String player) {
-        if (UserSaves.containsKey(player)) {
-            return UserSaves.get(player);
-        }
-        
-        UserSaves save = new UserSaves();
-        UserSaves.put(player, save);
-        return save;
-    }
-    
-    //ATM / ACCOUNTS
+//ATM / ACCOUNTS
     /**
      * Check if an account exists
      * 
      * @param accountname The name of the account
      * @since 0.5
      * @return If the account exists
-     * @throws BankAccountException 
      */
-    public boolean accountExists(String accountname) throws BankAccountException {
+    public boolean accountExists(String accountname) {
+    	if (knownAccounts.contains(accountname))
+    		return true;
         ResultSet rs;
         int id = 0;
         try {
-            if (settings.UseMySQL) {
+            if (settings.UseMySQL)
                 rs = settings.stmt.executeQuery("SELECT `id` FROM `" + settings.SQL_account_table + "` WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
-            } else {
+            else
                 rs = settings.stmt.executeQuery("SELECT `rowid` FROM `" + settings.SQL_account_table + "` WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
-            }
             while (rs.next()) {
-                if (settings.UseMySQL) {
+                if (settings.UseMySQL)
                     id = rs.getInt("id");
-                } else {
+                else
                     id = rs.getInt("rowid");
-                }
             }
         } catch (SQLException e) {
             if (!e.getMessage().equalsIgnoreCase(null))
                 console.warning("Error #01-2: " + e.getMessage());
             else
                 console.warning("Error #01-1: " + e.getErrorCode() + " - " + e.getSQLState());
-            throwException("SQL error while looking up for account");
         }
         if (id > 0) {
+        	knownAccounts.add(accountname);
             return true;
         }
         return false;
@@ -321,17 +276,16 @@ public class BankAccount extends JavaPlugin {
      * 
      * @since 0.5
      * @param player Username of the player
-     * @return List of accounts 
-     * @throws BankAccountException 
+     * @return List of accounts
      */
-    public List<String> accountList(String player) throws BankAccountException {
+    public List<String> accountList(String player) {
         List<String> accounts = new ArrayList<String>();
         ResultSet rs = null;
         try {
             rs = settings.selectStmt.executeQuery("SELECT `accountname` FROM `" + settings.SQL_account_table + "` WHERE `owners` LIKE '%" + player + "%' OR `users` LIKE '%" + player + "%'");
             while (rs.next()) {
                 String accountname = rs.getString("accountname");
-                //Make sure it's not just a part of the name
+                //Make sure it's not just a part of the player name
                 if (accessAccount(accountname,player,false)) {
                     accounts.add(accountname);
                 }
@@ -341,7 +295,6 @@ public class BankAccount extends JavaPlugin {
                 console.warning("Error #22-2: " + e.getMessage());
             else
                 console.warning("Error #22-1: " + e.getErrorCode() + " - " + e.getSQLState());
-            throwException("SQL error getting account list");
         }
         //Be sure that rs is closed
         try {
@@ -361,32 +314,31 @@ public class BankAccount extends JavaPlugin {
      * @since 0.5
      * @param player The player
      * @return List of accounts
-     * @throws BankAccountException 
      */
-    public List<String> accountList(Player player) throws BankAccountException { return accountList(player.getName()); }
-    
-    /**
-     * Open new account without fee paid
-     * 
-     * @param accountname The name of the account
-     * @param owners Username of the owners - Name of players separated by semicolon (;)
-     * @since 0.6
-     * @return If the account is successfully created
-     * @throws BankAccountException
-     */
-    public boolean openAccount(String accountname,String owners) throws BankAccountException { return openAccount(accountname, owners, 0); }
+    public List<String> accountList(Player player) { return accountList(player.getName()); }
     
     /**
      * Open new account
      * 
      * @param accountname The name of the account
      * @param owners Username of the owners - Name of players separated by semicolon (;)
-     * @param feePaid 
-     * @since 0.5.1
+     * @param feePayer Username of the player that pays the fee
+     * @since 0.6
      * @return If the account is successfully created
-     * @throws BankAccountException 
      */
-    public boolean openAccount(String accountname,String owners,double feePaid) throws BankAccountException {
+    public boolean openAccount(String accountname,String owners,String feePayer) {
+
+    	double feePaid = 0;
+        if (settings.OpeningFee.getMode() != FeeModes.NONE) {
+            MethodAccount account = Method.getAccount(feePayer);
+            double balance = account.balance();
+            if (settings.OpeningFee.PayFee(balance, feePayer) > 0) {
+                feePaid = settings.OpeningFee.CalculateFee(balance);
+            } else {
+                return true;
+            }
+        }
+        
         double StartAmount = 0;
         if (settings.StartAmount_Active) {
             StartAmount += feePaid*settings.StartAmount_Fee;
@@ -395,17 +347,15 @@ public class BankAccount extends JavaPlugin {
         
         try {
             settings.stmt.executeUpdate("INSERT INTO `" + settings.SQL_account_table + "` (`accountname`,`cleanname`,`owners`,`users`,`amount`) VALUES ('" + accountname + "','" + accountname.toLowerCase() + "','" + owners + "','','" + StartAmount + "')");
-            BalanceSign.updateSigns(accountname);
+            BalanceSign.update(accountname);
             return true;
         } catch(SQLException e) {
             if (!e.getMessage().equalsIgnoreCase(null))
                 console.warning("Error #02-3: " + e.getMessage());
             else
                 console.warning("Error #02-2: " + e.getErrorCode() + " - " + e.getSQLState());
-            throwException("SQL error opening account");
         } catch (Exception e) {
             console.warning("Error #02-1: " + e.toString());
-            throwException("Intern error opening account");
         }
         return false;
     }
@@ -418,9 +368,8 @@ public class BankAccount extends JavaPlugin {
      * @param writeAccess Only look for owners
      * @since 0.5
      * @return If the player have access
-     * @throws BankAccountException 
      */
-    public boolean accessAccount(String accountname,Player player,boolean writeAccess) throws BankAccountException {
+    public boolean accessAccount(String accountname,Player player,boolean writeAccess) {
         if (!accountExists(accountname)) {
             //There is no spoon... I mean account
             return false;
@@ -431,28 +380,25 @@ public class BankAccount extends JavaPlugin {
         }
         try {
             String coloum;
-            if (writeAccess) {
+            if (writeAccess)
                 coloum = "owners";
-            } else {
+            else
                 coloum = "users`, `owners";
-            }
             ResultSet rs;
             rs = settings.stmt.executeQuery("SELECT `" + coloum + "` FROM `" + settings.SQL_account_table + "` WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
             while(rs.next()) {
                 //Owners
                 String[] owners = rs.getString("owners").split(";");
                 for (String p : owners) {
-                    if (p.equalsIgnoreCase(player.getName())) {
+                    if (p.equalsIgnoreCase(player.getName()))
                         return true;
-                    }
                 }
                 //Users (if no write access is needed)
                 if (!writeAccess) {
                     String[] users = rs.getString("users").split(";");
                     for (String p : users) {
-                        if (p.equalsIgnoreCase(player.getName())) {
+                        if (p.equalsIgnoreCase(player.getName()))
                             return true;
-                        }
                     }
                 }
             }
@@ -461,10 +407,8 @@ public class BankAccount extends JavaPlugin {
                 console.warning("Error #03-3: " + e1.getMessage());
             else
                 console.warning("Error #03-2: " + e1.getErrorCode() + " - " + e1.getSQLState());
-            throwException("SQL error checking access to account");
         } catch(Exception e) {
             console.warning("Error #03-1: " + e.toString());
-            throwException("Intern error checking access to account");
         }
         return false;
     }
@@ -477,9 +421,8 @@ public class BankAccount extends JavaPlugin {
      * @param writeAccess Only look for owners
      * @since 0.5
      * @return If the player have access
-     * @throws BankAccountException 
      */
-    public boolean accessAccount(String accountname,String player,boolean writeAccess) throws BankAccountException {
+    public boolean accessAccount(String accountname,String player,boolean writeAccess) {
         try {
             ResultSet rs;
             rs = settings.stmt.executeQuery("SELECT `users`, `owners` FROM `" + settings.SQL_account_table + "` WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
@@ -487,17 +430,15 @@ public class BankAccount extends JavaPlugin {
                 //Owners
                 String[] owners = rs.getString("owners").split(";");
                 for (String p : owners) {
-                    if (p.equalsIgnoreCase(player)) {
+                    if (p.equalsIgnoreCase(player))
                         return true;
-                    }
                 }
                 //Users (if no write access is needed)
                 if (!writeAccess) {
                     String[] users = rs.getString("users").split(";");
                     for (String p : users) {
-                        if (p.equalsIgnoreCase(player)) {
+                        if (p.equalsIgnoreCase(player))
                             return true;
-                        }
                     }
                 }
             }
@@ -506,43 +447,96 @@ public class BankAccount extends JavaPlugin {
                 console.warning("Error #03-3: " + e1.getMessage());
             else
                 console.warning("Error #03-2: " + e1.getErrorCode() + " - " + e1.getSQLState());
-            throwException("SQL error checking access to account");
         } catch(Exception e) {
             console.warning("Error #03-1: " + e.toString());
-            throwException("Intern error checking access to account");
         }
         return false;
     }
     
-    public Account getAccount(String accountname) throws BankAccountException {
-    	if (accountExists(accountname)) {
+    /**
+     * Get an account
+     * 
+     * @param accountname Name of account
+     * @return Account
+     * @
+     */
+    public Account getAccount(String accountname) {
+    	if (accountExists(accountname))
     		return new Account(this, accountname);
-    	} else {
+    	else
     		return null;
-    	}
     }
     
+//BANKS
     /**
-     * Throw a BankAccountException with a specific message in case full debug is enabled
+     * Create new bank
      * 
-     * @param msg Message
+     * @param bankname The name of the account
+     * @param bankers Username of the bankers - Name of players separated by semicolon (;)
      * @since 0.6
-     * @see #throwException()
-     * @throws BankAccountException
+     * @return If the account is successfully created
      */
-    public void throwException(String msg) throws BankAccountException {
-        console.info("Check throwException");
-        if (settings.Debug_Full) {
-            throw new BankAccountException(msg);
+    public boolean createBank(String bankname,String bankers,double interest) {
+        try {
+            settings.stmt.executeUpdate("INSERT INTO `" + settings.SQL_banks_table + "` (`bankname`,`cleanname`,`bankers`,`interest`) VALUES ('" + bankname + "','" + bankname.toLowerCase() + "','" + bankers + "','" + interest + "')");
+            return true;
+        } catch(SQLException e) {
+            if (!e.getMessage().equalsIgnoreCase(null))
+                console.warning("Error #02-3: " + e.getMessage());
+            else
+                console.warning("Error #02-2: " + e.getErrorCode() + " - " + e.getSQLState());
+        } catch (Exception e) {
+            console.warning("Error #02-1: " + e.toString());
         }
+        return false;
     }
     
     /**
-     * Throw a BankAccountException with a blank message in case full debug is enabled
+     * Check if a bank exists
      * 
+     * @param bankname The name of the bank
      * @since 0.6
-     * @see #throwException(String)
-     * @throws BankAccountException
+     * @return If the bank exists
      */
-    public void throwException() throws BankAccountException { throwException(""); }
+    public boolean bankExists(String bankname) {
+    	if (knownBanks.contains(bankname))
+    		return true;
+        ResultSet rs;
+        int id = 0;
+        try {
+            if (settings.UseMySQL)
+                rs = settings.stmt.executeQuery("SELECT `id` FROM `" + settings.SQL_banks_table + "` WHERE `cleanname` = '" + bankname.toLowerCase() + "'");
+            else
+                rs = settings.stmt.executeQuery("SELECT `rowid` FROM `" + settings.SQL_banks_table + "` WHERE `cleanname` = '" + bankname.toLowerCase() + "'");
+            while (rs.next()) {
+                if (settings.UseMySQL)
+                    id = rs.getInt("id");
+                else
+                    id = rs.getInt("rowid");
+            }
+        } catch (SQLException e) {
+            if (!e.getMessage().equalsIgnoreCase(null))
+                console.warning("Error #01-2: " + e.getMessage());
+            else
+                console.warning("Error #01-1: " + e.getErrorCode() + " - " + e.getSQLState());
+        }
+        if (id > 0) {
+        	knownAccounts.add(bankname);
+            return true;
+        }
+        return false;
+    }
+    
+    /**
+     * Get a bank
+     * 
+     * @param bankname Name of bank
+     * @return Bank
+     */
+    public Bank getBank(String bankname) {
+    	if (bankExists(bankname))
+    		return new Bank(this, bankname);
+    	else
+    		return null;
+    }
 }

@@ -1,10 +1,12 @@
 CREATE TABLE `bankaccounts` (
   `id` INT( 255 ) NOT NULL AUTO_INCREMENT PRIMARY KEY ,
   `accountname` VARCHAR( 255 ) NOT NULL ,
+  `cleanname` VARCHAR( 255 ) NOT NULL ,
   `owners` LONGTEXT NOT NULL,
   `users` LONGTEXT NOT NULL,
   `password` VARCHAR( 255 ) NULL DEFAULT '',
-  `amount` DOUBLE( 255,2 ) NOT NULL DEFAULT '0'
+  `amount` DOUBLE( 255,2 ) NOT NULL DEFAULT '0',
+  `bank` INT( 255 ) NOT NULL DEFAULT '0'
 )
 CREATE TABLE `bankareas` (
   `id` INT( 255 ) NOT NULL AUTO_INCREMENT PRIMARY KEY ,
@@ -34,4 +36,11 @@ CREATE TABLE `banktransactions` (
   `type` INT( 255 ) NOT NULL,
   `amount` DOUBLE( 255,2 ) NULL,
   `time` INT( 255 ) NOT NULL
+)
+CREATE TABLE `banks` (
+  `id` INT( 255 ) NOT NULL AUTO_INCREMENT PRIMARY KEY ,
+  `bankname` VARCHAR( 255 ) NOT NULL ,
+  `cleanname` VARCHAR( 255 ) NOT NULL ,
+  `bankers` LONGTEXT NOT NULL ,
+  `interest` DOUBLE( 255,2 ) NOT NULL DEFAULT '0'
 )

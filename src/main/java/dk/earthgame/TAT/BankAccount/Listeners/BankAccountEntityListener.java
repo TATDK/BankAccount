@@ -24,11 +24,11 @@ public class BankAccountEntityListener extends EntityListener {
             Player player = (Player)defender;
             if (player.getHealth() - event.getDamage() <= 0) {
                 if (attacker != null && attacker instanceof Player) {
-                    double bounty = plugin.getSaved(player.getName()).getBounty();
+                    double bounty = plugin.UserSaves.getSaved(player.getName()).getBounty();
                     if (bounty > 0.00) {
                         MethodAccount attackerAccount = plugin.Method.getAccount(((Player)attacker).getName());
                         attackerAccount.add(bounty);
-                        plugin.getSaved(player.getName()).setBounty(0.00);
+                        plugin.UserSaves.getSaved(player.getName()).setBounty(0.00);
                     }
                 }
             }
@@ -43,11 +43,11 @@ public class BankAccountEntityListener extends EntityListener {
             Player player = (Player)defender;
             if (player.getHealth() - event.getDamage() <= 0) {
                 if (attacker != null && attacker instanceof Player) {
-                    double bounty = plugin.getSaved(player.getName()).getBounty();
+                    double bounty = plugin.UserSaves.getSaved(player.getName()).getBounty();
                     if (bounty > 0.00) {
                         MethodAccount attackerAccount = plugin.Method.getAccount(((Player)attacker).getName());
                         attackerAccount.add(bounty);
-                        plugin.getSaved(player.getName()).setBounty(0.00);
+                        plugin.UserSaves.getSaved(player.getName()).setBounty(0.00);
                     }
                 }
             }

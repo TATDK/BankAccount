@@ -5,3 +5,6 @@ commands:
     account:
         description: Shared Bank Accounts
         usage: /account help - Show help to BankAccount
+    bank:
+        description: Banks
+        usage: /bank help - Show help to BankAccount

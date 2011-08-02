@@ -109,6 +109,18 @@
     	<version>7.0</version>
     	<scope>provided</scope>
     </dependency>
+    <dependency>
+    	<groupId>com</groupId>
+    	<artifactId>iCo6</artifactId>
+    	<version>6.0</version>
+    	<scope>provided</scope>
+    </dependency>
+    <dependency>
+    	<groupId>me.ashtheking</groupId>
+    	<artifactId>currency</artifactId>
+    	<version>0.05</version>
+    	<scope>provided</scope>
+    </dependency>
   </dependencies>
   
   <build>

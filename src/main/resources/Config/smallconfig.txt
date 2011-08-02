@@ -17,6 +17,7 @@ SQL-tables:
     Area: bankareas
     Loan: bankloans
     Transaction: banktransactions
+    Banks: banks
 Permissions:
     OP: true
     Permissions: false
@@ -77,4 +78,3 @@ Account:
 Debug:
     Loan: true
     Interest: true
-    Full: false
