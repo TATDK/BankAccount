@@ -4,7 +4,7 @@ https://github.com/TATDK/BankAccount
 *****************************
        Requirements
 *****************************
-iConomy 4/5, BOSEconomy or Essentials Economy
+iConomy, BOSEconomy, Essentials Economy or MultiCurrency
 mysql-connector-java-bin (https://github.com/TATDK/BankAccount/raw/master/ZipInclude/mysql-connector-java-bin.jar)
 sqlitejdbc-v056          (https://github.com/TATDK/BankAccount/raw/master/ZipInclude/sqlitejdbc-v056.jar)
 
@@ -36,5 +36,7 @@ UPDATE:
 *****************************
            JavaDoc
 *****************************
-JavaDoc for BankAccount API can be found @ Github
+JavaDoc for BankAccount API can be found @ GitHub
 http://TATDK.github.com/BankAccount/doc/
+JavaDoc for BankAccount Development API can be found @ GitHub
+http://TATDK.github.com/BankAccount/dev-doc/
