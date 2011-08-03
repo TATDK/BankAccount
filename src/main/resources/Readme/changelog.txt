@@ -10,8 +10,9 @@ Added multiple fee systems
   * Deposit  - When you deposit to an account     (player pays the fee)
   * Withdraw - When you withdraw from an account  (account pays the fee)
   * Transfer - When you transfer between accounts (sender account pays the fee)
-  * Closing  - When you close an account          (player pays the fee)
+  * Closing  - When you close an account          (account pays the fee)
   * Sign     - When you create a balance sign     (player pays the fee)
+Update Register [GitHub Commit: af7bef3b278663a8ecf89a54706d282a3b8bb982]
 API: Removed 0.5 deprecated functions
 API: Renamed CommandList to AccountCommands
 API: Added BankCommands

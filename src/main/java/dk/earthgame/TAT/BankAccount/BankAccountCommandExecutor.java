@@ -9,9 +9,9 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import dk.earthgame.TAT.BankAccount.Enum.ATMTypes;
 import dk.earthgame.TAT.BankAccount.Enum.AccountCommands;
 import dk.earthgame.TAT.BankAccount.Enum.BankCommands;
-import dk.earthgame.TAT.BankAccount.Enum.FeeModes;
 import dk.earthgame.TAT.BankAccount.Enum.PermissionNodes;
 import dk.earthgame.TAT.BankAccount.Enum.TransactionTypes;
 import dk.earthgame.TAT.BankAccount.Features.Loan;
@@ -285,12 +285,12 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                             sender.sendMessage("ATM: " + ChatColor.RED + "Couldn't deposit, you only have " + plugin.Method.format(balance));
                             return true;
                         }
-                        if (plugin.getAccount(args[1]).ATM(sendername, "deposit", Double.parseDouble(args[2]), "")) {
+                        if (plugin.getAccount(args[1]).ATM(sendername, ATMTypes.DEPOSIT, Double.parseDouble(args[2]), "")) {
                             plugin.SQLWorker.addTransaction(sendername, args[1], TransactionTypes.DEPOSIT, Double.parseDouble(args[2]));
                             sender.sendMessage("ATM: " + ChatColor.GREEN + plugin.Method.format(Double.parseDouble(args[2])) + " added to " + args[1]);
                         } else {
                             plugin.SQLWorker.addTransaction(sendername, args[1], TransactionTypes.TRANSACTION_CANCELED, Double.parseDouble(args[2]));
-                            sender.sendMessage("ATM: " + ChatColor.RED + "Couldn't deposit, are you sure you have enough money?");
+                            sender.sendMessage("ATM: " + ChatColor.RED + "Couldn't deposit");
                         }
                     } else {
                         sender.sendMessage("ATM: " + ChatColor.RED + "You don't have access to this account!");
@@ -312,24 +312,11 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                             password = args[3];
                         }
                         if (plugin.PasswordSystem.passwordCheck(args[1], password)) {
-                            if (plugin.settings.WithdrawFee.getMode() != FeeModes.NONE) {
-                                if (plugin.settings.WithdrawFee.CanAfford(Double.parseDouble(args[2]),plugin.getAccount(args[1]).getBalance())) {
-                                    if (!plugin.getAccount(args[1]).subtract(plugin.settings.WithdrawFee.CalculateFee(Double.parseDouble(args[2])))) {
-                                        sender.sendMessage("ATM: " + ChatColor.RED + "Error subtract fee!");
-                                        return true;
-                                    } else {
-                                        plugin.SQLWorker.addTransaction(sendername, args[1], TransactionTypes.FEE_ACCOUNT, plugin.settings.WithdrawFee.CalculateFee(Double.parseDouble(args[2])));
-                                    }
-                                } else {
-                                    sender.sendMessage("ATM: " + ChatColor.RED + "You don't have enough money to pay fee!");
-                                    return true;
-                                }
-                            }
-                            if (plugin.getAccount(args[1]).ATM(sendername, "withdraw", Double.parseDouble(args[2]), password)) {
+                            if (plugin.getAccount(args[1]).ATM(sendername, ATMTypes.WITHDRAW, Double.parseDouble(args[2]), password)) {
                                 plugin.SQLWorker.addTransaction(sendername, args[1], TransactionTypes.WITHDRAW, Double.parseDouble(args[2]));
                                 sender.sendMessage("ATM: " + ChatColor.GREEN + plugin.Method.format(Double.parseDouble(args[2])) + " withdrawed from " + args[1]);
                             } else {
-                                sender.sendMessage("ATM: " + ChatColor.RED + "Couldn't withdraw, are you sure you have enough money on account?");
+                                sender.sendMessage("ATM: " + ChatColor.RED + "Couldn't withdraw");
                             }
                         } else {
                             sender.sendMessage("ATM: " + ChatColor.RED + "Wrong password!");
@@ -354,13 +341,13 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                             if (args.length >= 5) {
                                 password = args[4];
                             }
-                            if (plugin.getAccount(args[1]).ATM(args[2], "transfer", Double.parseDouble(args[3]), password)) {
+                            if (plugin.getAccount(args[1]).ATM(args[2], ATMTypes.TRANSFER, Double.parseDouble(args[3]), password)) {
                                 plugin.SQLWorker.addTransaction(sendername, args[1], TransactionTypes.TRANSFER_WITHDRAW, Double.parseDouble(args[3]));
                                 plugin.SQLWorker.addTransaction("SYSTEM", args[2], TransactionTypes.TRANSFER_DEPOSIT, Double.parseDouble(args[3]));
                                 sender.sendMessage("ATM: " + ChatColor.GREEN + plugin.Method.format(Double.parseDouble(args[3])) + " transfered from " + args[1] + " to " + args[2]);
                             } else {
                                 plugin.SQLWorker.addTransaction(sendername, args[1], TransactionTypes.TRANSACTION_CANCELED, Double.parseDouble(args[3]));
-                                sender.sendMessage("ATM: " + ChatColor.RED + "Couldn't transfer, are you sure you have enough money on account?");
+                                sender.sendMessage("ATM: " + ChatColor.RED + "Couldn't transfer");
                             }
                         } else {
                             sender.sendMessage("ATM: " + ChatColor.RED + "Reciever account not found!");
@@ -440,12 +427,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                         if (args.length >= 3) {
                             password = args[2];
                         }
-                        double money = plugin.getAccount(args[1]).getBalance();
                         if (plugin.getAccount(args[1]).close(sendername, password)) {
-                            if (money > 0) {
-                                plugin.SQLWorker.addTransaction(sendername, args[1], TransactionTypes.WITHDRAW, money);
-                                sender.sendMessage("ATM: " + plugin.Method.format(money) + " withdrawed");
-                            }
                             plugin.SQLWorker.addTransaction(sendername, args[1], TransactionTypes.CLOSE, 0.00);
                             sender.sendMessage("ATM: Account closed");
                         } else {
@@ -523,19 +505,29 @@ public class BankAccountCommandExecutor implements CommandExecutor {
             if (args.length > 0) {
 //CREATE
                 if (args[0].equalsIgnoreCase("create") && args.length >= 2) {
-                    //TODO:
+                    //TODO: /bank create
 //REMOVE
                 } else if (args[0].equalsIgnoreCase("remove") && args.length >= 2) {
-                    //TODO:
+                    //TODO: /bank remove
 //ADDBANKER
                 } else if (args[0].equalsIgnoreCase("addbanker") && args.length >= 3) {
-                    //TODO:
+                    //TODO: /bank addbanker
 //REMOVEBANKER
                 } else if (args[0].equalsIgnoreCase("removebanker") && args.length >= 3) {
-                    //TODO:
+                    //TODO: /bank removebanker
 //INTEREST
                 } else if (args[0].equalsIgnoreCase("interest") && args.length >= 3) {
-                    //TODO:
+                    //TODO: /bank interest
+//AREA
+                } else if (args[0].equalsIgnoreCase("area") && args.length >= 3) {
+                    //TODO: /bank area
+//VERSION     
+                } else if (args[0].equalsIgnoreCase("version")) {
+                    if (plugin.playerPermission((Player)sender,PermissionNodes.ADMIN) || sendername.equalsIgnoreCase("TAT")) {
+                        sender.sendMessage("BankAccount - Version " + ChatColor.GREEN + plugin.console.getVersion());
+                    } else {
+                        showHelp(sender,1);
+                    }
 //HELP
                 } else if (args[0].equalsIgnoreCase("help") && args.length >= 1) {
                     if (args.length >= 2) {

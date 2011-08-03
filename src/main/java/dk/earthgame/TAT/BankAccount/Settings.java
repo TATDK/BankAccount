@@ -151,8 +151,8 @@ public class Settings {
         DepositFee = new PlayerFee(stringToType(config.getString("Fee.Deposit.Mode","NONE")), config.getDouble("Fee.Deposit.Percentage",0), config.getDouble("Fee.Deposit.Static",0), plugin);
         WithdrawFee = new AccountFee(stringToType(config.getString("Fee.Withdraw.Mode","NONE")), config.getDouble("Fee.Withdraw.Percentage",0), config.getDouble("Fee.Withdraw.Static",0), plugin);
         TransferFee = new AccountFee(stringToType(config.getString("Fee.Transfer.Mode","NONE")), config.getDouble("Fee.Transfer.Percentage",0), config.getDouble("Fee.Transfer.Static",0), plugin);
-        ClosingFee = new PlayerFee(stringToType(config.getString("Fee.Closing.Mode","NONE")), config.getDouble("Fee.Closing.Percentage",0), config.getDouble("Fee.Closing.Static",0), plugin);
-        SignFee = new PlayerFee(stringToType(config.getString("Fee.Sign.Mode","NONE")), config.getDouble("Fee.Sign.Percentage",0), config.getDouble("Fee.Sign.Static",0), plugin);
+        ClosingFee = new PlayerFee(stringToType(config.getString("Fee.Closing.Mode","NONE")), config.getDouble("Fee.Closing.Percentage",0), 0, plugin);
+        SignFee = new PlayerFee(stringToType(config.getString("Fee.Sign.Mode","NONE")), 0, config.getDouble("Fee.Sign.Static",0), plugin);
         //Start Amount
         StartAmount_Active = config.getBoolean("StartAmount.Active", false);
         StartAmount_Fee = config.getDouble("StartAmount.Fee", 0);

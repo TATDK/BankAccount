@@ -3,6 +3,7 @@ package dk.earthgame.TAT.BankAccount.Features;
 import java.sql.SQLException;
 
 import dk.earthgame.TAT.BankAccount.BankAccount;
+import dk.earthgame.TAT.BankAccount.Enum.ATMTypes;
 import dk.earthgame.TAT.BankAccount.Enum.FeeModes;
 import dk.earthgame.nijikokun.register.payment.Method.MethodAccount;
 
@@ -199,15 +200,21 @@ public class Account {
      * @since 0.5
      * @return If the action is run successfully
      */
-    public boolean ATM(String player,String type,Double amount,String password) {
+    public boolean ATM(String player,ATMTypes type,Double amount,String password) {
         try {
-            double account = getBalance();
+            double accountBalance = getBalance();
             MethodAccount economyAccount = plugin.Method.getAccount(player);
-            if (type == "deposit") {
-                if (plugin.settings.MaxAmount > 0 && (account+amount) > plugin.settings.MaxAmount) {
+            double playerBalance = economyAccount.balance();
+            if (type == ATMTypes.DEPOSIT) {
+                if (plugin.settings.MaxAmount > 0 && (accountBalance + amount) > plugin.settings.MaxAmount) {
                     //Cancel the transaction
                     return false;
                 } else if (economyAccount.hasEnough(amount)) {
+                	if (plugin.settings.DepositFee.getMode() != FeeModes.NONE) {
+                		amount = plugin.settings.DepositFee.PayFee(amount, playerBalance, player);
+                		if (amount == 0)
+                            return true;
+                	}
                     add(amount);
                     economyAccount.subtract(amount);
                     plugin.BalanceSign.update(accountname);
@@ -215,17 +222,13 @@ public class Account {
                 } else {
                     return false;
                 }
-            } else if (type == "withdraw") {
+            } else if (type == ATMTypes.WITHDRAW) {
                 if (plugin.PasswordSystem.passwordCheck(accountname, password)) {
-                    if ((account - amount) >= 0) {
+                    if ((accountBalance - amount) >= 0) {
                         if (plugin.settings.WithdrawFee.getMode() != FeeModes.NONE) {
-                            if (plugin.settings.WithdrawFee.CanAfford(account - amount)) {
-                                if (!subtract(plugin.settings.WithdrawFee.CalculateFee(account - amount))) {
-                                    return false;
-                                }
-                            } else {
-                                return false;
-                            }
+                        	amount = plugin.settings.WithdrawFee.PayFee(amount,accountBalance,accountname);
+                            if (amount == 0)
+                                return true;
                         }
                         subtract(amount);
                         economyAccount.add(amount);
@@ -237,7 +240,7 @@ public class Account {
                 } else {
                     return false;
                 }
-            } else if (type == "transfer") {
+            } else if (type == ATMTypes.TRANSFER) {
                 if (plugin.PasswordSystem.passwordCheck(accountname, password)) {
                 	Account reciever = plugin.getAccount(player);
                     //Player = receiver account
@@ -245,15 +248,11 @@ public class Account {
                     if (plugin.settings.MaxAmount > 0 && (receiver_account+amount) > plugin.settings.MaxAmount) {
                         //Cancel the transaction
                         return false;
-                    } else if ((account - amount) >= 0) {
+                    } else if ((accountBalance - amount) >= 0) {
                         if (plugin.settings.TransferFee.getMode() != FeeModes.NONE) {
-                            if (plugin.settings.TransferFee.CanAfford(account - amount)) {
-                                if (!subtract(plugin.settings.TransferFee.CalculateFee(account - amount))) {
-                                    return false;
-                                }
-                            } else {
-                                return false;
-                            }
+                        	amount = plugin.settings.TransferFee.PayFee(amount,accountBalance,accountname);
+                            if (amount == 0)
+                                return true;
                         }
                         subtract(amount);
                         reciever.add(amount);
@@ -286,16 +285,14 @@ public class Account {
             try {
                 MethodAccount economyAccount = plugin.Method.getAccount(player);
                 double accountBalance = getBalance();
-                if (plugin.settings.ClosingFee.getMode() != FeeModes.NONE) {
-                    if (plugin.settings.ClosingFee.CanAfford(accountBalance)) {
-                        if (!subtract(plugin.settings.ClosingFee.CalculateFee(accountBalance))) {
-                            return false;
-                        } else {
-                            accountBalance -= plugin.settings.ClosingFee.CalculateFee(accountBalance);
-                        }
-                    } else {
-                        return false;
-                    }
+                if (plugin.settings.ClosingFee.getMode() != FeeModes.NONE && accountBalance > 0) {
+                	if (plugin.settings.ClosingFee.Fee_Percentage == 100) {
+                		accountBalance = 0;
+                	} else {
+	                	accountBalance = plugin.settings.ClosingFee.PayFee(accountBalance,accountname);
+	                    if (accountBalance == 0)
+	                        return true;
+                	}
                 }
                 plugin.SQLWorker.executeDelete("DELETE FROM `" + plugin.settings.SQL_account_table + "` WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
                 economyAccount.add(accountBalance);

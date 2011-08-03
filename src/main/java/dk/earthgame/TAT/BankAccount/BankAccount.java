@@ -327,15 +327,14 @@ public class BankAccount extends JavaPlugin {
      * @return If the account is successfully created
      */
     public boolean openAccount(String accountname,String owners,String feePayer) {
-
     	double feePaid = 0;
-        if (settings.OpeningFee.getMode() != FeeModes.NONE) {
+        if (settings.OpeningFee.getMode() != FeeModes.NONE && (feePayer.equalsIgnoreCase("") || feePayer != null)) {
             MethodAccount account = Method.getAccount(feePayer);
             double balance = account.balance();
             if (settings.OpeningFee.PayFee(balance, feePayer) > 0) {
                 feePaid = settings.OpeningFee.CalculateFee(balance);
             } else {
-                return true;
+                return false;
             }
         }
         

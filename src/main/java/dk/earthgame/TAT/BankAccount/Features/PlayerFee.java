@@ -17,10 +17,27 @@ public class PlayerFee extends Fee {
 		plugin = instantiate;
 	}
 	
+	/**
+	 * Pay the fee
+	 * Calculated by whole balance
+	 * 
+	 * @param balance Balance of player
+	 * @param playername Name of player
+	 * @return New balance, else 0
+	 */
 	public double PayFee(double balance,String playername) {
 		return PayFee(balance,balance,playername);
 	}
 	
+	/**
+	 * Pay the fee
+	 * Calculated by part of balance
+	 * 
+	 * @param amount Part of balance
+	 * @param balance Balance of player
+	 * @param playername Name of player
+	 * @return How much there can be moved, else 0
+	 */
 	public double PayFee(double amount,double balance,String playername) {
 		Player player = null;
 		if (plugin.getServer().getPlayer(playername) != null)

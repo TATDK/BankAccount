@@ -30,9 +30,11 @@ Areas:
     MultipleBanks: false
 Interest:
     Time: 5
-    Amount: 1
     Online-limit: 1
-    Offline-amount: 0.5
+    MultipleInterests: false
+    SingleInterest:
+        Amount: 1
+        Offline-amount: 0.5
 Loan:
     Active: false
     Fixed-rate: 0.00
@@ -64,10 +66,8 @@ Fee:
     Closing:
         Mode: None
         Percentage: 0
-        Static: 0
     Sign:
         Mode: None
-        Percentage: 0
         Static: 0
 StartAmount:
     Active: false
