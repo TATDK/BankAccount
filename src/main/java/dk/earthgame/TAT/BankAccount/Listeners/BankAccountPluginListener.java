@@ -81,7 +81,7 @@ public class BankAccountPluginListener extends ServerListener {
         }
         
         //Permissions
-        if (plugin.settings.Permissions == null && pluginname.equalsIgnoreCase("Permissions") && plugin.settings.UsePermissions) {
+        if (plugin.settings.Permissions == null && pluginname.equalsIgnoreCase("Permissions") && plugin.settings.usePermissions) {
             Plugin test = checkPlugin(pluginname);
             if (test != null) {
                 ((Permissions)test).getDatabase();
@@ -90,7 +90,7 @@ public class BankAccountPluginListener extends ServerListener {
             }
         }
         //GroupManager
-        if (plugin.settings.GroupManager == null && pluginname.equalsIgnoreCase("GroupManager") && plugin.settings.UseGroupManager) {
+        if (plugin.settings.GroupManager == null && pluginname.equalsIgnoreCase("GroupManager") && plugin.settings.useGroupManager) {
             Plugin test = checkPlugin(pluginname);
             if (test != null) {
                 this.plugin.settings.GroupManager = (GroupManager)test;

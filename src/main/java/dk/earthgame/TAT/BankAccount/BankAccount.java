@@ -96,15 +96,15 @@ public class BankAccount extends JavaPlugin {
      */
     private boolean checkPermission(Player player,PermissionNodes node,boolean extraLookup) {
         if (player != null) {
-        	//Permission
-            if (settings.UsePermissions)
+            //Permission
+            if (settings.usePermissions)
                 if (settings.Permissions.has(player, node.getNode()))
                     return true;
             //GroupManager
-            if (settings.UseGroupManager)
+            if (settings.useGroupManager)
                 if (settings.GroupManager.getWorldsHolder().getWorldPermissions(player).has(player, node.getNode()))
                     return true;
-            if (settings.UseOP)
+            if (settings.useOP)
                 if (player.isOp())
                     return true;
             if (node != PermissionNodes.ACCESS && !extraLookup) {
@@ -189,7 +189,7 @@ public class BankAccount extends JavaPlugin {
          * 
          * Used if BankAccount is started after one of the third-part plugins
          */
-        if (settings.Permissions == null && settings.UsePermissions) {
+        if (settings.Permissions == null && settings.usePermissions) {
             Plugin test = getServer().getPluginManager().getPlugin("Permissions");
             if (test != null) {
                 if (test.isEnabled()) {
@@ -198,7 +198,7 @@ public class BankAccount extends JavaPlugin {
                 }
             }
         }
-        if (settings.GroupManager == null && settings.UseGroupManager) {
+        if (settings.GroupManager == null && settings.useGroupManager) {
             Plugin test = getServer().getPluginManager().getPlugin("GroupManager");
             if (test != null) {
                 if (test.isEnabled()) {
@@ -246,17 +246,17 @@ public class BankAccount extends JavaPlugin {
      * @return If the account exists
      */
     public boolean accountExists(String accountname) {
-    	if (knownAccounts.contains(accountname))
-    		return true;
+        if (knownAccounts.contains(accountname))
+            return true;
         ResultSet rs;
         int id = 0;
         try {
-            if (settings.UseMySQL)
+            if (settings.useMySQL)
                 rs = settings.stmt.executeQuery("SELECT `id` FROM `" + settings.SQL_account_table + "` WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
             else
                 rs = settings.stmt.executeQuery("SELECT `rowid` FROM `" + settings.SQL_account_table + "` WHERE `cleanname` = '" + accountname.toLowerCase() + "'");
             while (rs.next()) {
-                if (settings.UseMySQL)
+                if (settings.useMySQL)
                     id = rs.getInt("id");
                 else
                     id = rs.getInt("rowid");
@@ -268,7 +268,7 @@ public class BankAccount extends JavaPlugin {
                 console.warning("Error #01-1: " + e.getErrorCode() + " - " + e.getSQLState());
         }
         if (id > 0) {
-        	knownAccounts.add(accountname);
+            knownAccounts.add(accountname);
             return true;
         }
         return false;
@@ -330,9 +330,9 @@ public class BankAccount extends JavaPlugin {
      * @return If the account is successfully created
      */
     public boolean openAccount(String accountname,String owners,String feePayer) {
-    	if (accountExists(accountname))
-    		return false;
-    	double feePaid = 0;
+        if (accountExists(accountname))
+            return false;
+        double feePaid = 0;
         if (settings.OpeningFee.getMode() != FeeModes.NONE && (feePayer.equalsIgnoreCase("") || feePayer != null)) {
             MethodAccount account = Method.getAccount(feePayer);
             double balance = account.balance();
@@ -344,9 +344,9 @@ public class BankAccount extends JavaPlugin {
         }
         
         double StartAmount = 0;
-        if (settings.StartAmount_Active) {
-            StartAmount += feePaid*settings.StartAmount_Fee;
-            StartAmount += settings.StartAmount_Static;
+        if (settings.startAmount_Active) {
+            StartAmount += feePaid*settings.startAmount_Fee;
+            StartAmount += settings.startAmount_Static;
         }
         
         try {
@@ -378,7 +378,7 @@ public class BankAccount extends JavaPlugin {
             //There is no spoon... I mean account
             return false;
         }
-        if (settings.SuperAdmins && playerPermission(player, PermissionNodes.ADMIN)) {
+        if (settings.superAdmins && playerPermission(player, PermissionNodes.ADMIN)) {
             //Ta ta taaa da.. SuperAdmin!
             return true;
         }
@@ -465,10 +465,10 @@ public class BankAccount extends JavaPlugin {
      * @
      */
     public Account getAccount(String accountname) {
-    	if (accountExists(accountname))
-    		return new Account(this, accountname);
-    	else
-    		return null;
+        if (accountExists(accountname))
+            return new Account(this, accountname);
+        else
+            return null;
     }
     
 //BANKS
@@ -480,11 +480,11 @@ public class BankAccount extends JavaPlugin {
      * @since 0.6
      * @return If the account is successfully created
      */
-    public boolean createBank(String bankname,String bankers,double interest) {
-    	if (bankExists(bankname))
-    		return false;
+    public boolean createBank(String bankname,String bankers) {
+        if (bankExists(bankname))
+            return false;
         try {
-            settings.stmt.executeUpdate("INSERT INTO `" + settings.SQL_banks_table + "` (`bankname`,`cleanname`,`bankers`,`interest`) VALUES ('" + bankname + "','" + bankname.toLowerCase() + "','" + bankers + "','" + interest + "')");
+            settings.stmt.executeUpdate("INSERT INTO `" + settings.SQL_banks_table + "` (`bankname`,`cleanname`,`bankers`,`online-interest`,`offline-interest`,`online-amount`) VALUES ('" + bankname + "','" + bankname.toLowerCase() + "','" + bankers + "','" + settings.interestOnlineAmount + "','" + settings.interestOfflineAmount + "','" + settings.interestNeededOnline + "')");
             return true;
         } catch(SQLException e) {
             if (!e.getMessage().equalsIgnoreCase(null))
@@ -505,17 +505,17 @@ public class BankAccount extends JavaPlugin {
      * @return If the bank exists
      */
     public boolean bankExists(String bankname) {
-    	if (knownBanks.contains(bankname))
-    		return true;
+        if (knownBanks.contains(bankname))
+            return true;
         ResultSet rs;
         int id = 0;
         try {
-            if (settings.UseMySQL)
+            if (settings.useMySQL)
                 rs = settings.stmt.executeQuery("SELECT `id` FROM `" + settings.SQL_banks_table + "` WHERE `cleanname` = '" + bankname.toLowerCase() + "'");
             else
                 rs = settings.stmt.executeQuery("SELECT `rowid` FROM `" + settings.SQL_banks_table + "` WHERE `cleanname` = '" + bankname.toLowerCase() + "'");
             while (rs.next()) {
-                if (settings.UseMySQL)
+                if (settings.useMySQL)
                     id = rs.getInt("id");
                 else
                     id = rs.getInt("rowid");
@@ -527,7 +527,7 @@ public class BankAccount extends JavaPlugin {
                 console.warning("Error #01-1: " + e.getErrorCode() + " - " + e.getSQLState());
         }
         if (id > 0) {
-        	knownAccounts.add(bankname);
+            knownAccounts.add(bankname);
             return true;
         }
         return false;
@@ -540,9 +540,9 @@ public class BankAccount extends JavaPlugin {
      * @return Bank
      */
     public Bank getBank(String bankname) {
-    	if (bankExists(bankname))
-    		return new Bank(this, bankname);
-    	else
-    		return null;
+        if (bankExists(bankname))
+            return new Bank(this, bankname);
+        else
+            return null;
     }
 }

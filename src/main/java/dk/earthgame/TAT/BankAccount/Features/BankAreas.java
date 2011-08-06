@@ -25,14 +25,14 @@ public class BankAreas {
         ResultSet rs;
         int id = 0;
         try {
-            if (plugin.settings.UseMySQL) {
+            if (plugin.settings.useMySQL) {
                 rs = plugin.settings.stmt.executeQuery("SELECT `id` FROM `" + plugin.settings.SQL_area_table + "` WHERE `areaname` = '" + name + "'");
             } else {
                 rs = plugin.settings.stmt.executeQuery("SELECT `rowid` FROM `" + plugin.settings.SQL_area_table + "` WHERE `areaname` = '" + name + "'");
             }
             try {
                 while (rs.next()) {
-                    if (plugin.settings.UseMySQL) {
+                    if (plugin.settings.useMySQL) {
                         id = rs.getInt("id");
                     } else {
                         id = rs.getInt("rowid");

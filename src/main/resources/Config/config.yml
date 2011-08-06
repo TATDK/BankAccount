@@ -63,20 +63,20 @@ Areas:
 
 ##
 #Interest settings
-#   Time: Minutes between updates
-#   Online-limit: % of users and owners that needs to be online to gain online interest
+#   Time: Minutes between updates (20 minutes = 1 Minecraft day)
 #   MultipleInterests: [Require MultipleBanks enabled]  true = each bank have their own interest rate // false = global interest rate
-#   SingleInterest: Settings when MultipleInterests is disabled
-#       Amount: % of account balance added to every account
+#   DefaultInterest: Default interest settings
+#       Online-amount: % of account balance added to every account
 #       Offline-amount: % of account balance added to every account when player is offline
+#       Online-limit: % of users and owners that needs to be online to gain online interest
 ##
 Interest:
     Time: 5
-    Online-limit: 1
     MultipleInterests: false
-    SingleInterest:
-        Amount: 1
+    DefaultInterest:
+        Online-amount: 1
         Offline-amount: 0.5
+        Online-limit: 1
 
 ##
 #Loan settings

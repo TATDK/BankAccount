@@ -197,7 +197,7 @@ public class SQLWorker {
      * @throws BankAccountException
      */
     public void addTransaction(String player, String account, TransactionTypes type, Double amount) {
-        if (plugin.settings.Transactions) {
+        if (plugin.settings.transactions) {
             try {
                 int time = Math.round(new Date().getTime()/1000);
                 plugin.settings.stmt.executeUpdate("INSERT INTO `" + plugin.settings.SQL_transaction_table + "` (`player`,`account`,`type`,`amount`,`time`) VALUES ('" + player + "','" + account + "','" + type.get() + "','" + amount + "','" + time +"')");

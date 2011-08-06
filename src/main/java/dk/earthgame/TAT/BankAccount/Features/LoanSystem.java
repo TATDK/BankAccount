@@ -71,7 +71,7 @@ public class LoanSystem {
         JobId = ((Plugin)plugin).getServer().getScheduler().scheduleSyncRepeatingTask((Plugin)plugin, new Runnable() {
             @SuppressWarnings({ "unchecked", "rawtypes" })
             public void run() {
-                if (plugin.settings.Debug_Loan)
+                if (plugin.settings.debug_Loan)
                     plugin.console.info("Loan start");
                 Iterator it = Loans.entrySet().iterator();
                 while (it.hasNext()) {
@@ -82,13 +82,13 @@ public class LoanSystem {
                         if (plugin.UserSaves.getSaved(pairs.getKey()).getBounty() > 0.00) {
                             plugin.SQLWorker.addTransaction(pairs.getKey(), "", TransactionTypes.LOAN_MISSING, pairs.getValue().remaining);
                         } else {
-                            if (plugin.settings.Debug_Loan)
+                            if (plugin.settings.debug_Loan)
                                 plugin.console.info(pairs.getKey() + " paid a part of the loan back");
                             plugin.SQLWorker.addTransaction(pairs.getKey(), "", TransactionTypes.LOAN_PAID, 0.00);
                         }
                     }
                 }
-                if (plugin.settings.Debug_Loan)
+                if (plugin.settings.debug_Loan)
                     plugin.console.info("Loan stop");
             }
         }, 0, runTime*20*60);

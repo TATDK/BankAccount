@@ -30,11 +30,11 @@ Areas:
     MultipleBanks: false
 Interest:
     Time: 5
-    Online-limit: 1
     MultipleInterests: false
-    SingleInterest:
-        Amount: 1
+    DefaultInterest:
+        Online-amount: 1
         Offline-amount: 0.5
+        Online-limit: 1
 Loan:
     Active: false
     Fixed-rate: 0.00

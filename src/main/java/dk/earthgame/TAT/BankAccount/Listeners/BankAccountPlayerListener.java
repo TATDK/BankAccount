@@ -18,7 +18,7 @@ public class BankAccountPlayerListener extends PlayerListener {
     public void onPlayerInteract(PlayerInteractEvent event) {
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
             UserSave mySave = plugin.UserSaves.getSaved(event.getPlayer().getName());
-            if (event.getPlayer().getItemInHand().getTypeId() == plugin.settings.AreaWandId && mySave.isSelecting()) {
+            if (event.getPlayer().getItemInHand().getTypeId() == plugin.settings.areaWandId && mySave.isSelecting()) {
                 Location pos = event.getClickedBlock().getLocation();
                 if (mySave.setPosition(pos) == 2) {
                     event.getPlayer().sendMessage("ATM: Area selected, to confirm: /account setarea <areaname>");

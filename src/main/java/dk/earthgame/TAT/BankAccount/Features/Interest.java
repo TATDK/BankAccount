@@ -19,12 +19,12 @@ public class Interest {
     		return;
     	jobID = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
             public void run() {
-                if (plugin.settings.Debug_Interest)
+                if (plugin.settings.debug_Interest)
                 	plugin.console.info("Running interest system");
                                                     
                 double totalGiven = 0.00;
                 try {
-                    if (plugin.settings.UseMySQL) {
+                    if (plugin.settings.useMySQL) {
                         //MySQL
                         ResultSet accounts = plugin.settings.stmt.executeQuery("SELECT `id`, `amount`, `owners`, `users` FROM `" + plugin.settings.SQL_account_table + "`");
                         while (accounts.next()) {
@@ -34,7 +34,7 @@ public class Interest {
                             int neededOnline = (owners.length+users.length)/plugin.settings.interestNeededOnline;
                             int online = 0;
                             boolean accountOnline = false;
-                            if (plugin.settings.interestAmount == plugin.settings.interestOfflineAmount) {
+                            if (plugin.settings.interestOnlineAmount == plugin.settings.interestOfflineAmount) {
                             	accountOnline = true;
                             } else {
 	                            if (owners.length > 1) {
@@ -81,12 +81,12 @@ public class Interest {
                             }
                             double interest;
                             if (accountOnline)
-                                interest = plugin.settings.interestAmount;
+                                interest = plugin.settings.interestOnlineAmount;
                             else
                                 interest = plugin.settings.interestOfflineAmount;
-                            if (plugin.settings.MaxAmount > 0 && ((accountbalance *= 1+(interest/100)) > plugin.settings.MaxAmount)) {
-                                totalGiven += (plugin.settings.MaxAmount-accountbalance);
-                                accountbalance = plugin.settings.MaxAmount;
+                            if (plugin.settings.maxAmount > 0 && ((accountbalance *= 1+(interest/100)) > plugin.settings.maxAmount)) {
+                                totalGiven += (plugin.settings.maxAmount-accountbalance);
+                                accountbalance = plugin.settings.maxAmount;
                             } else {
                                 totalGiven += accountbalance*(interest/100);
                                 accountbalance *= 1+(interest/100);
@@ -107,7 +107,7 @@ public class Interest {
                             int neededOnline = (owners.length+users.length)/plugin.settings.interestNeededOnline;
                             int online = 0;
                             boolean accountOnline = false;
-                            if (plugin.settings.interestAmount == plugin.settings.interestOfflineAmount) {
+                            if (plugin.settings.interestOnlineAmount == plugin.settings.interestOfflineAmount) {
                             	accountOnline = true;
                             } else {
 	                            if (owners.length > 1) {
@@ -154,12 +154,12 @@ public class Interest {
                             }
                             double interest;
                             if (accountOnline)
-                                interest = plugin.settings.interestAmount;
+                                interest = plugin.settings.interestOnlineAmount;
                             else
                                 interest = plugin.settings.interestOfflineAmount;
-                            if (plugin.settings.MaxAmount > 0 && ((accountbalance *= 1+(interest/100)) > plugin.settings.MaxAmount)) {
-                                totalGiven += (plugin.settings.MaxAmount-accountbalance);
-                                accountbalance = plugin.settings.MaxAmount;
+                            if (plugin.settings.maxAmount > 0 && ((accountbalance *= 1+(interest/100)) > plugin.settings.maxAmount)) {
+                                totalGiven += (plugin.settings.maxAmount-accountbalance);
+                                accountbalance = plugin.settings.maxAmount;
                             } else {
                                 totalGiven += accountbalance*(interest/100);
                                 accountbalance *= 1+(interest/100);
@@ -178,11 +178,11 @@ public class Interest {
                 	plugin.console.warning("Couldn't execute interest");
                 	plugin.console.info(e.toString());
                 }
-                if (plugin.settings.Debug_Interest)
+                if (plugin.settings.debug_Interest)
                 	plugin.console.info("Total given " + plugin.Method.format(totalGiven) + " in interest");
             }
         }, plugin.settings.interestTime*20*60, plugin.settings.interestTime*20*60);
-    	plugin.console.info("Running interest every " + plugin.settings.interestTime + " minutes by " + plugin.settings.interestAmount + "%");
+    	plugin.console.info("Running interest every " + plugin.settings.interestTime + " minutes by " + plugin.settings.interestOnlineAmount + "%");
     }
     
     public void shutdownInterest() {

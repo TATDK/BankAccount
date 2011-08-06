@@ -29,15 +29,11 @@ public class Settings {
     private BankAccount plugin;
     
     Configuration config;
-    public int interestTime;
-    public double interestAmount;
-    public int interestNeededOnline;
-    public double interestOfflineAmount;
     public int checkJobId;
-    public int AreaWandId;
-    public boolean MultiBanks;
+    public int areaWandId;
+    public boolean multiBanks;
     //MySQL
-    public boolean UseMySQL = false;
+    public boolean useMySQL = false;
     String MySQL_host;
     String MySQL_port;
     String MySQL_username;
@@ -54,16 +50,22 @@ public class Settings {
     public String SQL_transaction_table;
     public String SQL_banks_table;
     //Permissions
-    public boolean UseOP;
+    public boolean useOP;
     public PermissionHandler Permissions = null;
-    public boolean UsePermissions;
+    public boolean usePermissions;
     public GroupManager GroupManager = null;
-    public boolean UseGroupManager;
-    public boolean Areas;
-    public boolean SuperAdmins;
-    public boolean DepositAll;
+    public boolean useGroupManager;
+    public boolean areas;
+    public boolean superAdmins;
+    public boolean depositAll;
+    //Interest
+    public int interestTime;
+    public double interestOnlineAmount;
+    public double interestOfflineAmount;
+    public int interestNeededOnline;
+    public boolean multiInterests;
     //Transaction
-    public boolean Transactions;
+    public boolean transactions;
     //Fee
     public PlayerFee OpeningFee;
     public PlayerFee DepositFee;
@@ -72,14 +74,14 @@ public class Settings {
     public PlayerFee ClosingFee;
     public PlayerFee SignFee;
     //Start Amount
-    public boolean StartAmount_Active;
-    public double StartAmount_Fee;
-    public double StartAmount_Static;
+    public boolean startAmount_Active;
+    public double startAmount_Fee;
+    public double startAmount_Static;
     //Account
-    public double MaxAmount;
+    public double maxAmount;
     //Debug messages
-    public boolean Debug_Loan;
-    public boolean Debug_Interest;
+    public boolean debug_Loan;
+    public boolean debug_Interest;
     
     public Settings(BankAccount plugin) {
         this.plugin = plugin;
@@ -102,8 +104,8 @@ public class Settings {
         config = new Configuration(new File(plugin.getDataFolder(), "config.yml"));
         config.load();
         //SQL
-        Transactions = config.getBoolean("SQL-info.Transactions", false);
-        UseMySQL = config.getBoolean("SQL-info.MySQL", false);
+        transactions = config.getBoolean("SQL-info.Transactions", false);
+        useMySQL = config.getBoolean("SQL-info.MySQL", false);
         MySQL_host = config.getString("SQL-info.Host","localhost");
         MySQL_port = config.getString("SQL-info.Port","3306");
         MySQL_username = config.getString("SQL-info.User","root");
@@ -116,14 +118,14 @@ public class Settings {
         SQL_transaction_table = config.getString("SQL-tables.Transaction","banktransactions");
         SQL_banks_table = config.getString("SQL-tables.Banks","banks");
         //Permissions
-        UseOP = config.getBoolean("Permissions.OP",true);
-        UsePermissions = config.getBoolean("Permissions.Permissions",false);
-        UseGroupManager = config.getBoolean("Permissions.GroupManager",false);
-        SuperAdmins = config.getBoolean("Permissions.SuperAdmins", false);
-        DepositAll = config.getBoolean("Permissions.DepositAll", false);
+        useOP = config.getBoolean("Permissions.OP",true);
+        usePermissions = config.getBoolean("Permissions.Permissions",false);
+        useGroupManager = config.getBoolean("Permissions.GroupManager",false);
+        superAdmins = config.getBoolean("Permissions.SuperAdmins", false);
+        depositAll = config.getBoolean("Permissions.DepositAll", false);
         //Interest
-        interestAmount = config.getDouble("Interest.Amount", 0);
-        interestNeededOnline = config.getInt("Interest.Online-limit", 1);
+        interestOnlineAmount = config.getDouble("Interest.DefaultInterest.Online-amount", 0);
+        interestNeededOnline = config.getInt("Interest.DefaultInterest.Online-limit", 1);
         if (interestNeededOnline < 1) {
             interestNeededOnline = 1;
             plugin.console.warning("Interest -> Online-limit must be between 1 and 100");
@@ -133,12 +135,13 @@ public class Settings {
             plugin.console.warning("Interest -> Online-limit must be between 1 and 100");
             plugin.console.info("Interest -> Online-limit set to 100");
         }
-        interestOfflineAmount = config.getDouble("Interest.Offline-amount", 0);
+        interestOfflineAmount = config.getDouble("Interest.DefaultInterest.Offline-amount", 0);
         interestTime = config.getInt("Interest.Time", 0);
+        multiInterests = config.getBoolean("Interest.MultipleInterests", false);
         //Area
-        Areas = config.getBoolean("Areas.Active",false);
-        AreaWandId = config.getInt("Areas.AreaWandid",339);
-        MultiBanks = config.getBoolean("Areas.MultipleBanks", false);
+        areas = config.getBoolean("Areas.Active",false);
+        areaWandId = config.getInt("Areas.AreaWandid",339);
+        multiBanks = config.getBoolean("Areas.MultipleBanks", false);
         //Loan
         plugin.LoanSystem.LoanActive = config.getBoolean("Loan.Active", false);
         plugin.LoanSystem.Fixed_rate = config.getDouble("Loan.Fixed-rate", 0);
@@ -154,19 +157,19 @@ public class Settings {
         ClosingFee = new PlayerFee(stringToType(config.getString("Fee.Closing.Mode","NONE")), config.getDouble("Fee.Closing.Percentage",0), 0, plugin);
         SignFee = new PlayerFee(stringToType(config.getString("Fee.Sign.Mode","NONE")), 0, config.getDouble("Fee.Sign.Static",0), plugin);
         //Start Amount
-        StartAmount_Active = config.getBoolean("StartAmount.Active", false);
-        StartAmount_Fee = config.getDouble("StartAmount.Fee", 0);
-        StartAmount_Static = config.getDouble("StartAmount.Static", 0);
+        startAmount_Active = config.getBoolean("StartAmount.Active", false);
+        startAmount_Fee = config.getDouble("StartAmount.Fee", 0);
+        startAmount_Static = config.getDouble("StartAmount.Static", 0);
         //Account
-        MaxAmount = config.getDouble("Account.MaxAmount", 0);
+        maxAmount = config.getDouble("Account.MaxAmount", 0);
         //Debug
-        Debug_Interest = config.getBoolean("Debug.Interest", true);
-        Debug_Loan = config.getBoolean("Debug.Loan", true);
+        debug_Interest = config.getBoolean("Debug.Interest", true);
+        debug_Loan = config.getBoolean("Debug.Loan", true);
         
         plugin.console.info("Properties Loaded");
         //Load class
         try {
-            if (UseMySQL) {
+            if (useMySQL) {
                 Class.forName("com.mysql.jdbc.Driver");
             } else {
                 Class.forName("org.sqlite.JDBC");
@@ -176,13 +179,13 @@ public class Settings {
         }
         //Try connect to database
         try {
-            if (UseMySQL) {
+            if (useMySQL) {
                 con = DriverManager.getConnection("jdbc:mysql://" + MySQL_host + ":" + MySQL_port + "/" + MySQL_database, MySQL_username, MySQL_password);
             } else {
                 con = DriverManager.getConnection("jdbc:sqlite:" + plugin.myFolder.getAbsolutePath() + "/BankAccount.db");
             }
             try {
-                if (UseMySQL) {
+                if (useMySQL) {
                     selectStmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_UPDATABLE);
                     updateStmt = con.createStatement(ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_UPDATABLE);
                     stmt       = con.createStatement(ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_UPDATABLE);
@@ -224,16 +227,16 @@ public class Settings {
                     if (!checkAccount) {
                         //ACCOUNT TABLE
                         String query = "CREATE TABLE IF NOT EXISTS `" + SQL_account_table + "` (`accountname` VARCHAR( 255 ) NOT NULL , `cleanname` VARCHAR( 255 ) NOT NULL , `owners` LONGTEXT NOT NULL, `users` LONGTEXT NOT NULL, `password` VARCHAR( 255 ) NULL DEFAULT '', `amount` DOUBLE( 255,2 ) NOT NULL DEFAULT '0')";
-                        if (UseMySQL) {
+                        if (useMySQL) {
                             plugin.console.warning("Created table " + SQL_account_table);
                             query = "CREATE TABLE IF NOT EXISTS `" + SQL_account_table + "` (`id` INT( 255 ) NOT NULL AUTO_INCREMENT PRIMARY KEY , `accountname` VARCHAR( 255 ) NOT NULL , `cleanname` VARCHAR( 255 ) NOT NULL , `owners` LONGTEXT NOT NULL, `users` LONGTEXT NOT NULL, `password` VARCHAR( 255 ) NULL DEFAULT '', `amount` DOUBLE( 255,2 ) NOT NULL DEFAULT '0')";
                         }
                         stmt.execute(query);
                     }
-                    if (!checkArea && Areas) {
+                    if (!checkArea && areas) {
                         //AREA TABLE
                         String query = "CREATE TABLE IF NOT EXISTS `" + SQL_area_table + "` (`areaname` VARCHAR( 255 ) NOT NULL , `world` VARCHAR( 255 ) NOT NULL , `x1` INT( 255 ) NOT NULL , `y1` INT( 255 ) NOT NULL , `z1` INT( 255 ) NOT NULL , `x2` INT( 255 ) NOT NULL , `y2` INT( 255 ) NOT NULL , `z2` INT( 255 ) NOT NULL)";
-                        if (UseMySQL) {
+                        if (useMySQL) {
                             plugin.console.warning("Created table " + SQL_area_table);
                             query = "CREATE TABLE IF NOT EXISTS `" + SQL_area_table + "` (`id` INT( 255 ) NOT NULL AUTO_INCREMENT PRIMARY KEY , `areaname` VARCHAR( 255 ) NOT NULL , `world` VARCHAR( 255 ) NOT NULL , `x1` INT( 255 ) NOT NULL , `y1` INT( 255 ) NOT NULL , `z1` INT( 255 ) NOT NULL , `x2` INT( 255 ) NOT NULL , `y2` INT( 255 ) NOT NULL , `z2` INT( 255 ) NOT NULL)";
                         }
@@ -242,40 +245,40 @@ public class Settings {
                     if (!checkLoan && plugin.LoanSystem.LoanActive) {
                         //LOAN TABLE
                         String query = "CREATE TABLE IF NOT EXISTS `" + SQL_loan_table + "` (`player` VARCHAR( 255 ) NOT NULL, `totalamount` DOUBLE( 255,2 ) NOT NULL, `remaining` DOUBLE( 255,2 ) NOT NULL, `timepayment` INT( 255 ) NOT NULL, `timeleft` INT( 255 ) NOT NULL, `part` INT( 255 ) NOT NULL, `parts` INT( 255 ) NOT NULL)";
-                        if (UseMySQL) {
+                        if (useMySQL) {
                             plugin.console.warning("Created table " + SQL_loan_table);
                             query = "CREATE TABLE IF NOT EXISTS `" + SQL_loan_table + "` (`id` INT( 255 ) NOT NULL AUTO_INCREMENT PRIMARY KEY, `player` VARCHAR( 255 ) NOT NULL, `totalamount` DOUBLE( 255,2 ) NOT NULL, `timeleft` INT( 255 ) NOT NULL, `part` INT( 255 ) NOT NULL, `parts` INT( 255 ) NOT NULL)";
                         }
                         stmt.execute(query);
                     }
-                    if (!checkTransaction && Transactions) {
+                    if (!checkTransaction && transactions) {
                         //TRANSACTION TABLE
                         String query = "CREATE TABLE IF NOT EXISTS `" + SQL_transaction_table + "` (`player` VARCHAR( 255 ) NOT NULL, `account` VARCHAR( 255 ) NULL, `type` INT( 255 ) NOT NULL, `amount` DOUBLE( 255,2 ) NULL, `time` INT( 255 ) NOT NULL)";
-                        if (UseMySQL) {
+                        if (useMySQL) {
                             plugin.console.warning("Created table " + SQL_transaction_table);
                             query = "CREATE TABLE IF NOT EXISTS `" + SQL_transaction_table + "` (`id` INT( 255 ) NOT NULL AUTO_INCREMENT PRIMARY KEY , `player` VARCHAR( 255 ) NOT NULL, `account` VARCHAR( 255 ) NULL, `type` INT( 255 ) NOT NULL, `amount` DOUBLE( 255,2 ) NULL, `time` INT( 255 ) NOT NULL)";
                         }
                         stmt.execute(query);
                     }
-                    if (!checkBanks && MultiBanks) {
+                    if (!checkBanks && multiBanks) {
                         //BANKS TABLE
                         String query = "";
-                        if (UseMySQL) {
+                        if (useMySQL) {
                             plugin.console.warning("Created table " + SQL_banks_table);
                             query = "";
                         }
                         stmt.execute(query);
                     }
                     //Run upgrades of SQL tables
-                    new Upgrade(plugin, UseMySQL);
+                    new Upgrade(plugin, useMySQL);
                 } catch (SQLException e3) {
                     if (!checkAccount) {
                         plugin.console.warning("Failed to find and create table " + SQL_account_table);
                     }
-                    if (!checkArea && Areas) {
+                    if (!checkArea && areas) {
                         plugin.console.warning("Failed to find and create table " + SQL_area_table);
                         plugin.console.info("Disabled areas!");
-                        Areas = false;
+                        areas = false;
                     }
                     if (!checkLoan && plugin.LoanSystem.LoanActive) {
                         plugin.console.warning("Failed to find and create table " + SQL_loan_table);
@@ -285,10 +288,10 @@ public class Settings {
                             plugin.LoanSystem.shutdownRunner();
                         }
                     }
-                    if (!checkTransaction && Transactions) {
+                    if (!checkTransaction && transactions) {
                         plugin.console.warning("Failed to find and create table " + SQL_transaction_table);
                         plugin.console.info("Disabled transactions!");
-                        Transactions = false;
+                        transactions = false;
                     }
                     /*
                     if (!checkBanks && MultiBanks) {
@@ -303,7 +306,7 @@ public class Settings {
                     return false;
                 }
             } catch (SQLException e2) {
-                if (UseMySQL) {
+                if (useMySQL) {
                     plugin.console.warning("Failed to connect to MySQL");
                 } else {
                     plugin.console.warning("Failed to connect to SQLite");
@@ -314,7 +317,7 @@ public class Settings {
                 return false;
             }
         } catch (SQLException e1) {
-            if (UseMySQL) {
+            if (useMySQL) {
                 plugin.console.warning("Failed to connect to MySQL");
             } else {
                 plugin.console.warning("Failed to connect to SQLite");

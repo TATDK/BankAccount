@@ -14,6 +14,7 @@ import dk.earthgame.TAT.BankAccount.Enum.AccountCommands;
 import dk.earthgame.TAT.BankAccount.Enum.BankCommands;
 import dk.earthgame.TAT.BankAccount.Enum.PermissionNodes;
 import dk.earthgame.TAT.BankAccount.Enum.TransactionTypes;
+import dk.earthgame.TAT.BankAccount.Features.Bank;
 import dk.earthgame.TAT.BankAccount.Features.Loan;
 import dk.earthgame.TAT.BankAccount.System.UserSave;
 import dk.earthgame.nijikokun.register.payment.Method.MethodAccount;
@@ -47,7 +48,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
 
             if (args.length > 0) {
                 //Are you in an area? (If areas are enabled)
-                if (plugin.settings.Areas) {
+                if (plugin.settings.areas) {
                     AccountCommands foundCommand = AccountCommands.valueOf(args[0].toUpperCase());
                     if (foundCommand != null) {
                         if (foundCommand.getRequireArea() && !plugin.BankAreas.inArea(((Player)sender).getWorld().getName(), ((Player)sender).getLocation())) {
@@ -271,7 +272,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
 
                     if (!plugin.accountExists(args[1])) {
                         sender.sendMessage("ATM: " + ChatColor.RED + "Account not found");
-                    } else if (plugin.accessAccount(args[1], (Player)sender, false) || plugin.settings.DepositAll) {
+                    } else if (plugin.accessAccount(args[1], (Player)sender, false) || plugin.settings.depositAll) {
                         if (Double.parseDouble(args[2]) <= 0.00) {
                             sender.sendMessage("ATM: " + ChatColor.RED + "Please enter value higher than 0");
                             return true;
@@ -505,19 +506,100 @@ public class BankAccountCommandExecutor implements CommandExecutor {
             if (args.length > 0) {
 //CREATE
                 if (args[0].equalsIgnoreCase("create") && args.length >= 2) {
-                    //TODO: /bank create
+                    if (!plugin.playerPermission((Player)sender,PermissionNodes.BANK_CREATE)) {
+                        sender.sendMessage("You don't have permission to use this command");
+                        return true;
+                    }
+
+                    if (plugin.font.stringWidth(args[1]) > 150) {
+                        sender.sendMessage("BankManagement: " + ChatColor.RED + "Bankname to long");
+                    } else if (plugin.bankExists(args[1])) {
+                        sender.sendMessage("BankManagement: " + ChatColor.RED + "Bankname is taken");
+                    } else {
+                        String bankers = "";
+                        bankers += sendername;
+                        if (args.length >= 3) {
+                            for (int i = 3;i<=args.length;i++) {
+                                bankers += ";" + args[i-1];
+                            }
+                        }
+                        if (plugin.openAccount(args[1], bankers, sendername)) {
+                            sender.sendMessage("BankManagement: " + ChatColor.GREEN + args[1] + " created");
+                            bankers = "";
+                            bankers += sendername;
+                            if (args.length >= 3) {
+                                for (int i = 3;i<=args.length;i++) {
+                                    bankers += "," + args[i-1];
+                                }
+                            }
+                            sender.sendMessage(ChatColor.WHITE + "Bankers: " + ChatColor.GREEN + bankers);
+                        } else {
+                            sender.sendMessage("BankManagement: " + ChatColor.RED + "Couldn't create bank");
+                        }
+                    }
 //REMOVE
                 } else if (args[0].equalsIgnoreCase("remove") && args.length >= 2) {
-                    //TODO: /bank remove
+                    if (!plugin.playerPermission((Player)sender,PermissionNodes.BANK_REMOVE)) {
+                        sender.sendMessage("You don't have permission to use this command");
+                        return true;
+                    }
+                    
+                    if (!plugin.bankExists(args[1])) {
+                        sender.sendMessage("BankManagement: " + ChatColor.RED + "Bankname doesn't exists");
+                    } else {
+                        String newbank = "";
+                        if (args.length >= 3)
+                            if (plugin.bankExists(args[2]))
+                                newbank = args[2];
+                        plugin.getBank(args[1]).remove(newbank);
+                        if (newbank == "")
+                            newbank = "Global";
+                        sender.sendMessage("BankManagement: " + ChatColor.GREEN + "Bank removed and replaced by " + newbank);
+                    }
 //ADDBANKER
                 } else if (args[0].equalsIgnoreCase("addbanker") && args.length >= 3) {
-                    //TODO: /bank addbanker
+                    if (!plugin.playerPermission((Player)sender,PermissionNodes.BANK_MANAGE)) {
+                        sender.sendMessage("You don't have permission to use this command");
+                        return true;
+                    }
+                    
+                    if (!plugin.bankExists(args[1])) {
+                        sender.sendMessage("BankManagement: " + ChatColor.RED + "Bankname doesn't exists");
+                    } else {
+                        Bank bank = plugin.getBank(args[1]);
+                        if (bank.addBanker(args[2]))
+                            sender.sendMessage("BankManagement: " + ChatColor.GREEN + "Banker added");
+                        else
+                            sender.sendMessage("BankManagement: " + ChatColor.RED + "Couldn't add banker");
+                    }
 //REMOVEBANKER
                 } else if (args[0].equalsIgnoreCase("removebanker") && args.length >= 3) {
-                    //TODO: /bank removebanker
+                    if (!plugin.playerPermission((Player)sender,PermissionNodes.BANK_MANAGE)) {
+                        sender.sendMessage("You don't have permission to use this command");
+                        return true;
+                    }
+                    
+                    if (!plugin.bankExists(args[1])) {
+                        sender.sendMessage("BankManagement: " + ChatColor.RED + "Bankname doesn't exists");
+                    } else {
+                        Bank bank = plugin.getBank(args[1]);
+                        if (bank.removeBanker(args[2]))
+                            sender.sendMessage("BankManagement: " + ChatColor.GREEN + "Banker removed");
+                        else
+                            sender.sendMessage("BankManagement: " + ChatColor.RED + "Couldn't remove banker");
+                    }
 //INTEREST
-                } else if (args[0].equalsIgnoreCase("interest") && args.length >= 3) {
-                    //TODO: /bank interest
+                } else if (args[0].equalsIgnoreCase("interest") && args.length >= 5) {
+                	if (!plugin.settings.multiInterests) {
+                		sender.sendMessage("BankManagement: " + ChatColor.RED + "Individual interest not enabled");
+                	} else if (!plugin.bankExists(args[1])) {
+                        sender.sendMessage("BankManagement: " + ChatColor.RED + "Bankname doesn't exists");
+                    } else {
+	                	if (plugin.getBank(args[1]).changeInterest(Double.parseDouble(args[2]), Double.parseDouble(args[3]), Integer.parseInt(args[4])))
+	                        sender.sendMessage("BankManagement: " + ChatColor.GREEN + "Interest changed");
+	                    else
+	                        sender.sendMessage("BankManagement: " + ChatColor.RED + "Couldn't change interest");
+                    }
 //AREA
                 } else if (args[0].equalsIgnoreCase("area") && args.length >= 3) {
                     //TODO: /bank area
@@ -555,6 +637,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
      * @see #showHelp(CommandSender sender, int page)
      */
     public void showHelp(Player player, int page) {
+    	List<PermissionNodes> knownPermissions = new ArrayList<PermissionNodes>();
         List<String> acommands = new ArrayList<String>();
         List<String> bcommands = new ArrayList<String>();
         if (plugin.playerPermission(player, PermissionNodes.EXTENDED) || plugin.playerPermission(player, PermissionNodes.ADMIN)) {
@@ -584,8 +667,12 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                 bcommands.add(BankCommands.REMOVE.getDescription());
             } else {
                 for (BankCommands c : BankCommands.values()) {
-                    if (plugin.playerPermission(player, c.getRequiredPermission()))
+                	if (knownPermissions.contains(c.getRequiredPermission())) {
+                		bcommands.add(c.getDescription());
+                	} else if (plugin.playerPermission(player, c.getRequiredPermission())) {
+                    	knownPermissions.add(c.getRequiredPermission());
                         bcommands.add(c.getDescription());
+                    }
                 }
             }
         } else if (plugin.playerPermission(player, PermissionNodes.BASIC)) {
@@ -615,16 +702,29 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                 acommands.add(AccountCommands.PAY.getDescription());
             }
             for (BankCommands c : BankCommands.values()) {
-                if (plugin.playerPermission(player, c.getRequiredPermission()))
+            	if (knownPermissions.contains(c.getRequiredPermission())) {
+            		bcommands.add(c.getDescription());
+            	} else if (plugin.playerPermission(player, c.getRequiredPermission())) {
+                	knownPermissions.add(c.getRequiredPermission());
                     bcommands.add(c.getDescription());
+                }
             }
         } else {
             for (AccountCommands c : AccountCommands.values()) {
-                if (plugin.playerPermission(player, c.getRequiredPermission()))
+            	if (knownPermissions.contains(c.getRequiredPermission())) {
+            		acommands.add(c.getDescription());
+            	} else if (plugin.playerPermission(player, c.getRequiredPermission())) {
+                	knownPermissions.add(c.getRequiredPermission());
                     acommands.add(c.getDescription());
+                }
             }
             for (BankCommands c : BankCommands.values()) {
-                if (plugin.playerPermission(player, c.getRequiredPermission()))
+            	if (knownPermissions.contains(c.getRequiredPermission())) {
+            		bcommands.add(c.getDescription());
+            	} else if (plugin.playerPermission(player, c.getRequiredPermission())) {
+                	knownPermissions.add(c.getRequiredPermission());
+                    bcommands.add(c.getDescription());
+                }
                     bcommands.add(c.getDescription());
             }
         }

@@ -11,7 +11,8 @@ CREATE TABLE `bankaccounts` (
 CREATE TABLE `bankareas` (
   `id` INT( 255 ) NOT NULL AUTO_INCREMENT PRIMARY KEY ,
   `world` VARCHAR( 255 ) NOT NULL,
-  `areaname` VARCHAR( 255 ) NOT NULL ,
+  `areaname` VARCHAR( 255 ) NOT NULL,
+  `bank` INT( 255 ) NOT NULL DEFAULT '0',
   `x1` INT( 255 ) NOT NULL ,
   `y1` INT( 255 ) NOT NULL ,
   `z1` INT( 255 ) NOT NULL ,
@@ -42,5 +43,7 @@ CREATE TABLE `banks` (
   `bankname` VARCHAR( 255 ) NOT NULL ,
   `cleanname` VARCHAR( 255 ) NOT NULL ,
   `bankers` LONGTEXT NOT NULL ,
-  `interest` DOUBLE( 255,2 ) NOT NULL DEFAULT '0'
+  `online-interest` DOUBLE( 255,2 ) NOT NULL DEFAULT '0',
+  `offline-interest` DOUBLE( 255,2 ) NOT NULL DEFAULT '0',
+  `online-amount` INT( 3 ) NOT NULL DEFAULT '0'
 )
