@@ -212,11 +212,14 @@ public class BankAccount extends JavaPlugin {
             if (test != null) {
                 if (test.isEnabled()) {
                     signupdater = (SignUpdater)test;
+                    ATMSign.enabled = true;
+                    BalanceSign.enabled = true;
                     console.info("Established connection with SignUpdater!");
                 }
             }
         }
 
+        ATMSign.load();
         BalanceSign.load();
         UserSaves.load();
     }
@@ -327,6 +330,8 @@ public class BankAccount extends JavaPlugin {
      * @return If the account is successfully created
      */
     public boolean openAccount(String accountname,String owners,String feePayer) {
+    	if (accountExists(accountname))
+    		return false;
     	double feePaid = 0;
         if (settings.OpeningFee.getMode() != FeeModes.NONE && (feePayer.equalsIgnoreCase("") || feePayer != null)) {
             MethodAccount account = Method.getAccount(feePayer);
@@ -476,6 +481,8 @@ public class BankAccount extends JavaPlugin {
      * @return If the account is successfully created
      */
     public boolean createBank(String bankname,String bankers,double interest) {
+    	if (bankExists(bankname))
+    		return false;
         try {
             settings.stmt.executeUpdate("INSERT INTO `" + settings.SQL_banks_table + "` (`bankname`,`cleanname`,`bankers`,`interest`) VALUES ('" + bankname + "','" + bankname.toLowerCase() + "','" + bankers + "','" + interest + "')");
             return true;

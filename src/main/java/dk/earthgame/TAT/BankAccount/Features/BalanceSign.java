@@ -16,6 +16,7 @@ import dk.earthgame.TAT.BankAccount.System.SignLocation;
 import dk.earthgame.TAT.SignUpdater.UpdaterPriority;
 
 public class BalanceSign {
+	public boolean enabled;
 	private BankAccount plugin;
     private HashMap<SignLocation,String> signs = new HashMap<SignLocation, String>();
     
@@ -124,6 +125,22 @@ public class BalanceSign {
             }
         }
         return false;
+    }
+    
+    /**
+     * Get account on sign on location
+     * @param w World
+     * @param l Location
+     * @since 0.6
+     * @return Accountname if fould, else null
+     */
+    public String getAccount(World w,Location l) {
+    	for (Map.Entry<SignLocation, String> sign: signs.entrySet()) {
+            if (sign.getKey().getWorld().equals(w) && sign.getKey().getLocation().equals(l)) {
+                return sign.getValue();
+            }
+        }
+        return null;
     }
     
     /**

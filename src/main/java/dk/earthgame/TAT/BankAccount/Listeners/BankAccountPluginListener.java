@@ -55,6 +55,8 @@ public class BankAccountPluginListener extends ServerListener {
         //SignUpdater
         if (plugin.signupdater != null && pluginname.equalsIgnoreCase("SignUpdater")) {
             plugin.signupdater = null;
+            plugin.ATMSign.enabled = false;
+            plugin.BalanceSign.enabled = false;
             plugin.console.warning("Lost connection with " + plugin + "!");
         }
     }
@@ -104,6 +106,8 @@ public class BankAccountPluginListener extends ServerListener {
             Plugin test = checkPlugin(pluginname);
             if (test != null) {
                 this.plugin.signupdater = (SignUpdater)test;
+                plugin.ATMSign.enabled = true;
+                plugin.BalanceSign.enabled = true;
                 this.plugin.console.info("Established connection with " + plugin + "!");
             }
         }

@@ -19,9 +19,10 @@ public enum PermissionNodes {
     PASSWORD            ("password"),    //Access to set password
     TRANSFER            ("transfer"),    //Access to transfer from own accounts
     LOAN                ("loan"),        //Access to loan money
-    SIGN                ("sign"),        //Access to create BankAccount signs
-    EXTENDED            ("extended"),    //Access to all commands except area commands
+    EXTENDED            ("extended"),    //Access to all commands except area commands and sign creation
     BASIC               ("basic"),       //Access the same as: open,user,deposit,withdraw,list
+    BALANCESIGN         ("sign.balance"),//Access to create BankAccount balancesigns
+    ATMSIGN             ("sign.atm"),    //Access to create BankAccount ATMsigns
     BANK_CREATE         ("bank.create"), //Access to create new banks
     BANK_REMOVE         ("bank.remove"), //Access to remove any bank
     BANK_MANAGE         ("bank.manage"); //Access to manage all banks (add and remove bankers, control interest)

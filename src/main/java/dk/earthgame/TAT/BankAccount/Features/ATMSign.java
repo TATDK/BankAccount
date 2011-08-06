@@ -15,6 +15,7 @@ import dk.earthgame.TAT.BankAccount.BankAccount;
 import dk.earthgame.TAT.BankAccount.System.SignLocation;
 
 public class ATMSign {
+	public boolean enabled;
 	private BankAccount plugin;
     private HashMap<SignLocation,Integer> signs = new HashMap<SignLocation, Integer>();
     
@@ -27,7 +28,7 @@ public class ATMSign {
      * 
      * @since 0.6
      */
-    public void loadSigns() {
+    public void load() {
         File signFile = new File(plugin.getDataFolder(), "ATMSigns.dat");
         if (signFile.exists()) {
             try {
@@ -58,7 +59,7 @@ public class ATMSign {
      * 
      * @since 0.6
      */
-    public void saveSigns() {
+    public void save() {
         try {
             File signFile = new File(plugin.getDataFolder(), "ATMSigns.dat");
             FileWriter writer = new FileWriter(signFile);
@@ -86,7 +87,7 @@ public class ATMSign {
     public void add(World w,Location l) {
         ((Sign)w.getBlockAt(l).getState()).setLine(0, "[BankAccount]");
         signs.put(new SignLocation(w, l),0);
-        saveSigns();
+        save();
     }
     
     /**
@@ -96,13 +97,13 @@ public class ATMSign {
      * @param l Location
      * @since 0.6
      */
-    public void removeSign(World w,Location l) {
+    public void remove(World w,Location l) {
         for (Map.Entry<SignLocation, Integer> sign: signs.entrySet()) {
             if (sign.getKey().getWorld().equals(w) && sign.getKey().getLocation().equals(l)) {
                 signs.remove(sign.getKey());
             }
         }
-        saveSigns();
+        save();
     }
     
     /**
@@ -113,7 +114,7 @@ public class ATMSign {
      * @since 0.6
      * @return true if the sign exists, otherwise false
      */
-    public boolean signExists(World w,Location l) {
+    public boolean exists(World w,Location l) {
         for (Map.Entry<SignLocation, Integer> sign: signs.entrySet()) {
             if (sign.getKey().getWorld().equals(w) && sign.getKey().getLocation().equals(l)) {
                 return true;
