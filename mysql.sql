@@ -8,18 +8,6 @@ CREATE TABLE `bankaccounts` (
   `amount` DOUBLE( 255,2 ) NOT NULL DEFAULT '0',
   `bank` INT( 255 ) NOT NULL DEFAULT '0'
 )
-CREATE TABLE `bankareas` (
-  `id` INT( 255 ) NOT NULL AUTO_INCREMENT PRIMARY KEY ,
-  `world` VARCHAR( 255 ) NOT NULL,
-  `areaname` VARCHAR( 255 ) NOT NULL,
-  `bank` INT( 255 ) NOT NULL DEFAULT '0',
-  `x1` INT( 255 ) NOT NULL ,
-  `y1` INT( 255 ) NOT NULL ,
-  `z1` INT( 255 ) NOT NULL ,
-  `x2` INT( 255 ) NOT NULL ,
-  `y2` INT( 255 ) NOT NULL ,
-  `z2` INT( 255 ) NOT NULL
-)
 CREATE TABLE `bankloans` (
   `id` INT( 255 ) NOT NULL AUTO_INCREMENT PRIMARY KEY ,
   `player` VARCHAR( 255 ) NOT NULL,

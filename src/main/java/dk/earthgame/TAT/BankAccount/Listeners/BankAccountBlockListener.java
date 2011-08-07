@@ -1,9 +1,7 @@
 package dk.earthgame.TAT.BankAccount.Listeners;
 
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
@@ -14,6 +12,7 @@ import org.bukkit.event.block.SignChangeEvent;
 import dk.earthgame.TAT.BankAccount.BankAccount;
 import dk.earthgame.TAT.BankAccount.Enum.FeeModes;
 import dk.earthgame.TAT.BankAccount.Enum.PermissionNodes;
+import dk.earthgame.TAT.BankAccount.System.BALocation;
 import dk.earthgame.nijikokun.register.payment.Method.MethodAccount;
 
 public class BankAccountBlockListener extends BlockListener {
@@ -26,21 +25,20 @@ public class BankAccountBlockListener extends BlockListener {
     @Override
     public void onBlockBreak(BlockBreakEvent event) {
     	if (event.getBlock().getState() instanceof Sign) {
-    		World w = event.getBlock().getWorld();
-    		Location l = event.getBlock().getLocation();
+    		BALocation l = (BALocation)event.getBlock().getLocation();
     		Player p = event.getPlayer();
-    		if (plugin.ATMSign.exists(w, l)) {
+    		if (plugin.ATMSign.exists(l)) {
     			if (plugin.playerPermission(p, PermissionNodes.ATMSIGN)) {
-	    			plugin.ATMSign.remove(w, l);
+	    			plugin.ATMSign.remove(l);
 	    			p.sendMessage("[BankAccount] " + ChatColor.GREEN + "ATMSign removed");
     			} else {
 	    			p.sendMessage("[BankAccount] " + ChatColor.RED + "You don't have permission to remove ATM signs!");
         			event.setCancelled(true);
     			}
     		} 
-    		if (plugin.BalanceSign.exists(w, l)) {
-    			if (plugin.accessAccount(plugin.BalanceSign.getAccount(w, l), p, false) && plugin.playerPermission(p, PermissionNodes.BALANCESIGN)) {
-    				plugin.BalanceSign.remove(w, l);
+    		if (plugin.BalanceSign.exists(l)) {
+    			if (plugin.accessAccount(plugin.BalanceSign.getAccount(l), p, false) && plugin.playerPermission(p, PermissionNodes.BALANCESIGN)) {
+    				plugin.BalanceSign.remove(l);
         			p.sendMessage("[BankAccount] " + ChatColor.GREEN + "Balancesign removed");
     			} else {
 	    			p.sendMessage("[BankAccount] " + ChatColor.RED + "You don't have permission to remove balancesigns!");
@@ -58,6 +56,7 @@ public class BankAccountBlockListener extends BlockListener {
         }
         
         if (event.getLine(0).equalsIgnoreCase("[BankAccount]")) {
+        	BALocation l = (BALocation)event.getBlock().getLocation();
             if (event.getLine(1) != null) {
             	if (event.getLine(1).equalsIgnoreCase("atm")) {
             		if (plugin.playerPermission(p, PermissionNodes.ATMSIGN)) {
@@ -69,7 +68,7 @@ public class BankAccountBlockListener extends BlockListener {
 					                return;
 					        }
 					        p.sendMessage("ATMsign created");
-			                plugin.ATMSign.add(p.getWorld(), event.getBlock().getLocation());
+			                plugin.ATMSign.add(l);
 					    } else {
                 			SignError(event,p,"ATMsign not enabled");
                 		}
@@ -89,14 +88,14 @@ public class BankAccountBlockListener extends BlockListener {
 							                    SignError(event,p,"Couldn't subtract sign creating fee from your account");
 							                } else {
 							                    p.sendMessage("Balancesign created");
-							                    plugin.BalanceSign.add(p.getWorld(), event.getBlock().getLocation(), event.getLine(1));
+							                    plugin.BalanceSign.add(l, event.getLine(1));
 							                }
 							            } else {
 							                SignError(event,p,"You don't have enough money.");
 							            }
 							        } else {
 							            p.sendMessage(ChatColor.GREEN + "Balancesign created");
-							            plugin.BalanceSign.add(p.getWorld(), event.getBlock().getLocation(), event.getLine(1));
+							            plugin.BalanceSign.add(l, event.getLine(1));
 							        }
 							    } else {
 							        SignError(event,p,"You don't have access to this account");

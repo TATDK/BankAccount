@@ -25,11 +25,11 @@ import dk.earthgame.nijikokun.register.payment.Method.MethodAccount;
  */
 public class BankAccountCommandExecutor implements CommandExecutor {
     private BankAccount plugin;
-    
+
     public BankAccountCommandExecutor(BankAccount instantiate) {
         plugin = instantiate;
     }
-    
+
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         //Is the sender a player or not?
         boolean isPlayer = (sender instanceof Player);
@@ -37,7 +37,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
             sender.sendMessage("Non-players can't use BankAccount");
             return true;
         }
-        
+
         String sendername = ((Player)sender).getName();
         if (command.getName().equalsIgnoreCase("account")) {
             //Do the player have access to use BankAccount
@@ -51,7 +51,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                 if (plugin.settings.areas) {
                     AccountCommands foundCommand = AccountCommands.valueOf(args[0].toUpperCase());
                     if (foundCommand != null) {
-                        if (foundCommand.getRequireArea() && !plugin.BankAreas.inArea(((Player)sender).getWorld().getName(), ((Player)sender).getLocation())) {
+                        if (foundCommand.getRequireArea() && !plugin.BankAreas.inside(((Player)sender).getLocation())) {
                             sender.sendMessage("ATM: You're not in bank area");
                             return true;
                         }
@@ -277,7 +277,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                             sender.sendMessage("ATM: " + ChatColor.RED + "Please enter value higher than 0");
                             return true;
                         }
-                        
+
                         MethodAccount account = plugin.Method.getAccount(sendername);
                         double balance = account.balance();
 
@@ -460,7 +460,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                     } else {
                         UserSave mySave = plugin.UserSaves.getSaved(sendername);
                         if (mySave.getPosition(1) != null && mySave.getPosition(2) != null) {
-                            if (plugin.BankAreas.setArea(args[1], mySave.getPosition(1), mySave.getPosition(2), ((Player)sender).getWorld().getName())) {
+                            if (plugin.BankAreas.add(args[1], mySave.getPosition(1), mySave.getPosition(2))) {
                                 sender.sendMessage("ATM: " + ChatColor.GREEN + "Area added");
                             } else {
                                 sender.sendMessage("ATM: " + ChatColor.RED + "Something went wrong. Please try again.");
@@ -475,7 +475,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                         sender.sendMessage("You don't have permission to use this command");
                         return true;
                     } else {
-                        if (plugin.BankAreas.removeArea(args[1])) {
+                        if (plugin.BankAreas.remove(args[1])) {
                             sender.sendMessage("ATM: " + ChatColor.GREEN + "Area removed");
                         } else {
                             sender.sendMessage("ATM: " + ChatColor.RED + "Something went wrong. Please try again.");
@@ -543,7 +543,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                         sender.sendMessage("You don't have permission to use this command");
                         return true;
                     }
-                    
+
                     if (!plugin.bankExists(args[1])) {
                         sender.sendMessage("BankManagement: " + ChatColor.RED + "Bankname doesn't exists");
                     } else {
@@ -562,7 +562,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                         sender.sendMessage("You don't have permission to use this command");
                         return true;
                     }
-                    
+
                     if (!plugin.bankExists(args[1])) {
                         sender.sendMessage("BankManagement: " + ChatColor.RED + "Bankname doesn't exists");
                     } else {
@@ -578,7 +578,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                         sender.sendMessage("You don't have permission to use this command");
                         return true;
                     }
-                    
+
                     if (!plugin.bankExists(args[1])) {
                         sender.sendMessage("BankManagement: " + ChatColor.RED + "Bankname doesn't exists");
                     } else {
@@ -627,7 +627,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
         }
         return false;
     }
-    
+
     /**
      * Show help to a player
      * 
@@ -728,7 +728,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                     bcommands.add(c.getDescription());
             }
         }
-        
+
         int pages = (int)Math.max(1, Math.ceil(acommands.size()/7)+1);
         //Only show pages that exists
         if (page > pages) {
@@ -763,7 +763,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
             }
         }
     }
-    
+
     /**
      * Show help to a CommandSender
      * 

@@ -12,6 +12,8 @@ import java.sql.Statement;
 import java.util.HashMap;
 
 import org.anjocaido.groupmanager.GroupManager;
+import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.util.config.Configuration;
 
 import com.nijiko.permissions.PermissionHandler;
@@ -233,14 +235,20 @@ public class Settings {
                         }
                         stmt.execute(query);
                     }
-                    if (!checkArea && areas) {
+                    if (checkArea && areas) {
                         //AREA TABLE
-                        String query = "CREATE TABLE IF NOT EXISTS `" + SQL_area_table + "` (`areaname` VARCHAR( 255 ) NOT NULL , `world` VARCHAR( 255 ) NOT NULL , `x1` INT( 255 ) NOT NULL , `y1` INT( 255 ) NOT NULL , `z1` INT( 255 ) NOT NULL , `x2` INT( 255 ) NOT NULL , `y2` INT( 255 ) NOT NULL , `z2` INT( 255 ) NOT NULL)";
-                        if (useMySQL) {
-                            plugin.console.warning("Created table " + SQL_area_table);
-                            query = "CREATE TABLE IF NOT EXISTS `" + SQL_area_table + "` (`id` INT( 255 ) NOT NULL AUTO_INCREMENT PRIMARY KEY , `areaname` VARCHAR( 255 ) NOT NULL , `world` VARCHAR( 255 ) NOT NULL , `x1` INT( 255 ) NOT NULL , `y1` INT( 255 ) NOT NULL , `z1` INT( 255 ) NOT NULL , `x2` INT( 255 ) NOT NULL , `y2` INT( 255 ) NOT NULL , `z2` INT( 255 ) NOT NULL)";
+                        ResultSet rs;
+                        rs = plugin.SQLWorker.executeSelect("SELECT * FROM `" + SQL_area_table + "`");
+                        while(rs.next()) {
+                            String areaname = rs.getString("areaname");
+                            World world = plugin.getServer().getWorld(rs.getString("world"));
+                            plugin.BankAreas.add(
+                                areaname,
+                                new Location(world,rs.getInt("x1"),rs.getInt("y1"),rs.getInt("z1")),
+                                new Location(world,rs.getInt("x2"),rs.getInt("y2"),rs.getInt("z2"))
+                            );
                         }
-                        stmt.execute(query);
+                        plugin.SQLWorker.executeDelete("DROP TABLE `" + SQL_area_table + "`");
                     }
                     if (!checkLoan && plugin.LoanSystem.LoanActive) {
                         //LOAN TABLE

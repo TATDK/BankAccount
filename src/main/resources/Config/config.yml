@@ -24,7 +24,7 @@ SQL-info:
     Database: minecraft
 
 ##
-#Config: SQL-tables (Account / Area / Loan / Transaction)
+#Config: SQL-tables (Account / Area / Loan / Transaction / Banks)
 #Doing: Names of SQL tables
 ##
 SQL-tables:

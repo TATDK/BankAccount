@@ -27,9 +27,7 @@ public class Account {
      * @since 0.6
      * @return Account name
      */
-    public String getName() {
-        return name;
-    }
+    public String getName() { return name; }
     
     /**
      * Get bank of account
@@ -282,7 +280,6 @@ public class Account {
      * @param password Password
      * @since 0.5
      * @return If the account is successfully closed
-     * @throws BankAccountException 
      */
     public boolean close(String player,String password) {
         if (plugin.PasswordSystem.passwordCheck(name, password)) {
@@ -322,7 +319,6 @@ public class Account {
      * 
      * @since 0.5
      * @return String of users (seperated by comma and space(, ))
-     * @throws BankAccountException 
      */
     public String getUsers() {
         try {
@@ -351,7 +347,6 @@ public class Account {
      * 
      * @since 0.5
      * @return String of owners (seperated by comma and space(, ))
-     * @throws BankAccountException 
      */
     public String getOwners() {
         try {
@@ -380,7 +375,6 @@ public class Account {
      * 
      * @since 0.5
      * @return double - Amount of money on account
-     * @throws BankAccountException 
      */
     public double getBalance() {
         try {
@@ -401,7 +395,6 @@ public class Account {
      * @param balance New balance
      * @since 0.5
      * @return If the account balance is successfully changed
-     * @throws BankAccountException 
      */
     public boolean setBalance(double balance) {
         try {
@@ -425,7 +418,6 @@ public class Account {
      * @param amount Amount of money that shall be added
      * @since 0.5
      * @return If the money is successfully added
-     * @throws BankAccountException 
      */
     public boolean add(double amount) {
         double temp = getBalance();
@@ -449,7 +441,6 @@ public class Account {
      * @param amount Amount of money that shall be subtracted
      * @since 0.5
      * @return If the money is successfully subtracted
-     * @throws BankAccountException 
      */
     public boolean subtract(double amount) {
         double temp = getBalance();

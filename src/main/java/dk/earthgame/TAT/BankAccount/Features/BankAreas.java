@@ -1,63 +1,98 @@
 package dk.earthgame.TAT.BankAccount.Features;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.util.ArrayList;
+import java.util.List;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.util.Vector;
 
-public class BankAreas {
-	private dk.earthgame.TAT.BankAccount.BankAccount plugin;
-	
-	public BankAreas(dk.earthgame.TAT.BankAccount.BankAccount instantiate) {
-		plugin = instantiate;
-	}
+import dk.earthgame.TAT.BankAccount.BankAccount;
+import dk.earthgame.TAT.BankAccount.System.BALocation;
 
-	/**
+public class BankAreas {
+    private BankAccount plugin;
+    private String filename = "Areas.dat";
+    private List<Area> areas = new ArrayList<Area>();
+
+    public BankAreas(dk.earthgame.TAT.BankAccount.BankAccount instantiate) {
+        plugin = instantiate;
+    }
+
+    /**
+     * Load bank areas from .dat file
+     * @since 0.6
+     */
+    public void load() {
+        File signFile = new File(plugin.getDataFolder(), filename);
+        if (signFile.exists()) {
+            try {
+                FileReader fr = new FileReader(signFile);
+                BufferedReader reader = new BufferedReader(fr);
+                String s;
+                int line = 0;
+                areas.clear();
+                while ((s = reader.readLine()) != null) {
+                    line++;
+                    String[] args = s.split(",");
+                    if (args.length == 9) {
+                        World w = plugin.getServer().getWorld(args[0]);
+                        areas.add(new Area(
+                            args[8],
+                            new BALocation(w, Integer.parseInt(args[1]), Integer.parseInt(args[2]), Integer.parseInt(args[3])),
+                            new BALocation(w, Integer.parseInt(args[4]), Integer.parseInt(args[5]), Integer.parseInt(args[6])),
+                            Integer.parseInt(args[7])));
+                    } else {
+                        plugin.console.warning(filename + " contains errors on line " + line);
+                    }
+                }
+                fr.close();
+            } catch (Exception e) {
+                plugin.console.warning("Error loading " + filename);
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Save bank areas to .dat file
+     * @since 0.6
+     */
+    public void save() {
+        try {
+            File signFile = new File(plugin.getDataFolder(), filename);
+            FileWriter writer = new FileWriter(signFile);
+            for (Area area: areas) {
+                BALocation pos1 = (BALocation)area.getLocation(1);
+                BALocation pos2 = (BALocation)area.getLocation(2);
+                writer.write(pos1.locOutput() + "," + pos2.locOutput(",",false) + "," + area.getBankID() + "," + area.getName() + "\n");
+            }
+            writer.flush();
+            writer.close();
+        } catch (Exception e) {
+            plugin.console.warning("Can't save to " + filename);
+            e.printStackTrace();
+        }
+    }
+
+    /**
      * Does an area exists
      * 
      * @param name Name of area
      * @since 0.5
      * @return If the area exists
-     * @throws BankAccountException 
      */
-    public boolean areaExists(String name) {
-        ResultSet rs;
-        int id = 0;
-        try {
-            if (plugin.settings.useMySQL) {
-                rs = plugin.settings.stmt.executeQuery("SELECT `id` FROM `" + plugin.settings.SQL_area_table + "` WHERE `areaname` = '" + name + "'");
-            } else {
-                rs = plugin.settings.stmt.executeQuery("SELECT `rowid` FROM `" + plugin.settings.SQL_area_table + "` WHERE `areaname` = '" + name + "'");
-            }
-            try {
-                while (rs.next()) {
-                    if (plugin.settings.useMySQL) {
-                        id = rs.getInt("id");
-                    } else {
-                        id = rs.getInt("rowid");
-                    }
-                }
-            } catch (SQLException e1) {
-                if (!e1.getMessage().equalsIgnoreCase(null))
-                	plugin.console.warning("Error #14-5: " + e1.getMessage());
-                else
-                	plugin.console.warning("Error #14-4: " + e1.getErrorCode() + " - " + e1.getSQLState());
-            }
-        } catch (SQLException e) {
-            if (!e.getMessage().equalsIgnoreCase(null))
-            	plugin.console.warning("Error #14-3: " + e.getMessage());
-            else
-            	plugin.console.warning("Error #14-2: " + e.getErrorCode() + " - " + e.getSQLState());
-        } catch (Exception e) {
-        	plugin.console.warning("Error #14-1: " + e.toString());
-        }
-        if (id > 0) {
-            return true;
+    public boolean exists(String name) {
+        for (Area area: areas) {
+            if (area.getName().equalsIgnoreCase(name))
+                return true;
         }
         return false;
     }
-    
+
     /**
      * Are the position inside an area
      * 
@@ -65,67 +100,44 @@ public class BankAreas {
      * @param pos Position
      * @since 0.5
      * @return If the position is inside an area
-     * @throws BankAccountException 
      */
-    public boolean inArea(String world,Location pos) {
-        try {
-            ResultSet rs = plugin.settings.stmt.executeQuery("SELECT `x1`,`y1`,`z1`,`x2`,`y2`,`z2` FROM `" + plugin.settings.SQL_area_table + "` WHERE `world` = '" + world + "'");
-            while (rs.next()) {
-                Vector min = new Vector(
-                    Math.min(rs.getInt("x1"), rs.getInt("x2")),
-                    Math.min(rs.getInt("y1"), rs.getInt("y2")),
-                    Math.min(rs.getInt("z1"), rs.getInt("z2"))
-                );
-                Vector max = new Vector(
-                    Math.max(rs.getInt("x1"), rs.getInt("x2")),
-                    Math.max(rs.getInt("y1"), rs.getInt("y2")),
-                    Math.max(rs.getInt("z1"), rs.getInt("z2"))
-                );
-                
-                if (pos.getBlockX() >= min.getBlockX() && pos.getBlockX() <= max.getBlockX() &&
-                    pos.getBlockY() >= min.getBlockY() && pos.getBlockY() <= max.getBlockY() &&
-                    pos.getBlockZ() >= min.getBlockZ() && pos.getBlockZ() <= max.getBlockZ()) {
-                    return true;
-                }
+    public boolean inside(Location pos) {
+        for (Area area: areas) {
+            Vector min = new Vector(
+                Math.min(area.getLocation(1).getBlockX(), area.getLocation(2).getBlockX()),
+                Math.min(area.getLocation(1).getBlockY(), area.getLocation(2).getBlockY()),
+                Math.min(area.getLocation(1).getBlockZ(), area.getLocation(2).getBlockZ())
+            );
+            Vector max = new Vector(
+                Math.max(area.getLocation(1).getBlockX(), area.getLocation(2).getBlockX()),
+                Math.max(area.getLocation(1).getBlockY(), area.getLocation(2).getBlockY()),
+                Math.max(area.getLocation(1).getBlockZ(), area.getLocation(2).getBlockZ())
+            );
+
+            if (pos.getBlockX() >= min.getBlockX() && pos.getBlockX() <= max.getBlockX() &&
+                pos.getBlockY() >= min.getBlockY() && pos.getBlockY() <= max.getBlockY() &&
+                pos.getBlockZ() >= min.getBlockZ() && pos.getBlockZ() <= max.getBlockZ()) {
+                return true;
             }
-        } catch(SQLException e) {
-            if (!e.getMessage().equalsIgnoreCase(null))
-            	plugin.console.warning("Error #15-3: " + e.getMessage());
-            else
-            	plugin.console.warning("Error #15-2: " + e.getErrorCode() + " - " + e.getSQLState());
-        } catch (Exception e) {
-        	plugin.console.warning("Error #15-1: " + e.toString());
         }
         return false;
     }
-    
+
     /**
      * Add an area
      * 
      * @param name Name of area
      * @param pos1 Position 1
      * @param pos2 Position 2
-     * @param world Name of world
      * @since 0.5
      * @return If the area is successfully added
-     * @throws BankAccountException 
      */
-    public boolean setArea(String name,Location pos1,Location pos2,String world) {
-        if (areaExists(name)) {
+    public boolean add(String name,Location pos1,Location pos2) {
+        if (exists(name))
             return false;
-        }
-        try {
-        	plugin.settings.stmt.executeUpdate("INSERT INTO `" + plugin.settings.SQL_area_table + "` (`areaname`,`world`,`x1`, `y1`, `z1`, `x2`, `y2`, `z2`) VALUES ('" + name + "','" + world + "','" + pos1.getBlockX() + "','" + pos1.getBlockY() + "','" + pos1.getBlockZ() + "','" + pos2.getBlockX() + "','" + pos2.getBlockY() + "','" + pos2.getBlockZ() + "')");
-            return true;
-        } catch (SQLException e) {
-            if (!e.getMessage().equalsIgnoreCase(null))
-            	plugin.console.warning("Error #12-3: " + e.getMessage());
-            else
-            	plugin.console.warning("Error #12-2: " + e.getErrorCode() + " - " + e.getSQLState());
-        } catch (Exception e) {
-        	plugin.console.warning("Error #12-1: " + e.toString());
-        }
-        return false;
+        areas.add(new Area(name,pos1,pos2,0));
+        save();
+        return true;
     }
 
     /**
@@ -134,19 +146,14 @@ public class BankAreas {
      * @param name Name of area
      * @since 0.5
      * @return If the area is successfully removed
-     * @throws BankAccountException 
      */
-    public boolean removeArea(String name) {
-        try {
-        	plugin.settings.stmt.executeUpdate("DELETE FROM `" + plugin.settings.SQL_area_table + "` WHERE `areaname` = '" + name + "'");
-            return true;
-        } catch(SQLException e) {
-            if (!e.getMessage().equalsIgnoreCase(null))
-            	plugin.console.warning("Error #13-3: " + e.getMessage());
-            else
-            	plugin.console.warning("Error #13-2: " + e.getErrorCode() + " - " + e.getSQLState());
-        } catch (Exception e) {
-        	plugin.console.warning("Error #13-1: " + e.toString());
+    public boolean remove(String name) {
+        for (Area a : areas) {
+            if (a.getName().equalsIgnoreCase(name)) {
+                areas.remove(a);
+                save();
+                return true;
+            }
         }
         return false;
     }
