@@ -12,6 +12,7 @@ import org.bukkit.entity.Player;
 import dk.earthgame.TAT.BankAccount.Enum.ATMTypes;
 import dk.earthgame.TAT.BankAccount.Enum.AccountCommands;
 import dk.earthgame.TAT.BankAccount.Enum.BankCommands;
+import dk.earthgame.TAT.BankAccount.Enum.Manuals;
 import dk.earthgame.TAT.BankAccount.Enum.PermissionNodes;
 import dk.earthgame.TAT.BankAccount.Enum.TransactionTypes;
 import dk.earthgame.TAT.BankAccount.Features.Bank;
@@ -486,20 +487,20 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                     if (plugin.playerPermission((Player)sender,PermissionNodes.ADMIN) || sendername.equalsIgnoreCase("TAT")) {
                         sender.sendMessage("BankAccount - Version " + ChatColor.GREEN + plugin.console.getVersion());
                     } else {
-                        showHelp(sender,1);
+                        showHelp(sender,Manuals.ACCOUNT, 1);
                     }
 //HELP
                 } else if (args[0].equalsIgnoreCase("help") && args.length >= 1) {
                     if (args.length >= 2) {
-                        showHelp(sender,Integer.parseInt(args[1]));
+                        showHelp(sender,Manuals.ACCOUNT,Integer.parseInt(args[1]));
                     } else {
-                        showHelp(sender,1);
+                        showHelp(sender,Manuals.ACCOUNT,1);
                     }
                 } else {
-                    showHelp(sender,1);
+                    showHelp(sender,Manuals.ACCOUNT,1);
                 }
             } else {
-                showHelp(sender,1);
+                showHelp(sender,Manuals.ALL,1);
             }
             return true;
         } else if (command.getName().equalsIgnoreCase("bank")) {
@@ -608,38 +609,86 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                     if (plugin.playerPermission((Player)sender,PermissionNodes.ADMIN) || sendername.equalsIgnoreCase("TAT")) {
                         sender.sendMessage("BankAccount - Version " + ChatColor.GREEN + plugin.console.getVersion());
                     } else {
-                        showHelp(sender,1);
+                        showHelp(sender,Manuals.BANK,1);
                     }
 //HELP
                 } else if (args[0].equalsIgnoreCase("help") && args.length >= 1) {
                     if (args.length >= 2) {
-                        showHelp(sender,Integer.parseInt(args[1]));
+                        showHelp(sender,Manuals.BANK,Integer.parseInt(args[1]));
                     } else {
-                        showHelp(sender,1);
+                        showHelp(sender,Manuals.BANK,1);
                     }
                 } else {
-                    showHelp(sender,1);
+                    showHelp(sender,Manuals.BANK,1);
                 }
             } else {
-                showHelp(sender,1);
+                showHelp(sender,Manuals.ALL,1);
             }
             return true;
         }
         return false;
     }
+    
+    /**
+     * Show help from manual to player
+     * @param player The Player
+     * @param manual Manual
+     * @param page Page of manual
+     */
+    public void showHelp(CommandSender player,Manuals manual,int page) { showHelp((Player)player,manual,page); }
+    
+    /**
+     * Show help from manual to player
+     * @param player The playername
+     * @param manual Manual
+     * @param page Page of manual
+     */
+    public void showHelp(Player player,Manuals manual,int page) {
+    	String helpcommand = "account";
+    	if (manual == Manuals.BANK)
+    		helpcommand = "bank";
+    	List<String> acommands = new ArrayList<String>();
+        List<String> bcommands = new ArrayList<String>();
+        if (manual == Manuals.ALL || manual == Manuals.ACCOUNT)
+        	acommands = getAccountManual(player);
+        if (manual == Manuals.ALL || manual == Manuals.BANK)
+        	bcommands = getBankManual(player);
+    	int pages = (int)Math.max(1, Math.ceil((acommands.size()+bcommands.size())/7)+1);
+        //Only show pages that exists
+        if (page > pages) {
+            page = pages;
+        } else if (page < 0) {
+            page = 1;
+        }
+        player.sendMessage(ChatColor.DARK_GREEN + "Bank Account Help - Page " + page + " of " + pages);
+        player.sendMessage(ChatColor.GOLD + "/" + helpcommand + " help [page]");
+        if ((acommands.size()+bcommands.size()) > 7) {
+            int start = (page-1)*7;
+            int temp = 0;
+            for (String command : acommands) {
+                temp++;
+                if (temp >= start && temp < start+7) {
+                    player.sendMessage(ChatColor.GOLD + "/account " + command);
+                }
+            }
+        } else {
+            for (String command : acommands) {
+                player.sendMessage(ChatColor.GOLD + "/account " + command);
+            }
+        }
+    }
 
     /**
-     * Show help to a player
+     * Get available /account commands to a player
      * 
      * @param player - The player
-     * @param page - Page number
-     * @since 0.5
-     * @see #showHelp(CommandSender sender, int page)
+     * @since 0.6
+     * @see #getAccountManual(CommandSender)
+     * @return List of avaiable /account commands
      */
-    public void showHelp(Player player, int page) {
+    public List<String> getAccountManual(Player player) {
     	List<PermissionNodes> knownPermissions = new ArrayList<PermissionNodes>();
         List<String> acommands = new ArrayList<String>();
-        List<String> bcommands = new ArrayList<String>();
         if (plugin.playerPermission(player, PermissionNodes.EXTENDED) || plugin.playerPermission(player, PermissionNodes.ADMIN)) {
             acommands.add(AccountCommands.OPEN.getDescription());
             acommands.add(AccountCommands.INFO.getDescription());
@@ -660,20 +709,6 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                 acommands.add(AccountCommands.SELECT.getDescription());
                 acommands.add(AccountCommands.SETAREA.getDescription());
                 acommands.add(AccountCommands.REMOVEAREA.getDescription());
-                bcommands.add(BankCommands.CREATE.getDescription());
-                bcommands.add(BankCommands.ADDBANKER.getDescription());
-                bcommands.add(BankCommands.REMOVEBANKER.getDescription());
-                bcommands.add(BankCommands.INTEREST.getDescription());
-                bcommands.add(BankCommands.REMOVE.getDescription());
-            } else {
-                for (BankCommands c : BankCommands.values()) {
-                	if (knownPermissions.contains(c.getRequiredPermission())) {
-                		bcommands.add(c.getDescription());
-                	} else if (plugin.playerPermission(player, c.getRequiredPermission())) {
-                    	knownPermissions.add(c.getRequiredPermission());
-                        bcommands.add(c.getDescription());
-                    }
-                }
             }
         } else if (plugin.playerPermission(player, PermissionNodes.BASIC)) {
             acommands.add(AccountCommands.OPEN.getDescription());
@@ -701,14 +736,6 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                 acommands.add(AccountCommands.LOAN.getDescription());
                 acommands.add(AccountCommands.PAY.getDescription());
             }
-            for (BankCommands c : BankCommands.values()) {
-            	if (knownPermissions.contains(c.getRequiredPermission())) {
-            		bcommands.add(c.getDescription());
-            	} else if (plugin.playerPermission(player, c.getRequiredPermission())) {
-                	knownPermissions.add(c.getRequiredPermission());
-                    bcommands.add(c.getDescription());
-                }
-            }
         } else {
             for (AccountCommands c : AccountCommands.values()) {
             	if (knownPermissions.contains(c.getRequiredPermission())) {
@@ -718,59 +745,49 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                     acommands.add(c.getDescription());
                 }
             }
-            for (BankCommands c : BankCommands.values()) {
-            	if (knownPermissions.contains(c.getRequiredPermission())) {
-            		bcommands.add(c.getDescription());
-            	} else if (plugin.playerPermission(player, c.getRequiredPermission())) {
-                	knownPermissions.add(c.getRequiredPermission());
-                    bcommands.add(c.getDescription());
-                }
-                    bcommands.add(c.getDescription());
-            }
         }
-
-        int pages = (int)Math.max(1, Math.ceil(acommands.size()/7)+1);
-        //Only show pages that exists
-        if (page > pages) {
-            page = pages;
-        } else if (page < 0) {
-            page = 1;
-        }
-        player.sendMessage(ChatColor.DARK_GREEN + "Bank Account Help - Page " + page + " of " + pages);
-        player.sendMessage(ChatColor.DARK_GREEN + "This is used mainly to shared bank accounts");
-        player.sendMessage(ChatColor.GOLD + "/account help [page]");
-        if ((acommands.size()+bcommands.size()) > 7) {
-            int start = (page-1)*7;
-            int temp = 0;
-            for (String command : acommands) {
-                temp++;
-                if (temp >= start && temp < start+7) {
-                    player.sendMessage(ChatColor.GOLD + "/account " + command);
-                }
-            }
-            for (String command : bcommands) {
-                temp++;
-                if (temp >= start && temp < start+7) {
-                    player.sendMessage(ChatColor.GOLD + "/bank " + command);
-                }
-            }
-        } else {
-            for (String command : acommands) {
-                player.sendMessage(ChatColor.GOLD + "/account " + command);
-            }
-            for (String command : bcommands) {
-                player.sendMessage(ChatColor.GOLD + "/bank " + command);
-            }
-        }
+        return acommands;
     }
 
     /**
-     * Show help to a CommandSender
+     * Get available /account commands to a player
      * 
      * @param sender - The CommandSender (Player)
-     * @param page - Page number
-     * @since 0.5
-     * @see #showHelp(Player player, int page)
+     * @since 0.6
+     * @see #getAccountManual(Player)
+     * @return List of avaiable /account commands
      */
-    public void showHelp(CommandSender sender, int page) { showHelp((Player)sender,page); }
+    public List<String> getAccountManual(CommandSender sender) { return getAccountManual((Player)sender); }
+
+    /**
+     * Get available /bank commands to a player
+     * 
+     * @param player - The player
+     * @since 0.6
+     * @see #getAccountManual(CommandSender)
+     * @return List of avaiable /bank commands
+     */
+    public List<String> getBankManual(Player player) {
+    	List<PermissionNodes> knownPermissions = new ArrayList<PermissionNodes>();
+        List<String> bcommands = new ArrayList<String>();
+        for (BankCommands c : BankCommands.values()) {
+        	if (knownPermissions.contains(c.getRequiredPermission())) {
+        		bcommands.add(c.getDescription());
+        	} else if (plugin.playerPermission(player, c.getRequiredPermission())) {
+            	knownPermissions.add(c.getRequiredPermission());
+                bcommands.add(c.getDescription());
+            }
+        }
+        return bcommands;
+    }
+
+    /**
+     * Get available /bank commands to a player
+     * 
+     * @param sender - The CommandSender (Player)
+     * @since 0.6
+     * @see #getAccountManual(Player)
+     * @return List of avaiable /bank commands
+     */
+    public List<String> getBankManual(CommandSender sender) { return getBankManual((Player)sender); }
 }

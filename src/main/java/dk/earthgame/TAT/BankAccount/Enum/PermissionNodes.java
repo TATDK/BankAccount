@@ -7,7 +7,7 @@ package dk.earthgame.TAT.BankAccount.Enum;
  */
 public enum PermissionNodes {
     ACCESS              ("access"),      //Access to allow user to use BankAccount.
-                                                     //Overrides all other Bankaccount permissions
+                                         //Overrides all other Bankaccount permissions
     ADMIN               ("admin"),       //Access to all commands and accounts (if SuperAdmin is enabled)
     AREA                ("area"),        //Access to area commands
     OPEN                ("open"),        //Access to open own accounts + show balance
@@ -19,7 +19,7 @@ public enum PermissionNodes {
     PASSWORD            ("password"),    //Access to set password
     TRANSFER            ("transfer"),    //Access to transfer from own accounts
     LOAN                ("loan"),        //Access to loan money
-    EXTENDED            ("extended"),    //Access to all commands except area commands and sign creation
+    EXTENDED            ("extended"),    //Access to all account commands except area commands
     BASIC               ("basic"),       //Access the same as: open,user,deposit,withdraw,list
     BALANCESIGN         ("sign.balance"),//Access to create BankAccount balancesigns
     ATMSIGN             ("sign.atm"),    //Access to create BankAccount ATMsigns

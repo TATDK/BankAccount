@@ -14,6 +14,10 @@ public class BALocation extends Location {
 		super(world, x, y, z);
 	}
     
+    public BALocation(Location l) {
+    	super(l.getWorld(),l.getX(),l.getY(),l.getZ());
+    }
+    
     /**
      * Get location in output separated simply by comma (,)
      * @return Location of sign (x,y,z)

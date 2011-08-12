@@ -457,4 +457,16 @@ public class Account {
         }
         return false;
     }
+    
+    /**
+     * Check if the account have password protection
+     * @since 0.6
+     * @return true if protected; else false
+     */
+    public boolean havePassword() {
+    	if (plugin.PasswordSystem.passwordCheck(name, "")) {
+    		return false;
+    	}
+    	return true;
+    }
 }

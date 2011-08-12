@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.Location;
 import org.bukkit.block.Sign;
@@ -18,7 +19,7 @@ public class BalanceSign {
     public boolean enabled;
     private BankAccount plugin;
     private String filename = "BalanceSigns.dat";
-    private HashMap<BALocation,String> signs = new HashMap<BALocation, String>();
+    private ConcurrentHashMap<BALocation,String> signs = new ConcurrentHashMap<BALocation, String>();
     
     public BalanceSign(BankAccount instantiate) {
     	plugin = instantiate;
@@ -86,7 +87,6 @@ public class BalanceSign {
      * @since 0.6
      */
     public void add(Location l,String accountname) {
-        ((Sign)l.getBlock().getState()).setLine(0, "[BankAccount]");
         signs.put((BALocation)l, accountname);
         update(accountname);
         save();
@@ -200,18 +200,13 @@ public class BalanceSign {
             if (sign.getValue().equalsIgnoreCase(accountname)) {
                 BALocation sl = sign.getKey();
                 if (sl.getBlock().getState() instanceof Sign) {
-                    Sign foundSign = (Sign) sl.getBlock().getState();
-                    if (foundSign.getLine(0).equalsIgnoreCase("[BankAccount]")) {
-                        if (plugin.accountExists(foundSign.getLine(1))) {
-                            String[] lines = {foundSign.getLine(0), sign.getValue(), plugin.Method.format(balance), ""};
-                            plugin.signupdater.AddSignUpdate(UpdaterPriority.NORMAL, foundSign, lines);
-                        } else {
-                            String[] lines = {foundSign.getLine(0), sign.getValue(), "Account closed", ""};
-                            plugin.signupdater.AddSignUpdate(UpdaterPriority.NORMAL, foundSign, lines);
-                        }
+                    Sign foundSign = (Sign)sl.getBlock().getState();
+                    if (plugin.accountExists(sign.getValue())) {
+                        String[] lines = {"[BankAccount]", sign.getValue(), plugin.Method.format(balance), ""};
+                        plugin.signupdater.AddSignUpdate(UpdaterPriority.NORMAL, foundSign, lines);
                     } else {
-                        remove(sl);
-                        plugin.console.warning("Sign in world " + sl.getWorld().getName() + " at " + sl.locOutput(", ",false) + " can't be found - removed");
+                        String[] lines = {"[BankAccount]", sign.getValue(), "Account closed", ""};
+                        plugin.signupdater.AddSignUpdate(UpdaterPriority.NORMAL, foundSign, lines);
                     }
                 } else {
                     remove(sl);

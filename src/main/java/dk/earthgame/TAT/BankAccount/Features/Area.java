@@ -16,8 +16,8 @@ public class Area {
     
     public Area(String name,Location pos1,Location pos2,int bankID) {
         this.name = name;
-        this.pos1 = (BALocation)pos1;
-        this.pos2 = (BALocation)pos2;
+        this.pos1 = new BALocation(pos1);
+        this.pos2 = new BALocation(pos2);
         this.bankID = bankID;
     }
     

@@ -25,7 +25,7 @@ public class BankAccountBlockListener extends BlockListener {
     @Override
     public void onBlockBreak(BlockBreakEvent event) {
     	if (event.getBlock().getState() instanceof Sign) {
-    		BALocation l = (BALocation)event.getBlock().getLocation();
+    		BALocation l = new BALocation(event.getBlock().getLocation());
     		Player p = event.getPlayer();
     		if (plugin.ATMSign.exists(l)) {
     			if (plugin.playerPermission(p, PermissionNodes.ATMSIGN)) {
@@ -51,12 +51,11 @@ public class BankAccountBlockListener extends BlockListener {
     @Override
     public void onSignChange(SignChangeEvent event) {
         Player p = event.getPlayer();
-        if (!(p instanceof Player)) {
+        if (!(p instanceof Player))
             return;
-        }
         
         if (event.getLine(0).equalsIgnoreCase("[BankAccount]")) {
-        	BALocation l = (BALocation)event.getBlock().getLocation();
+        	BALocation l = new BALocation(event.getBlock().getLocation());
             if (event.getLine(1) != null) {
             	if (event.getLine(1).equalsIgnoreCase("atm")) {
             		if (plugin.playerPermission(p, PermissionNodes.ATMSIGN)) {
@@ -88,31 +87,25 @@ public class BankAccountBlockListener extends BlockListener {
 							                    SignError(event,p,"Couldn't subtract sign creating fee from your account");
 							                } else {
 							                    p.sendMessage("Balancesign created");
-							                    plugin.BalanceSign.add(l, event.getLine(1));
+							                    plugin.BalanceSign.add(l, event.getLine(2));
 							                }
-							            } else {
+							            } else
 							                SignError(event,p,"You don't have enough money.");
-							            }
 							        } else {
 							            p.sendMessage(ChatColor.GREEN + "Balancesign created");
-							            plugin.BalanceSign.add(l, event.getLine(1));
+							            plugin.BalanceSign.add(l, event.getLine(2));
 							        }
-							    } else {
+							    } else
 							        SignError(event,p,"You don't have access to this account");
-							    }
-							} else {
+							} else
 							    SignError(event,p,"Account doens't exists");
-							}
-                		} else {
+                		} else
                 			SignError(event,p,"You don't have access to create balancesigns");
-                		}
-            		} else {
+            		} else
             			SignError(event,p,"Balancesigns not enabled");
-            		}
             	}
-            } else {
+            } else
                 SignError(event,p,"Please type an accountname");
-            }
         }
     }
     

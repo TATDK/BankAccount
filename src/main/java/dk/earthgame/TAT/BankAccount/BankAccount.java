@@ -54,6 +54,7 @@ public class BankAccount extends JavaPlugin {
     public Password PasswordSystem = new Password(this);
     public SQLWorker SQLWorker = new SQLWorker(this);
     public UserSaves UserSaves = new UserSaves(this);
+	public boolean enabled;
     
 //Features
     public ATMSign ATMSign = new ATMSign(this);
@@ -146,8 +147,10 @@ public class BankAccount extends JavaPlugin {
         getCommand("bank").setUsage("/bank help - Show help to BankAccount");
         
         PluginManager pm = getServer().getPluginManager();
-        //RightClick - Used for area selection
+        //RightClick - Used for area selection and ATM scrolling
         pm.registerEvent(Type.PLAYER_INTERACT, playerListener, Priority.Normal, this);
+        //Used for ATMMachine
+        pm.registerEvent(Type.PLAYER_CHAT, playerListener, Priority.Normal, this);
         //Damage - Used for bounty
         pm.registerEvent(Type.ENTITY_DAMAGE, entityListener, Priority.Normal, this);
         //Enable/Disable - Used for hook up to other plugins
@@ -221,7 +224,15 @@ public class BankAccount extends JavaPlugin {
 
         ATMSign.load();
         BalanceSign.load();
+        BankAreas.load();
         UserSaves.load();
+        enabled = true;
+        
+        this.getServer().getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
+            public void run() {
+                ATMSign.resetAll();
+            }
+        }, 2*20);
     }
 
     /**
@@ -331,6 +342,8 @@ public class BankAccount extends JavaPlugin {
      */
     public boolean openAccount(String accountname,String owners,String feePayer) {
         if (accountExists(accountname))
+            return false;
+        if (font.stringWidth(accountname) > 150)
             return false;
         double feePaid = 0;
         if (settings.OpeningFee.getMode() != FeeModes.NONE && (feePayer.equalsIgnoreCase("") || feePayer != null)) {

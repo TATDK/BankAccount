@@ -2,6 +2,8 @@ package dk.earthgame.TAT.BankAccount.System;
 
 import org.bukkit.Location;
 
+import dk.earthgame.TAT.BankAccount.Features.ATMMachine;
+
 /**
  * Saved informations of an user
  * @author TAT
@@ -13,6 +15,7 @@ public class UserSave {
     private boolean selecting;
     private static Location pos1;
     private static Location pos2;
+    public ATMMachine usingATM = null;
     
     public UserSave(UserSaves instantiate) {}
     
