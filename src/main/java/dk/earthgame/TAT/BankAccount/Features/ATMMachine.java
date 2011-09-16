@@ -34,7 +34,7 @@ public class ATMMachine {
     public ATMMachine(BankAccount instantiate,Sign sign) {
         plugin = instantiate;
         this.sign = sign;
-        if (plugin.enabled)
+        if (plugin.isEnabled())
             Print();
     }
 
@@ -49,7 +49,7 @@ public class ATMMachine {
         recieveraccount = "";
         amount = 0;
         if (user != null)
-        	plugin.UserSaves.getSaved(user.getName()).usingATM = null;
+            plugin.UserSaves.getSaved(user.getName()).usingATM = null;
         user = null;
         currentInterface = defaultInterface;
         currentLine = 0;
@@ -116,6 +116,11 @@ public class ATMMachine {
                 lines[3] = "failed";
                 break;
             default:
+                if (currentInterface.length == 0) {
+                    lines[2] = "You don't have";
+                    lines[3] = "any accounts";
+                    break;
+                }
                 if (currentLine == 0) {
                     //First line
                     lines[1] = "> " + currentInterface[0];

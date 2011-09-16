@@ -39,11 +39,10 @@ public class ATMSign {
                 while ((s = reader.readLine()) != null) {
                     line++;
                     String[] args = s.split(",");
-                    if (args.length == 4) {
+                    if (args.length == 4)
                         signs.put(new BALocation(plugin.getServer().getWorld(args[0]),Double.parseDouble(args[1]),Double.parseDouble(args[2]),Double.parseDouble(args[3])),new ATMMachine(plugin, (Sign)new Location(plugin.getServer().getWorld(args[0]),Double.parseDouble(args[1]),Double.parseDouble(args[2]),Double.parseDouble(args[3])).getBlock().getState()));
-                    } else {
+                    else
                         plugin.console.warning(filename + " contains errors on line " + line);
-                    }
                 }
                 fr.close();
             } catch (Exception e) {

@@ -66,7 +66,7 @@ public class BankAccountPluginListener extends ServerListener {
         String pluginname = event.getPlugin().getDescription().getName();
         //Register (Economy API)
         if (!Methods.hasMethod()) {
-            if(Methods.setMethod(event.getPlugin())) {
+            if (Methods.setMethod(event.getPlugin())) {
                 plugin.Method = Methods.getMethod();
                 plugin.console.info("Payment method found (" + plugin.Method.getName() + " version: " + plugin.Method.getVersion() + ")");
                 plugin.LoanSystem.startupRunner();
@@ -85,18 +85,18 @@ public class BankAccountPluginListener extends ServerListener {
             Plugin test = checkPlugin(pluginname);
             if (test != null) {
                 ((Permissions)test).getDatabase();
-                this.plugin.settings.Permissions = ((Permissions)test).getHandler();
-                this.plugin.console.info("Established connection with " + plugin + "!");
+                plugin.settings.Permissions = ((Permissions)test).getHandler();
+                plugin.console.info("Established connection with " + plugin + "!");
             }
         }
         //GroupManager
         if (plugin.settings.GroupManager == null && pluginname.equalsIgnoreCase("GroupManager") && plugin.settings.useGroupManager) {
             Plugin test = checkPlugin(pluginname);
             if (test != null) {
-                this.plugin.settings.GroupManager = (GroupManager)test;
-                this.plugin.console.info("Established connection with " + plugin + "!");
-                if (this.plugin.settings.checkJobId > 0) {
-                    this.plugin.getServer().getScheduler().cancelTask(this.plugin.settings.checkJobId);
+                plugin.settings.GroupManager = (GroupManager)test;
+                plugin.console.info("Established connection with " + plugin + "!");
+                if (plugin.settings.checkJobId > 0) {
+                    plugin.getServer().getScheduler().cancelTask(this.plugin.settings.checkJobId);
                 }
             }
         }
@@ -105,10 +105,10 @@ public class BankAccountPluginListener extends ServerListener {
         if (plugin.signupdater == null && pluginname.equalsIgnoreCase("SignUpdater")) {
             Plugin test = checkPlugin(pluginname);
             if (test != null) {
-                this.plugin.signupdater = (SignUpdater)test;
+                plugin.signupdater = (SignUpdater)test;
                 plugin.ATMSign.enabled = true;
                 plugin.BalanceSign.enabled = true;
-                this.plugin.console.info("Established connection with " + plugin + "!");
+                plugin.console.info("Established connection with " + plugin + "!");
             }
         }
     }

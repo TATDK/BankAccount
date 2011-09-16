@@ -17,9 +17,12 @@ public class UserSave {
     private static Location pos2;
     public ATMMachine usingATM = null;
     
-    public UserSave(UserSaves instantiate) {}
+    public UserSave(UserSaves instantiate) {
+    	master = instantiate;
+    }
     
     public UserSave(UserSaves instantiate, double bounty) {
+    	master = instantiate;
     	this.bounty = bounty;
     }
     

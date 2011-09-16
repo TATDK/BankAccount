@@ -6,18 +6,18 @@ package dk.earthgame.TAT.BankAccount.Enum;
  * @since 0.5
  */
 public enum BankCommands {
-    CREATE      ("create"      ,"create <bankname> [bankers]"                                                 ,false ,PermissionNodes.BANK_CREATE),
-    REMOVE      ("remove"      ,"remove <bankname>"                                                           ,false ,PermissionNodes.BANK_REMOVE),
-    REMOVETO    ("remove"      ,"remove <bankname> [new bankname]"                                            ,false ,PermissionNodes.BANK_REMOVE),
-    ADDBANKER   ("addbanker"   ,"addbanker <bankname> <player>"                                               ,false ,PermissionNodes.BANK_MANAGE),
-    REMOVEBANKER("removebanker","removebanker <bankname> <player>"                                            ,false ,PermissionNodes.BANK_MANAGE),
-    INTEREST    ("interest"    ,"interest <bankname> <online interest> <offline interest> <required % online>",false ,PermissionNodes.BANK_MANAGE);
+    CREATE      ("create"      ,"create <bankname> [bankers]"                                                 ,false,PermissionNodes.BANK_CREATE),
+    REMOVE      ("remove"      ,"remove <bankname>"                                                           ,false,PermissionNodes.BANK_REMOVE),
+    REMOVETO    ("remove"      ,"remove <bankname> [new bankname]"                                            ,false,PermissionNodes.BANK_REMOVE),
+    ADDBANKER   ("addbanker"   ,"addbanker <bankname> <player>"                                               ,false,PermissionNodes.BANK_MANAGE),
+    REMOVEBANKER("removebanker","removebanker <bankname> <player>"                                            ,false,PermissionNodes.BANK_MANAGE),
+    INTEREST    ("interest"    ,"interest <bankname> <online interest> <offline interest> <required % online>",false,PermissionNodes.BANK_MANAGE);
 
     private String command;
     private String description;
     private boolean requireArea;
     private PermissionNodes requiredPermission;
-    BankCommands(String command, String description,boolean requireArea,PermissionNodes requiredPermission) {
+    BankCommands(String command,String description,boolean requireArea,PermissionNodes requiredPermission) {
         this.command = command;
         this.description = description;
         this.requireArea = requireArea;

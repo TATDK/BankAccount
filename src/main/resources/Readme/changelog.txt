@@ -12,7 +12,8 @@ Added multiple fee systems
   * Transfer - When you transfer between accounts (sender account pays the fee)
   * Closing  - When you close an account          (account pays the fee)
   * Sign     - When you create a balance sign     (player pays the fee)
-Update Register [GitHub Commit: af7bef3b278663a8ecf89a54706d282a3b8bb982]
+Update Register [GitHub Commit: af7bef3b278663a8ecf89a54706d282a3b8bb982] + pull requests
+Updated to Bukkit #1060
 API: Removed 0.5 deprecated functions
 API: Renamed CommandList to AccountCommands
 API: Added BankCommands

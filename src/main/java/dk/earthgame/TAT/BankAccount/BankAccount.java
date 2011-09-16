@@ -54,7 +54,6 @@ public class BankAccount extends JavaPlugin {
     public Password PasswordSystem = new Password(this);
     public SQLWorker SQLWorker = new SQLWorker(this);
     public UserSaves UserSaves = new UserSaves(this);
-	public boolean enabled;
     
 //Features
     public ATMSign ATMSign = new ATMSign(this);
@@ -172,7 +171,7 @@ public class BankAccount extends JavaPlugin {
         /*
          * Check if economy isn't hooked up 20 seconds after startup of BankAccount
          */
-        settings.checkJobId = this.getServer().getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
+        settings.checkJobId = getServer().getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
             public void run() {
                 if (!pluginListener.Methods.hasMethod()) {
                     //Shutdown if economy isn't found
@@ -226,9 +225,8 @@ public class BankAccount extends JavaPlugin {
         BalanceSign.load();
         BankAreas.load();
         UserSaves.load();
-        enabled = true;
         
-        this.getServer().getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
+        getServer().getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
             public void run() {
                 ATMSign.resetAll();
             }

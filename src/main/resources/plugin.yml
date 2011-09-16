@@ -1,6 +1,9 @@
 name: BankAccount
 main: dk.earthgame.TAT.BankAccount.BankAccount
 version: 0.6DEV
+author: TAT
+website: http://forums.bukkit.org/threads/BankAccount.7095/
+softdepend: [SignUpdater]
 commands:
     account:
         description: Shared Bank Accounts

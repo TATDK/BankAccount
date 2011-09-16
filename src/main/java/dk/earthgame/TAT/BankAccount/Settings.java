@@ -228,12 +228,12 @@ public class Settings {
                 try {
                     if (!checkAccount) {
                         //ACCOUNT TABLE
+                        plugin.console.warning("Creating table " + SQL_account_table);
                         String query = "CREATE TABLE IF NOT EXISTS `" + SQL_account_table + "` (`accountname` VARCHAR( 255 ) NOT NULL , `cleanname` VARCHAR( 255 ) NOT NULL , `owners` LONGTEXT NOT NULL, `users` LONGTEXT NOT NULL, `password` VARCHAR( 255 ) NULL DEFAULT '', `amount` DOUBLE( 255,2 ) NOT NULL DEFAULT '0')";
-                        if (useMySQL) {
-                            plugin.console.warning("Created table " + SQL_account_table);
+                        if (useMySQL)
                             query = "CREATE TABLE IF NOT EXISTS `" + SQL_account_table + "` (`id` INT( 255 ) NOT NULL AUTO_INCREMENT PRIMARY KEY , `accountname` VARCHAR( 255 ) NOT NULL , `cleanname` VARCHAR( 255 ) NOT NULL , `owners` LONGTEXT NOT NULL, `users` LONGTEXT NOT NULL, `password` VARCHAR( 255 ) NULL DEFAULT '', `amount` DOUBLE( 255,2 ) NOT NULL DEFAULT '0')";
-                        }
                         stmt.execute(query);
+                        checkAccount = true;
                     }
                     if (checkArea && areas) {
                         //AREA TABLE
@@ -249,15 +249,17 @@ public class Settings {
                             );
                         }
                         plugin.SQLWorker.executeDelete("DROP TABLE `" + SQL_area_table + "`");
+                        checkArea = true;
                     }
                     if (!checkLoan && plugin.LoanSystem.LoanActive) {
+                        plugin.console.warning("Creating table " + SQL_loan_table);
                         //LOAN TABLE
                         String query = "CREATE TABLE IF NOT EXISTS `" + SQL_loan_table + "` (`player` VARCHAR( 255 ) NOT NULL, `totalamount` DOUBLE( 255,2 ) NOT NULL, `remaining` DOUBLE( 255,2 ) NOT NULL, `timepayment` INT( 255 ) NOT NULL, `timeleft` INT( 255 ) NOT NULL, `part` INT( 255 ) NOT NULL, `parts` INT( 255 ) NOT NULL)";
                         if (useMySQL) {
-                            plugin.console.warning("Created table " + SQL_loan_table);
                             query = "CREATE TABLE IF NOT EXISTS `" + SQL_loan_table + "` (`id` INT( 255 ) NOT NULL AUTO_INCREMENT PRIMARY KEY, `player` VARCHAR( 255 ) NOT NULL, `totalamount` DOUBLE( 255,2 ) NOT NULL, `timeleft` INT( 255 ) NOT NULL, `part` INT( 255 ) NOT NULL, `parts` INT( 255 ) NOT NULL)";
                         }
                         stmt.execute(query);
+                        checkLoan = true;
                     }
                     if (!checkTransaction && transactions) {
                         //TRANSACTION TABLE
@@ -267,26 +269,23 @@ public class Settings {
                             query = "CREATE TABLE IF NOT EXISTS `" + SQL_transaction_table + "` (`id` INT( 255 ) NOT NULL AUTO_INCREMENT PRIMARY KEY , `player` VARCHAR( 255 ) NOT NULL, `account` VARCHAR( 255 ) NULL, `type` INT( 255 ) NOT NULL, `amount` DOUBLE( 255,2 ) NULL, `time` INT( 255 ) NOT NULL)";
                         }
                         stmt.execute(query);
+                        checkTransaction = true;
                     }
                     if (!checkBanks && multiBanks) {
                         //BANKS TABLE
-                        String query = "";
+                        String query = "CREATE TABLE `" + SQL_banks_table + "` (`cleanname` VARCHAR( 255 ) NOT NULL , `bankers` LONGTEXT NOT NULL , `online-interest` DOUBLE( 255,2 ) NOT NULL DEFAULT '0', `offline-interest` DOUBLE( 255,2 ) NOT NULL DEFAULT '0', `online-amount` INT( 3 ) NOT NULL DEFAULT '0')";
                         if (useMySQL) {
                             plugin.console.warning("Created table " + SQL_banks_table);
-                            query = "";
+                            query = "CREATE TABLE `" + SQL_banks_table + "` (`id` INT( 255 ) NOT NULL AUTO_INCREMENT PRIMARY KEY , `bankname` VARCHAR( 255 ) NOT NULL , `cleanname` VARCHAR( 255 ) NOT NULL , `bankers` LONGTEXT NOT NULL , `online-interest` DOUBLE( 255,2 ) NOT NULL DEFAULT '0', `offline-interest` DOUBLE( 255,2 ) NOT NULL DEFAULT '0', `online-amount` INT( 3 ) NOT NULL DEFAULT '0')";
                         }
                         stmt.execute(query);
+                        checkBanks = true;
                     }
                     //Run upgrades of SQL tables
                     new Upgrade(plugin, useMySQL);
                 } catch (SQLException e3) {
                     if (!checkAccount) {
                         plugin.console.warning("Failed to find and create table " + SQL_account_table);
-                    }
-                    if (!checkArea && areas) {
-                        plugin.console.warning("Failed to find and create table " + SQL_area_table);
-                        plugin.console.info("Disabled areas!");
-                        areas = false;
                     }
                     if (!checkLoan && plugin.LoanSystem.LoanActive) {
                         plugin.console.warning("Failed to find and create table " + SQL_loan_table);
@@ -301,14 +300,15 @@ public class Settings {
                         plugin.console.info("Disabled transactions!");
                         transactions = false;
                     }
-                    /*
-                    if (!checkBanks && MultiBanks) {
+                    if (!checkBanks && multiBanks) {
                         plugin.console.warning("Failed to find and create table " + SQL_banks_table);
                         plugin.console.info("Disabled multiple banks!");
-                        MultiBanks = false;
+                        multiBanks = false;
                     }
-                    */
-                    plugin.console.warning(e3.toString());
+                    if (!e3.getMessage().equalsIgnoreCase(null))
+                        plugin.console.warning(e3.getMessage());
+                    else
+                    	plugin.console.warning(e3.getErrorCode() + " - " + e3.getSQLState());
                     plugin.console.info("Shuting down");
                     plugin.getServer().getPluginManager().disablePlugin(plugin);
                     return false;

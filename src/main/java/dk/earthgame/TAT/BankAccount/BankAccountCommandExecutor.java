@@ -503,7 +503,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                 showHelp(sender,Manuals.ALL,1);
             }
             return true;
-        } else if (command.getName().equalsIgnoreCase("bank")) {
+        } else if (command.getName().equalsIgnoreCase("bank") && plugin.settings.multiBanks) {
             if (args.length > 0) {
 //CREATE
                 if (args[0].equalsIgnoreCase("create") && args.length >= 2) {
@@ -645,13 +645,13 @@ public class BankAccountCommandExecutor implements CommandExecutor {
      */
     public void showHelp(Player player,Manuals manual,int page) {
     	String helpcommand = "account";
-    	if (manual == Manuals.BANK)
+    	if (manual == Manuals.BANK && plugin.settings.multiBanks)
     		helpcommand = "bank";
     	List<String> acommands = new ArrayList<String>();
         List<String> bcommands = new ArrayList<String>();
         if (manual == Manuals.ALL || manual == Manuals.ACCOUNT)
         	acommands = getAccountManual(player);
-        if (manual == Manuals.ALL || manual == Manuals.BANK)
+        if ((manual == Manuals.ALL || manual == Manuals.BANK) && plugin.settings.multiBanks)
         	bcommands = getBankManual(player);
     	int pages = (int)Math.max(1, Math.ceil((acommands.size()+bcommands.size())/7)+1);
         //Only show pages that exists
@@ -671,9 +671,18 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                     player.sendMessage(ChatColor.GOLD + "/account " + command);
                 }
             }
+            for (String command : bcommands) {
+                temp++;
+                if (temp >= start && temp < start+7) {
+                    player.sendMessage(ChatColor.GOLD + "/bank " + command);
+                }
+            }
         } else {
             for (String command : acommands) {
                 player.sendMessage(ChatColor.GOLD + "/account " + command);
+            }
+            for (String command : bcommands) {
+                player.sendMessage(ChatColor.GOLD + "/bank " + command);
             }
         }
     }

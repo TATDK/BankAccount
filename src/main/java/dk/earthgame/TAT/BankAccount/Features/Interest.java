@@ -9,19 +9,48 @@ import dk.earthgame.TAT.BankAccount.BankAccount;
 public class Interest {
     private BankAccount plugin;
     private int jobID;
-    
+
     public Interest(BankAccount instantiate) {
-    	plugin = instantiate;
+        plugin = instantiate;
     }
-    
+
+    public boolean isOnline(String[] owners,String[] users,int neededOnline) {
+        int online = 0;
+        //Owners
+        for (String o : owners) {
+            if (plugin.getServer().getPlayer(o) != null) {
+                if (plugin.getServer().getPlayer(o).isOnline()) {
+                    online++;
+                    if (online > neededOnline) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        //Users
+        for (String u : users) {
+            if (plugin.getServer().getPlayer(u) != null) {
+                if (plugin.getServer().getPlayer(u).isOnline()) {
+                    online++;
+                    if (online > neededOnline) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     public void startupInterest() {
-    	if (jobID > 0)
-    		return;
-    	jobID = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
+        if (jobID > 0)
+            return;
+
+        jobID = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
             public void run() {
                 if (plugin.settings.debug_Interest)
-                	plugin.console.info("Running interest system");
-                                                    
+                    plugin.console.info("Running interest system");
+
                 double totalGiven = 0.00;
                 try {
                     if (plugin.settings.useMySQL) {
@@ -32,58 +61,21 @@ public class Interest {
                             String[] owners = accounts.getString("owners").split(";");
                             String[] users = accounts.getString("users").split(";");
                             int neededOnline = (owners.length+users.length)/plugin.settings.interestNeededOnline;
-                            int online = 0;
+
+                            //Is account online
                             boolean accountOnline = false;
                             if (plugin.settings.interestOnlineAmount == plugin.settings.interestOfflineAmount) {
-                            	accountOnline = true;
+                                accountOnline = true;
                             } else {
-	                            if (owners.length > 1) {
-	                                for (String o : owners) {
-	                                    if (plugin.getServer().getPlayer(o) != null) {
-	                                        if (plugin.getServer().getPlayer(o).isOnline()) {
-	                                            online++;
-	                                            if (online > neededOnline) {
-	                                                accountOnline = true;
-	                                                break;
-	                                            }
-	                                        }
-	                                    }
-	                                }
-	                            } else {
-	                                if (plugin.getServer().getPlayer(owners[0]) != null) {
-	                                    if (plugin.getServer().getPlayer(owners[0]).isOnline()) {
-	                                        online++;
-	                                    }
-	                                }
-	                            }
-	                            if (users.length > 1) {
-	                                for (String u : users) {
-	                                    if (plugin.getServer().getPlayer(u) != null) {
-	                                        if (plugin.getServer().getPlayer(u).isOnline()) {
-	                                            online++;
-	                                            if (online > neededOnline) {
-	                                                accountOnline = true;
-	                                                break;
-	                                            }
-	                                        }
-	                                    }
-	                                }
-	                            } else {
-	                                if (plugin.getServer().getPlayer(users[0]) != null) {
-	                                    if (plugin.getServer().getPlayer(users[0]).isOnline()) {
-	                                        online++;
-	                                    }
-	                                }
-	                            }
-	                            if (online > neededOnline) {
-	                                accountOnline = true;
-	                            }
+                            	accountOnline = isOnline(owners, users, neededOnline);
                             }
+
                             double interest;
                             if (accountOnline)
                                 interest = plugin.settings.interestOnlineAmount;
                             else
                                 interest = plugin.settings.interestOfflineAmount;
+
                             if (plugin.settings.maxAmount > 0 && ((accountbalance *= 1+(interest/100)) > plugin.settings.maxAmount)) {
                                 totalGiven += (plugin.settings.maxAmount-accountbalance);
                                 accountbalance = plugin.settings.maxAmount;
@@ -105,58 +97,21 @@ public class Interest {
                             String[] owners = accounts.getString("owners").split(";");
                             String[] users = accounts.getString("users").split(";");
                             int neededOnline = (owners.length+users.length)/plugin.settings.interestNeededOnline;
-                            int online = 0;
+
+                            //Is account online
                             boolean accountOnline = false;
                             if (plugin.settings.interestOnlineAmount == plugin.settings.interestOfflineAmount) {
-                            	accountOnline = true;
+                                accountOnline = true;
                             } else {
-	                            if (owners.length > 1) {
-	                                for (String o : owners) {
-	                                    if (plugin.getServer().getPlayer(o) != null) {
-	                                        if (plugin.getServer().getPlayer(o).isOnline()) {
-	                                            online++;
-	                                            if (online > neededOnline) {
-	                                                accountOnline = true;
-	                                                break;
-	                                            }
-	                                        }
-	                                    }
-	                                }
-	                            } else {
-	                                if (plugin.getServer().getPlayer(owners[0]) != null) {
-	                                    if (plugin.getServer().getPlayer(owners[0]).isOnline()) {
-	                                        online++;
-	                                    }
-	                                }
-	                            }
-	                            if (users.length > 1 && !accountOnline) {
-	                                for (String u : users) {
-	                                    if (plugin.getServer().getPlayer(u) != null) {
-	                                        if (plugin.getServer().getPlayer(u).isOnline()) {
-	                                            online++;
-	                                            if (online > neededOnline) {
-	                                                accountOnline = true;
-	                                                break;
-	                                            }
-	                                        }
-	                                    }
-	                                }
-	                            } else {
-	                                if (plugin.getServer().getPlayer(users[0]) != null) {
-	                                    if (plugin.getServer().getPlayer(users[0]).isOnline()) {
-	                                        online++;
-	                                    }
-	                                }
-	                            }
-	                            if (online > neededOnline) {
-	                                accountOnline = true;
-	                            }
+                                accountOnline = isOnline(owners, users, neededOnline);
                             }
+
                             double interest;
                             if (accountOnline)
                                 interest = plugin.settings.interestOnlineAmount;
                             else
                                 interest = plugin.settings.interestOfflineAmount;
+
                             if (plugin.settings.maxAmount > 0 && ((accountbalance *= 1+(interest/100)) > plugin.settings.maxAmount)) {
                                 totalGiven += (plugin.settings.maxAmount-accountbalance);
                                 accountbalance = plugin.settings.maxAmount;
@@ -164,6 +119,7 @@ public class Interest {
                                 totalGiven += accountbalance*(interest/100);
                                 accountbalance *= 1+(interest/100);
                             }
+
                             prep.setDouble(1, accountbalance);
                             prep.setString(2, accountname);
                             prep.addBatch();
@@ -175,20 +131,20 @@ public class Interest {
                         plugin.settings.con.setAutoCommit(true);
                     }
                 } catch (SQLException e) {
-                	plugin.console.warning("Couldn't execute interest");
-                	plugin.console.info(e.toString());
+                    plugin.console.warning("Couldn't execute interest");
+                    plugin.console.info(e.toString());
                 }
                 if (plugin.settings.debug_Interest)
-                	plugin.console.info("Total given " + plugin.Method.format(totalGiven) + " in interest");
+                    plugin.console.info("Total given " + plugin.Method.format(totalGiven) + " in interest");
             }
         }, plugin.settings.interestTime*20*60, plugin.settings.interestTime*20*60);
-    	plugin.console.info("Running interest every " + plugin.settings.interestTime + " minutes by " + plugin.settings.interestOnlineAmount + "%");
+        plugin.console.info("Running interest every " + plugin.settings.interestTime + " minutes by " + plugin.settings.interestOnlineAmount + "%");
     }
     
     public void shutdownInterest() {
-    	if (jobID > 0) {
-    		plugin.getServer().getScheduler().cancelTask(jobID);
-    		jobID = 0;
-    	}
+        if (jobID > 0) {
+            plugin.getServer().getScheduler().cancelTask(jobID);
+            jobID = 0;
+        }
     }
 }

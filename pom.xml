@@ -43,7 +43,7 @@
     <dependency>
       <groupId>org.bukkit</groupId>
       <artifactId>bukkit</artifactId>
-      <version>0.0.1-770</version>
+      <version>0.0.1-804</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -85,7 +85,7 @@
     <dependency>
       <groupId>org.bukkit</groupId>
       <artifactId>craftbukkit</artifactId>
-      <version>0.0.1-1000</version>
+      <version>0.0.1-1060</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
