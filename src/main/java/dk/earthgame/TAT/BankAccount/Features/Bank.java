@@ -1,7 +1,8 @@
 package dk.earthgame.TAT.BankAccount.Features;
 
 import java.sql.SQLException;
-
+import java.util.ArrayList;
+import java.util.List;
 import org.bukkit.entity.Player;
 
 import dk.earthgame.TAT.BankAccount.BankAccount;
@@ -15,15 +16,18 @@ public class Bank {
     private BankAccount plugin;
     private String name;
     private int id;
+    private int area;
+    private List<String> knownBankers = new ArrayList<String>();
     
     public Bank(BankAccount instantiate, String bankname) {
         plugin = instantiate;
         name = bankname;
-        if (bankname.equalsIgnoreCase("Global")) {
+        if (bankname.equalsIgnoreCase("Global"))
             id = 0;
-        } else {
+        else {
             try {
                 id = plugin.SQLWorker.getInt("id", plugin.settings.SQL_banks_table, "`name` = " + name);
+                area = plugin.SQLWorker.getInt("area", plugin.settings.SQL_banks_table, "`name` = " + name);
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -33,11 +37,12 @@ public class Bank {
     public Bank(BankAccount instantiate, int bankid) {
         plugin = instantiate;
         id = bankid;
-        if (id == 0) {
+        if (id == 0)
             name = "Global";
-        } else {
+        else {
             try {
                 name = plugin.SQLWorker.getString("name", plugin.settings.SQL_banks_table, "`id` = " + id);
+                area = plugin.SQLWorker.getInt("area", plugin.settings.SQL_banks_table, "`name` = " + name);
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -100,18 +105,19 @@ public class Bank {
     
     /**
      * Add banker to bank
-     * @param playername Name of new banker
+     * @param player Name of new banker
      * @since 0.6
      * @return true on success; else false
      */
-    public boolean addBanker(String playername) {
+    public boolean addBanker(String player) {
         try {
-            String newBankers = playername;
+            String newBankers = player;
             String[] bankers = plugin.SQLWorker.getString("bankers", plugin.settings.SQL_banks_table, "`cleanname` = '" + name.toLowerCase() + "'").split(";");
             for (String b : bankers) {
                 newBankers += ";" + b;
             }
             plugin.SQLWorker.executeUpdate("UPDATE `" + plugin.settings.SQL_banks_table + "` SET `bankers` = '" + newBankers + "' WHERE `cleanname` = '" + name.toLowerCase() + "'");
+            knownBankers.add(player);
             return true;
         } catch(SQLException e) {
             if (!e.getMessage().equalsIgnoreCase(null))
@@ -134,22 +140,23 @@ public class Bank {
     
     /**
      * Remove banker from bank
-     * @param playername Name of banker
+     * @param player Name of banker
      * @since 0.6
      * @return true on success; else false
      */
-    public boolean removeBanker(String playername) {
+    public boolean removeBanker(String player) {
         try {
-            String newBankers = playername;
+            String newBankers = player;
             String[] bankers = plugin.SQLWorker.getString("bankers", plugin.settings.SQL_banks_table, "`cleanname` = '" + name.toLowerCase() + "'").split(";");
             for (String b : bankers) {
-                if (!b.equalsIgnoreCase(playername)) {
+                if (!b.equalsIgnoreCase(player)) {
                     if (!newBankers.equalsIgnoreCase(""))
                         newBankers += ";";
                     newBankers += b;
                 }
             }
             plugin.SQLWorker.executeUpdate("UPDATE `" + plugin.settings.SQL_banks_table + "` SET `bankers` = '" + newBankers + "' WHERE `cleanname` = '" + name.toLowerCase() + "'");
+        	knownBankers.remove(player);
             return true;
         } catch(SQLException e) {
             if (!e.getMessage().equalsIgnoreCase(null))
@@ -185,6 +192,53 @@ public class Bank {
         }
         return false;
     }
+
+    /**
+     * Is the player a banker for this bank?
+     * @param player Player object of the player
+     * @since 0.6
+     * @return true, if the player is a banker; else false
+     */
+	public boolean isBanker(Player player) { return isBanker(player.getName());	}
+
+    /**
+     * Is the player a banker for this bank?
+     * @param player Username of the player
+     * @since 0.6
+     * @return true, if the player is a banker; else false
+     */
+	public boolean isBanker(String player) {
+		if (knownBankers.contains(player))
+			return true;
+		else {
+			try {
+				String[] bankers = plugin.SQLWorker.getString("`bankers`", plugin.settings.SQL_banks_table, "`id` = 0").split(";");
+				for (String b : bankers) {
+					if (b.equalsIgnoreCase(player))
+						return true;
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return false;
+	}
+	
+	public int getArea() {
+		return area;
+	}
+	
+	public void setArea(String areaname) {
+		try {
+			this.area = plugin.SQLWorker.getInt("`id`", plugin.settings.SQL_area_table, "`name` = '" + areaname + "'");
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void setArea(int area) {
+		this.area = area;
+	}
     
     /**
      * Remove bank and move all accounts to global

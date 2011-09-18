@@ -1,8 +1,12 @@
 package dk.earthgame.TAT.BankAccount.System;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.bukkit.Location;
 
 import dk.earthgame.TAT.BankAccount.Features.ATMMachine;
+import dk.earthgame.TAT.BankAccount.Features.Area;
 
 /**
  * Saved informations of an user
@@ -15,6 +19,7 @@ public class UserSave {
     private boolean selecting;
     private static Location pos1;
     private static Location pos2;
+	private List<Integer> inAreas = new ArrayList<Integer>();
     public ATMMachine usingATM = null;
     
     public UserSave(UserSaves instantiate) {
@@ -116,5 +121,61 @@ public class UserSave {
         } else {
             return null;
         }
+    }
+    
+    /**
+     * Is the user inside an specific area?
+     * @param area The area
+     * @since 0.6
+     * @return true if the player is in the area; else false
+     */
+    public boolean inArea(Area area) { return inAreas.contains(area.getID()); }
+    
+    /**
+     * Is the user inside an specific area?
+     * @param area ID of area
+     * @since 0.6
+     * @return true if the player is in the area; else false
+     */
+    public boolean inArea(int area) { return inAreas.contains(area); }
+    
+    /**
+     * Register the user entering an area
+     * @param area The area
+     * @since 0.6
+     */
+    public void enterArea(Area area) {
+    	if (master.plugin.BankAreas.exists(area.getName()) && !inArea(area))
+    		inAreas.add(area.getID());
+    }
+
+    /**
+     * Register the user entering an area
+     * @param area ID of area
+     * @since 0.6
+     */
+    public void enterArea(int area) {
+    	if (master.plugin.BankAreas.exists(area) && !inArea(area))
+    		inAreas.add(area);
+    }
+    
+    /**
+     * Register the user leaves an area
+     * @param area The area
+     * @since 0.6
+     */
+    public void exitArea(Area area) {
+    	if (inArea(area))
+    		inAreas.remove(inAreas.indexOf(area.getID()));
+    }
+    
+    /**
+     * Register the user leaves an area
+     * @param area ID of area
+     * @since 0.6
+     */
+    public void exitArea(int area) {
+    	if (inArea(area))
+    		inAreas.remove(inAreas.indexOf(area));
     }
 }

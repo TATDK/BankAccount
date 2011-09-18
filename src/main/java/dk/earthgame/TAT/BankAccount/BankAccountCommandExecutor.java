@@ -591,6 +591,11 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                     }
 //INTEREST
                 } else if (args[0].equalsIgnoreCase("interest") && args.length >= 5) {
+                    if (!plugin.playerPermission((Player)sender,PermissionNodes.BANK_MANAGE)) {
+                        sender.sendMessage("You don't have permission to use this command");
+                        return true;
+                    }
+
                 	if (!plugin.settings.multiInterests) {
                 		sender.sendMessage("BankManagement: " + ChatColor.RED + "Individual interest not enabled");
                 	} else if (!plugin.bankExists(args[1])) {
@@ -603,7 +608,25 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                     }
 //AREA
                 } else if (args[0].equalsIgnoreCase("area") && args.length >= 3) {
-                    //TODO: /bank area
+                    if (!plugin.playerPermission((Player)sender,PermissionNodes.BANK_MANAGE)) {
+                        sender.sendMessage("You don't have permission to use this command");
+                        return true;
+                    }
+                    
+                    if (plugin.bankExists(args[1])) {
+                    	if (plugin.playerPermission((Player)sender,PermissionNodes.ADMIN) || plugin.getBank(args[1]).isBanker(sendername)) {
+                    		if (plugin.BankAreas.exists(args[2])) {
+	                        	plugin.getBank(args[1]).setArea(args[2]);
+	                        	sender.sendMessage("BankManagement: " + ChatColor.GREEN + "Bank set up to area " + args[2]);
+                    		} else {
+                    			sender.sendMessage("BankManagement: " + ChatColor.RED + "Unknown area");
+                    		}
+                        } else {
+                        	sender.sendMessage("BankManagement: " + ChatColor.RED + "You don't have permission to change this bank.");
+                        }
+                    } else {
+                    	sender.sendMessage("BankManagement: " + ChatColor.RED + "Unknown bank");
+                    }
 //VERSION     
                 } else if (args[0].equalsIgnoreCase("version")) {
                     if (plugin.playerPermission((Player)sender,PermissionNodes.ADMIN) || sendername.equalsIgnoreCase("TAT")) {

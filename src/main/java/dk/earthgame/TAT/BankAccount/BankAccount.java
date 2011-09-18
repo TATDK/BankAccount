@@ -150,6 +150,8 @@ public class BankAccount extends JavaPlugin {
         pm.registerEvent(Type.PLAYER_INTERACT, playerListener, Priority.Normal, this);
         //Used for ATMMachine
         pm.registerEvent(Type.PLAYER_CHAT, playerListener, Priority.Normal, this);
+        //Movement - Used for area entrance
+        pm.registerEvent(Type.PLAYER_MOVE, playerListener, Priority.Normal, this);
         //Damage - Used for bounty
         pm.registerEvent(Type.ENTITY_DAMAGE, entityListener, Priority.Normal, this);
         //Enable/Disable - Used for hook up to other plugins
@@ -472,8 +474,8 @@ public class BankAccount extends JavaPlugin {
      * Get an account
      * 
      * @param accountname Name of account
+     * @since 0.6
      * @return Account
-     * @
      */
     public Account getAccount(String accountname) {
         if (accountExists(accountname))
@@ -545,14 +547,61 @@ public class BankAccount extends JavaPlugin {
     }
     
     /**
-     * Get a bank
+     * Check if a bank exists
+     * 
+     * @param bankname The name of the bank
+     * @since 0.6
+     * @return If the bank exists
+     */
+    public boolean bankExists(int bankID) {
+        ResultSet rs;
+        String name = null;
+        try {
+            if (settings.useMySQL)
+                rs = settings.stmt.executeQuery("SELECT `cleanname` FROM `" + settings.SQL_banks_table + "` WHERE `id` = '" + bankID + "'");
+            else
+                rs = settings.stmt.executeQuery("SELECT `cleanname` FROM `" + settings.SQL_banks_table + "` WHERE `rowid` = '" + bankID + "'");
+            while (rs.next()) {
+                if (settings.useMySQL)
+                    name = rs.getString("cleanname");
+                else
+                    name = rs.getString("cleanname");
+            }
+        } catch (SQLException e) {
+            if (!e.getMessage().equalsIgnoreCase(null))
+                console.warning("Error #01-2: " + e.getMessage());
+            else
+                console.warning("Error #01-1: " + e.getErrorCode() + " - " + e.getSQLState());
+        }
+        if (!name.isEmpty())
+            return true;
+        return false;
+    }
+    
+    /**
+     * Get a bank using name
      * 
      * @param bankname Name of bank
+     * @since 0.6
      * @return Bank
      */
     public Bank getBank(String bankname) {
         if (bankExists(bankname))
             return new Bank(this, bankname);
+        else
+            return null;
+    }
+    
+    /**
+     * Get a bank using ID
+     * 
+     * @param bankID ID of bank
+     * @since 0.6
+     * @return Bank
+     */
+    public Bank getBank(int bankID) {
+        if (bankExists(bankID))
+            return new Bank(this, bankID);
         else
             return null;
     }

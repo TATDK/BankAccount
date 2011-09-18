@@ -173,7 +173,7 @@ public class Account {
     /**
      * Set the password for an account
      * 
-     * @param password The new password (Must be encrypted!)
+     * @param password The new password (Must be encrypted!) See {@link dk.earthgame.TAT.BankAccount.System.Password#passwordCrypt(String)}
      * @since 0.5
      * @return If the password is successfully set
      */

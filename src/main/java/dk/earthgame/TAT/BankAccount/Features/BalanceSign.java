@@ -162,8 +162,11 @@ public class BalanceSign {
             if (balances.containsKey(sign.getValue())) {
                 balance = balances.get(sign.getValue());
             } else {
-                balance = plugin.getAccount(sign.getValue()).getBalance();
-                balances.put(sign.getValue(), balance);
+            	if (plugin.getAccount(sign.getValue()) != null)
+            		balance = plugin.getAccount(sign.getValue()).getBalance();
+            	else
+            		balance = 0;
+            	balances.put(sign.getValue(), balance);
             }
             BALocation sl = sign.getKey();
             if (sl.getBlock().getState() instanceof Sign) {

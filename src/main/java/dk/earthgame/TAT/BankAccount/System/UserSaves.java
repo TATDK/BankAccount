@@ -15,7 +15,7 @@ import dk.earthgame.TAT.BankAccount.BankAccount;
  * @since 0.6
  */
 public class UserSaves {
-    private BankAccount plugin;
+    BankAccount plugin;
 	private HashMap<String,UserSave> UserSaves = new HashMap<String,UserSave>();
     
 	public UserSaves(BankAccount instantiate) {
@@ -30,14 +30,13 @@ public class UserSaves {
      * @return UserSaves - the saved data
      */
     public UserSave getSaved(String player) {
-        if (UserSaves.containsKey(player)) {
+        if (UserSaves.containsKey(player))
             return UserSaves.get(player);
-        }
-        
-        UserSave save = new UserSave(this);
-        UserSaves.put(player, save);
+        //If not found, then create a new save
+        UserSave newSave = new UserSave(this);
+        UserSaves.put(player, newSave);
         save();
-        return save;
+        return newSave;
     }
     
     /**

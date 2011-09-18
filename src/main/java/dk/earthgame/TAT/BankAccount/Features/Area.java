@@ -12,9 +12,10 @@ import dk.earthgame.TAT.BankAccount.System.BALocation;
 public class Area {
     private String name;
     private BALocation pos1,pos2;
-    private int bankID;
+    private int id, bankID;
     
-    public Area(String name,Location pos1,Location pos2,int bankID) {
+    public Area(int id,String name,Location pos1,Location pos2,int bankID) {
+    	this.id = id;
         this.name = name;
         this.pos1 = new BALocation(pos1);
         this.pos2 = new BALocation(pos2);
@@ -31,6 +32,12 @@ public class Area {
             return pos1;
         return pos2;
     }
+    
+    /**
+     * Get area ID
+     * @return ID of area
+     */
+    public int getID() { return id; }
     
     /**
      * Get bank ID of area
