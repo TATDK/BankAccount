@@ -100,17 +100,17 @@ public class NPCEntity extends EntityPlayer {
 	}
 
 	@Override
-	public boolean a(EntityHuman entity) {
+	public boolean b(EntityHuman entity) {
 
 		EntityTargetEvent event = new NPCEntityTargetEvent(getBukkitEntity(), entity.getBukkitEntity(), NPCEntityTargetEvent.NPCTargetReason.NPC_RIGHTCLICKED);
 		CraftServer server = ((WorldServer) this.world).getServer();
 		server.getPluginManager().callEvent(event);
 
-		return super.a(entity);
+		return super.b(entity);
 	}
 
 	@Override
-	public void b(EntityHuman entity) {
+	public void a_(EntityHuman entity) {
 		if (lastTargetId == -1 || lastTargetId != entity.id) {
 			EntityTargetEvent event = new NPCEntityTargetEvent(getBukkitEntity(), entity.getBukkitEntity(), NPCEntityTargetEvent.NPCTargetReason.CLOSEST_PLAYER);
 			CraftServer server = ((WorldServer) this.world).getServer();
@@ -118,7 +118,7 @@ public class NPCEntity extends EntityPlayer {
 		}
 		lastTargetId = entity.id;
 
-		super.b(entity);
+		super.a_(entity);
 	}
 
 	@Override
@@ -152,6 +152,11 @@ public class NPCEntity extends EntityPlayer {
 				}
 			}
 		}
+	}
+	
+	@Override
+	public void move(double arg0, double arg1, double arg2) {
+		setPosition(arg0, arg1, arg2);
 	}
 	
 	public String getName() {

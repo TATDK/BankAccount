@@ -8,13 +8,11 @@ import java.util.logging.Logger;
 import net.minecraft.server.AxisAlignedBB;
 import net.minecraft.server.Entity;
 import net.minecraft.server.EntityPlayer;
-import net.minecraft.server.EnumSkyBlock;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.WorldProvider;
 import net.minecraft.server.WorldServer;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Player;
@@ -81,10 +79,6 @@ public class BWorld {
 
 	public boolean createExplosion(Location l, float power) {
 		return wServer.a(null, l.getX(), l.getY(), l.getZ(), power).wasCanceled ? false : true;
-	}
-
-	public void setLightLevel(Block block, final int level) {
-		wServer.b(EnumSkyBlock.BLOCK, block.getX(), block.getY(), block.getZ(), level);
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
