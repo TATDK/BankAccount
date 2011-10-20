@@ -33,6 +33,10 @@ public class EE17 implements Method {
     public String getVersion() {
         return "2.2";
     }
+    
+    public int fractionalDigits() {
+        return -1;
+    }
 
     public String format(double amount) {
         return Economy.format(amount);
@@ -52,6 +56,30 @@ public class EE17 implements Method {
 
     public boolean hasBankAccount(String bank, String name) {
         return false;
+    }
+
+    public boolean createAccount(String name) {
+        if(hasAccount(name))
+            return false;
+        
+        Economy.createNPC(name);
+        return true;
+    }
+
+    public boolean createAccount(String name, double balance) {
+        if(hasAccount(name))
+            return false;
+        
+        Economy.createNPC(name);
+
+        try {
+            Economy.setMoney(name, balance);
+        } catch (Exception ex) {
+            System.out.println("[REGISTER] Error in Essentials Economy: " + ex.getMessage());
+            return false;
+        }
+
+        return true;
     }
 
     public MethodAccount getAccount(String name) {

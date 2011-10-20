@@ -31,8 +31,12 @@ public class iCo6 implements Method {
     public String getVersion() {
         return "6";
     }
+    
+    public int fractionalDigits() {
+    	return 2;
+    }
 
-	public String format(double amount) {
+    public String format(double amount) {
         return this.iConomy.format(amount);
     }
 
@@ -50,6 +54,18 @@ public class iCo6 implements Method {
 
     public boolean hasBankAccount(String bank, String name) {
         return false;
+    }
+
+    public boolean createAccount(String name) {
+        if(hasAccount(name))
+            return false;
+        return (new Accounts()).create(name);
+    }
+
+    public boolean createAccount(String name, double balance) {
+        if(hasAccount(name))
+            return false;
+        return (new Accounts()).create(name, balance);
     }
 
     public MethodAccount getAccount(String name) {

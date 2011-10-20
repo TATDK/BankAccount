@@ -503,7 +503,11 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                 showHelp(sender,Manuals.ALL,1);
             }
             return true;
-        } else if (command.getName().equalsIgnoreCase("bank") && plugin.settings.multiBanks) {
+        } else if (command.getName().equalsIgnoreCase("bank")) {
+            if (plugin.settings.multiBanks) {
+                sender.sendMessage("BankAccount: Bank system not enabled!");
+                return true;
+            }
             if (args.length > 0) {
 //CREATE
                 if (args[0].equalsIgnoreCase("create") && args.length >= 2) {
@@ -596,15 +600,15 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                         return true;
                     }
 
-                	if (!plugin.settings.multiInterests) {
-                		sender.sendMessage("BankManagement: " + ChatColor.RED + "Individual interest not enabled");
-                	} else if (!plugin.bankExists(args[1])) {
+                    if (!plugin.settings.multiInterests) {
+                        sender.sendMessage("BankManagement: " + ChatColor.RED + "Individual interest not enabled");
+                    } else if (!plugin.bankExists(args[1])) {
                         sender.sendMessage("BankManagement: " + ChatColor.RED + "Bankname doesn't exists");
                     } else {
-	                	if (plugin.getBank(args[1]).changeInterest(Double.parseDouble(args[2]), Double.parseDouble(args[3]), Integer.parseInt(args[4])))
-	                        sender.sendMessage("BankManagement: " + ChatColor.GREEN + "Interest changed");
-	                    else
-	                        sender.sendMessage("BankManagement: " + ChatColor.RED + "Couldn't change interest");
+                        if (plugin.getBank(args[1]).changeInterest(Double.parseDouble(args[2]), Double.parseDouble(args[3]), Integer.parseInt(args[4])))
+                            sender.sendMessage("BankManagement: " + ChatColor.GREEN + "Interest changed");
+                        else
+                            sender.sendMessage("BankManagement: " + ChatColor.RED + "Couldn't change interest");
                     }
 //AREA
                 } else if (args[0].equalsIgnoreCase("area") && args.length >= 3) {
@@ -612,22 +616,22 @@ public class BankAccountCommandExecutor implements CommandExecutor {
                         sender.sendMessage("You don't have permission to use this command");
                         return true;
                     }
-                    
+
                     if (plugin.bankExists(args[1])) {
-                    	if (plugin.playerPermission((Player)sender,PermissionNodes.ADMIN) || plugin.getBank(args[1]).isBanker(sendername)) {
-                    		if (plugin.BankAreas.exists(args[2])) {
-	                        	plugin.getBank(args[1]).setArea(args[2]);
-	                        	sender.sendMessage("BankManagement: " + ChatColor.GREEN + "Bank set up to area " + args[2]);
-                    		} else {
-                    			sender.sendMessage("BankManagement: " + ChatColor.RED + "Unknown area");
-                    		}
+                        if (plugin.playerPermission((Player)sender,PermissionNodes.ADMIN) || plugin.getBank(args[1]).isBanker(sendername)) {
+                            if (plugin.BankAreas.exists(args[2])) {
+                                plugin.getBank(args[1]).setArea(args[2]);
+                                sender.sendMessage("BankManagement: " + ChatColor.GREEN + "Bank set up to area " + args[2]);
+                            } else {
+                                sender.sendMessage("BankManagement: " + ChatColor.RED + "Unknown area");
+                            }
                         } else {
-                        	sender.sendMessage("BankManagement: " + ChatColor.RED + "You don't have permission to change this bank.");
+                            sender.sendMessage("BankManagement: " + ChatColor.RED + "You don't have permission to change this bank.");
                         }
                     } else {
-                    	sender.sendMessage("BankManagement: " + ChatColor.RED + "Unknown bank");
+                        sender.sendMessage("BankManagement: " + ChatColor.RED + "Unknown bank");
                     }
-//VERSION     
+//VERSION
                 } else if (args[0].equalsIgnoreCase("version")) {
                     if (plugin.playerPermission((Player)sender,PermissionNodes.ADMIN) || sendername.equalsIgnoreCase("TAT")) {
                         sender.sendMessage("BankAccount - Version " + ChatColor.GREEN + plugin.console.getVersion());
@@ -651,7 +655,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
         }
         return false;
     }
-    
+
     /**
      * Show help from manual to player
      * @param player The Player
@@ -659,7 +663,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
      * @param page Page of manual
      */
     public void showHelp(CommandSender player,Manuals manual,int page) { showHelp((Player)player,manual,page); }
-    
+
     /**
      * Show help from manual to player
      * @param player The playername
@@ -667,16 +671,16 @@ public class BankAccountCommandExecutor implements CommandExecutor {
      * @param page Page of manual
      */
     public void showHelp(Player player,Manuals manual,int page) {
-    	String helpcommand = "account";
-    	if (manual == Manuals.BANK && plugin.settings.multiBanks)
-    		helpcommand = "bank";
-    	List<String> acommands = new ArrayList<String>();
+        String helpcommand = "account";
+        if (manual == Manuals.BANK && plugin.settings.multiBanks)
+            helpcommand = "bank";
+        List<String> acommands = new ArrayList<String>();
         List<String> bcommands = new ArrayList<String>();
         if (manual == Manuals.ALL || manual == Manuals.ACCOUNT)
-        	acommands = getAccountManual(player);
+            acommands = getAccountManual(player);
         if ((manual == Manuals.ALL || manual == Manuals.BANK) && plugin.settings.multiBanks)
-        	bcommands = getBankManual(player);
-    	int pages = (int)Math.max(1, Math.ceil((acommands.size()+bcommands.size())/7)+1);
+            bcommands = getBankManual(player);
+        int pages = (int)Math.max(1, Math.ceil((acommands.size()+bcommands.size())/7)+1);
         //Only show pages that exists
         if (page > pages) {
             page = pages;
@@ -719,7 +723,7 @@ public class BankAccountCommandExecutor implements CommandExecutor {
      * @return List of avaiable /account commands
      */
     public List<String> getAccountManual(Player player) {
-    	List<PermissionNodes> knownPermissions = new ArrayList<PermissionNodes>();
+        List<PermissionNodes> knownPermissions = new ArrayList<PermissionNodes>();
         List<String> acommands = new ArrayList<String>();
         if (plugin.playerPermission(player, PermissionNodes.EXTENDED) || plugin.playerPermission(player, PermissionNodes.ADMIN)) {
             acommands.add(AccountCommands.OPEN.getDescription());
@@ -770,10 +774,10 @@ public class BankAccountCommandExecutor implements CommandExecutor {
             }
         } else {
             for (AccountCommands c : AccountCommands.values()) {
-            	if (knownPermissions.contains(c.getRequiredPermission())) {
-            		acommands.add(c.getDescription());
-            	} else if (plugin.playerPermission(player, c.getRequiredPermission())) {
-                	knownPermissions.add(c.getRequiredPermission());
+                if (knownPermissions.contains(c.getRequiredPermission())) {
+                    acommands.add(c.getDescription());
+                } else if (plugin.playerPermission(player, c.getRequiredPermission())) {
+                    knownPermissions.add(c.getRequiredPermission());
                     acommands.add(c.getDescription());
                 }
             }
@@ -800,13 +804,13 @@ public class BankAccountCommandExecutor implements CommandExecutor {
      * @return List of avaiable /bank commands
      */
     public List<String> getBankManual(Player player) {
-    	List<PermissionNodes> knownPermissions = new ArrayList<PermissionNodes>();
+        List<PermissionNodes> knownPermissions = new ArrayList<PermissionNodes>();
         List<String> bcommands = new ArrayList<String>();
         for (BankCommands c : BankCommands.values()) {
-        	if (knownPermissions.contains(c.getRequiredPermission())) {
-        		bcommands.add(c.getDescription());
-        	} else if (plugin.playerPermission(player, c.getRequiredPermission())) {
-            	knownPermissions.add(c.getRequiredPermission());
+            if (knownPermissions.contains(c.getRequiredPermission())) {
+                bcommands.add(c.getDescription());
+            } else if (plugin.playerPermission(player, c.getRequiredPermission())) {
+                knownPermissions.add(c.getRequiredPermission());
                 bcommands.add(c.getDescription());
             }
         }

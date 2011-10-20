@@ -38,7 +38,14 @@ public interface Method {
      * @return <code>String</code> Plugin version.
      */
     public String getVersion();
-
+    
+    /**
+     * Returns the amount of decimal places that get stored
+     * NOTE: it will return -1 if there is no rounding
+     * 
+     * @return <code>int</code> for each decimal place
+     */
+    public int fractionalDigits();
 
     /**
      * Formats amounts into this payment methods style of currency display.
@@ -80,6 +87,23 @@ public interface Method {
      * @return <code>boolean</code>
      */
     public boolean hasBankAccount(String bank, String name);
+
+    /**
+     * Forces an account creation
+     *
+     * @param name Account name
+     * @return <code>boolean</code>
+     */
+    public boolean createAccount(String name);
+
+    /**
+     * Forces an account creation
+     *
+     * @param name Account name
+     * @param balance Initial account balance
+     * @return <code>boolean</code>
+     */
+    public boolean createAccount(String name, double balance);
 
     /**
      * Returns a <code>MethodAccount</code> class for an account <code>name</code>.

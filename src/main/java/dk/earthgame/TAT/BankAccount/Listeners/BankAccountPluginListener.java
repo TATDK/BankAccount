@@ -22,9 +22,9 @@ public class BankAccountPluginListener extends ServerListener {
 
     public BankAccountPluginListener(BankAccount plugin) {
         this.plugin = plugin;
-        this.Methods = new Methods("iConomy");
+        Methods.setPreferred("iConomy");
     }
-    
+
     Plugin checkPlugin(String pluginname) {
         return plugin.getServer().getPluginManager().getPlugin(pluginname);
     }
@@ -65,21 +65,21 @@ public class BankAccountPluginListener extends ServerListener {
     public void onPluginEnable(PluginEnableEvent event) {
         String pluginname = event.getPlugin().getDescription().getName();
         //Register (Economy API)
-        if (!Methods.hasMethod()) {
-            if (Methods.setMethod(event.getPlugin())) {
-                plugin.Method = Methods.getMethod();
-                plugin.console.info("Payment method found (" + plugin.Method.getName() + " version: " + plugin.Method.getVersion() + ")");
-                plugin.LoanSystem.startupRunner();
-                plugin.Interest.startupInterest();
-                plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
-                    public void run() {
-                    	plugin.BalanceSign.update();
-                    	plugin.console.info("Signs updated");
+        if (!Methods.hasMethod() && Methods.setMethod(plugin.getServer().getPluginManager())) {
+            plugin.Method = Methods.getMethod();
+            plugin.console.info("Payment method found (" + plugin.Method.getName() + " version: " + plugin.Method.getVersion() + ")");
+            plugin.LoanSystem.startupRunner();
+            plugin.Interest.startupInterest();
+            plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+                public void run() {
+                    if (plugin.BalanceSign.enabled) {
+                        plugin.BalanceSign.update();
+                        plugin.console.info("Signs updated");
                     }
-                },20);
-            }
+                }
+            },20);
         }
-        
+
         //Permissions
         if (plugin.settings.Permissions == null && pluginname.equalsIgnoreCase("Permissions") && plugin.settings.usePermissions) {
             Plugin test = checkPlugin(pluginname);

@@ -32,6 +32,10 @@ public class iCo5 implements Method {
     public String getVersion() {
         return "5";
     }
+    
+    public int fractionalDigits() {
+    	return 2;
+    }
 
     public String format(double amount) {
         return this.iConomy.format(amount);
@@ -51,6 +55,22 @@ public class iCo5 implements Method {
 
     public boolean hasBankAccount(String bank, String name) {
         return (hasBank(bank)) && this.iConomy.getBank(bank).hasAccount(name);
+    }
+
+    public boolean createAccount(String name) {
+        if(hasAccount(name))
+            return false;
+        return com.iConomy.iConomy.Accounts.create(name);
+    }
+
+    public boolean createAccount(String name, double balance) {
+        if(hasAccount(name))
+            return false;
+        if(!com.iConomy.iConomy.Accounts.create(name))
+            return false;
+
+        getAccount(name).set(balance);
+        return true;
     }
 
     public MethodAccount getAccount(String name) {

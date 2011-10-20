@@ -27,6 +27,10 @@ public class BOSE7 implements Method {
         return "0.7.0";
     }
 
+    public int fractionalDigits() {
+        return this.BOSEconomy.getFractionalDigits();
+    }
+
     public String format(double amount) {
         String currency = this.BOSEconomy.getMoneyNamePlural();
         if(amount == 1) currency = this.BOSEconomy.getMoneyName();
@@ -47,6 +51,22 @@ public class BOSE7 implements Method {
 
     public boolean hasBankAccount(String bank, String name) {
         return this.BOSEconomy.isBankOwner(bank, name) || this.BOSEconomy.isBankMember(bank, name);
+    }
+
+    public boolean createAccount(String name) {
+        if (hasAccount(name))
+            return false;
+
+        return this.BOSEconomy.registerPlayer(name);
+    }
+
+    public boolean createAccount(String name, double balance) {
+        if (hasAccount(name))
+            return false;
+
+        this.BOSEconomy.registerPlayer(name);
+        this.BOSEconomy.setPlayerMoney(name, balance, false);
+        return true;
     }
 
     public MethodAccount getAccount(String name) {

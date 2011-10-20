@@ -29,8 +29,12 @@ public class iCo4 implements Method {
     public String getVersion() {
         return "4";
     }
+    
+    public int fractionalDigits() {
+    	return 2;
+    }
 
-	public String format(double amount) {
+    public String format(double amount) {
         return this.iConomy.getBank().format(amount);
     }
 
@@ -48,6 +52,30 @@ public class iCo4 implements Method {
 
     public boolean hasBankAccount(String bank, String name) {
         return false;
+    }
+
+    public boolean createAccount(String name) {
+        if(hasAccount(name))
+            return false;
+        
+        try {
+            com.nijiko.coelho.iConomy.iConomy.getBank().addAccount(name);
+        } catch(Exception E) {
+            return false;
+        }
+        return true;
+    }
+
+    public boolean createAccount(String name, double balance) {
+        if(hasAccount(name))
+            return false;
+        
+        try {
+            com.nijiko.coelho.iConomy.iConomy.getBank().addAccount(name, balance);
+        } catch(Exception E) {
+            return false;
+        }
+        return true;
     }
 
     public MethodAccount getAccount(String name) {

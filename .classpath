@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="lib" path="ZipInclude/mysql-connector-java-bin.jar"/>
+	<classpathentry kind="lib" path="ZipInclude/sqlitejdbc-v056.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

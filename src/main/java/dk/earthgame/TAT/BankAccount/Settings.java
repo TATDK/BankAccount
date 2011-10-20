@@ -14,7 +14,7 @@ import java.util.HashMap;
 import org.anjocaido.groupmanager.GroupManager;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.util.config.Configuration;
+import org.bukkit.configuration.file.YamlConfiguration;
 
 import com.nijiko.permissions.PermissionHandler;
 
@@ -29,8 +29,8 @@ import dk.earthgame.TAT.BankAccount.System.Upgrade;
  */
 public class Settings {
     private BankAccount plugin;
-    
-    Configuration config;
+
+    YamlConfiguration config;
     public int checkJobId;
     public int areaWandId;
     public boolean multiBanks;
@@ -84,11 +84,12 @@ public class Settings {
     //Debug messages
     public boolean debug_Loan;
     public boolean debug_Interest;
-    
+
     public Settings(BankAccount plugin) {
         this.plugin = plugin;
+        config = new YamlConfiguration();
     }
-    
+
     private FeeModes stringToType(String s) {
         if (s.equalsIgnoreCase("percentage"))
             return FeeModes.PERCENTAGE;
@@ -100,11 +101,14 @@ public class Settings {
             return FeeModes.SMART2;
         return FeeModes.NONE;
     }
-    
+
     @SuppressWarnings("unchecked")
     boolean loadConfiguration() {
-        config = new Configuration(new File(plugin.getDataFolder(), "config.yml"));
-        config.load();
+        try {
+            config.load(plugin.getDataFolder() + File.pathSeparator + "config.yml");
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
         //SQL
         transactions = config.getBoolean("SQL-info.Transactions", false);
         useMySQL = config.getBoolean("SQL-info.MySQL", false);
@@ -143,11 +147,13 @@ public class Settings {
         //Area
         areas = config.getBoolean("Areas.Active",false);
         areaWandId = config.getInt("Areas.AreaWandid",339);
-        multiBanks = config.getBoolean("Areas.MultipleBanks", false);
+        //TODO: MultiBanks
+        //multiBanks = config.getBoolean("Areas.MultipleBanks", false);
+        multiBanks = false;
         //Loan
         plugin.LoanSystem.LoanActive = config.getBoolean("Loan.Active", false);
         plugin.LoanSystem.Fixed_rate = config.getDouble("Loan.Fixed-rate", 0);
-        plugin.LoanSystem.Rates = (HashMap<Double, Double>)config.getProperty("Loan.Rate");
+        plugin.LoanSystem.Rates = (HashMap<Double, Double>)config.get("Loan.Rate");
         plugin.LoanSystem.Max_amount = config.getDouble("Loan.Max-amount", 200);
         plugin.LoanSystem.PaymentTime = config.getInt("Loan.Payment-time", 60);
         plugin.LoanSystem.PaymentParts = config.getInt("Loan.Payment-parts", 3);
@@ -167,7 +173,7 @@ public class Settings {
         //Debug
         debug_Interest = config.getBoolean("Debug.Interest", true);
         debug_Loan = config.getBoolean("Debug.Loan", true);
-        
+
         plugin.console.info("Properties Loaded");
         //Load class
         try {
@@ -198,7 +204,7 @@ public class Settings {
                     stmt       = con.createStatement(ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_READ_ONLY);
                     plugin.console.info("Connected to SQLite");
                 }
-                
+
                 //Check if the tables exists, else create them
                 boolean checkAccount = false;
                 boolean checkArea = false;
@@ -308,7 +314,7 @@ public class Settings {
                     if (!e3.getMessage().equalsIgnoreCase(null))
                         plugin.console.warning(e3.getMessage());
                     else
-                    	plugin.console.warning(e3.getErrorCode() + " - " + e3.getSQLState());
+                        plugin.console.warning(e3.getErrorCode() + " - " + e3.getSQLState());
                     plugin.console.info("Shuting down");
                     plugin.getServer().getPluginManager().disablePlugin(plugin);
                     return false;
@@ -337,7 +343,7 @@ public class Settings {
         }
         return true;
     }
-    
+
     void createDefaultConfiguration() {
         String name = "config.yml";
         File actual = new File(plugin.getDataFolder(), name);
@@ -353,7 +359,7 @@ public class Settings {
                     while ((length = input.read(buf)) > 0) {
                         output.write(buf, 0, length);
                     }
-                    
+
                     plugin.console.info("Default config file created!");
                 } catch (IOException e) {
                     e.printStackTrace();
