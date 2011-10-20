@@ -105,7 +105,7 @@ public class Settings {
     @SuppressWarnings("unchecked")
     boolean loadConfiguration() {
         try {
-            config.load(plugin.getDataFolder() + File.pathSeparator + "config.yml");
+            config.load(plugin.getDataFolder() + File.separator + "config.yml");
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -142,7 +142,7 @@ public class Settings {
             plugin.console.info("Interest -> Online-limit set to 100");
         }
         interestOfflineAmount = config.getDouble("Interest.DefaultInterest.Offline-amount", 0);
-        interestTime = config.getInt("Interest.Time", 0);
+        interestTime = config.getInt("Interest.Time", 1);
         multiInterests = config.getBoolean("Interest.MultipleInterests", false);
         //Area
         areas = config.getBoolean("Areas.Active",false);

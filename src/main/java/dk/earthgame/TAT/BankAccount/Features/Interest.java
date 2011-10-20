@@ -45,6 +45,12 @@ public class Interest {
     public void startupInterest() {
         if (jobID > 0)
             return;
+        
+        if (plugin.settings.interestOnlineAmount <= 0)
+            return;
+        
+        if (plugin.settings.interestTime < 1)
+            plugin.settings.interestTime = 1;
 
         jobID = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
             public void run() {
