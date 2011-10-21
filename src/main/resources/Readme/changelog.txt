@@ -2,6 +2,10 @@ Plugin: BankAccount
 Author: TAT
 CHANGELOG
 
+FUTURE RELEASES
+ATM signs
+Multiple banks
+
 0.6
 Added balances signs
 Added main system for ATM signs (will be released later)
@@ -12,14 +16,12 @@ Added multiple fee systems
   * Transfer - When you transfer between accounts (sender account pays the fee)
   * Closing  - When you close an account          (account pays the fee)
   * Sign     - When you create a balance sign     (player pays the fee)
-Update Register [GitHub Commit: af7bef3b278663a8ecf89a54706d282a3b8bb982] + pull requests
-Updated to Bukkit #1060
+Update Register [GitHub Commit: 84cea9c22bef9f21036db1db3443494ea4ee0618]
+Updated to CraftBukkit #1338
 API: Removed 0.5 deprecated functions
 API: Renamed CommandList to AccountCommands
-API: Added BankCommands
 API: Added Account
 API: Moved a lot of account related functions to Account
-API: Added Bank
 API: and a lot more
 
 0.5.1

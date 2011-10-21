@@ -46,6 +46,8 @@ import dk.earthgame.nijikokun.register.payment.Method.MethodAccount;
 public class BankAccount extends JavaPlugin {
     protected final Plugin thisPlugin = this;
     public Settings settings = new Settings(this);
+    public boolean FoundEconomy;
+    public boolean Started;
     File myFolder;
     
 //System
@@ -104,6 +106,9 @@ public class BankAccount extends JavaPlugin {
             if (settings.useGroupManager)
                 if (settings.GroupManager.getWorldsHolder().getWorldPermissions(player).has(player, node.getNode()))
                     return true;
+            //PermissionsBukkit
+            if (player.hasPermission(node.getNode()))
+                return true;
             if (settings.useOP)
                 if (player.isOp())
                     return true;
@@ -160,8 +165,6 @@ public class BankAccount extends JavaPlugin {
         //Sign - Used for balance signs
         pm.registerEvent(Type.SIGN_CHANGE, blockListener, Priority.Normal, this);
         pm.registerEvent(Type.BLOCK_BREAK, blockListener, Priority.Normal, this);
-        
-        console.enabled();
 
         myFolder = getDataFolder();
         if (!myFolder.exists()) {
@@ -185,7 +188,8 @@ public class BankAccount extends JavaPlugin {
         }, 20*20);
 
         settings.createDefaultConfiguration();
-        settings.loadConfiguration();
+        if (!settings.loadConfiguration())
+            return;
         
         /*
          * Check if missing hook up is possible
@@ -233,6 +237,12 @@ public class BankAccount extends JavaPlugin {
                 ATMSign.resetAll();
             }
         }, 2*20);
+        
+        console.enabled();
+        Started = true;
+        
+        if (FoundEconomy)
+            LoanSystem.startupRunner();
     }
 
     /**

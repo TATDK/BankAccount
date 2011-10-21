@@ -41,8 +41,12 @@ public class LoanSystem {
      * @since 0.5
      */
     public void startupRunner() {
-    	if (running)
-    		return;
+        if (running)
+            return;
+        if (!plugin.Started) {
+            plugin.FoundEconomy = true;
+            return;
+        }
         ResultSet rs;
         try {
             rs = plugin.settings.stmt.executeQuery("SELECT `player`,`totalamount`,`remaining`,`part`,`parts`,`timeleft`,`timepayment` FROM `" + plugin.settings.SQL_loan_table + "`");

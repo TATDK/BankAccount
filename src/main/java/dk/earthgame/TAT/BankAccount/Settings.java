@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 
+import java.util.Map;
 import org.anjocaido.groupmanager.GroupManager;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -22,6 +23,9 @@ import dk.earthgame.TAT.BankAccount.Enum.FeeModes;
 import dk.earthgame.TAT.BankAccount.Features.AccountFee;
 import dk.earthgame.TAT.BankAccount.Features.PlayerFee;
 import dk.earthgame.TAT.BankAccount.System.Upgrade;
+import java.util.Map.Entry;
+import java.util.Set;
+import org.bukkit.configuration.MemorySection;
 
 /**
  * BankAccount settings
@@ -108,6 +112,8 @@ public class Settings {
             config.load(plugin.getDataFolder() + File.separator + "config.yml");
         } catch (Exception ex) {
             ex.printStackTrace();
+            plugin.getServer().getPluginManager().disablePlugin(plugin);
+            return false;
         }
         //SQL
         transactions = config.getBoolean("SQL-info.Transactions", false);
@@ -153,7 +159,14 @@ public class Settings {
         //Loan
         plugin.LoanSystem.LoanActive = config.getBoolean("Loan.Active", false);
         plugin.LoanSystem.Fixed_rate = config.getDouble("Loan.Fixed-rate", 0);
-        plugin.LoanSystem.Rates = (HashMap<Double, Double>)config.get("Loan.Rate");
+
+        Map<String, Object> rates = ((MemorySection)config.get("Loan.Rate")).getValues(true);
+        plugin.LoanSystem.Rates = new HashMap<Double, Double>();
+        for (Entry<String, Object> pair : rates.entrySet()) {
+            if (pair.getValue() instanceof Double)
+                plugin.LoanSystem.Rates.put(Double.parseDouble(pair.getKey()), (Double)pair.getValue());
+        }
+
         plugin.LoanSystem.Max_amount = config.getDouble("Loan.Max-amount", 200);
         plugin.LoanSystem.PaymentTime = config.getInt("Loan.Payment-time", 60);
         plugin.LoanSystem.PaymentParts = config.getInt("Loan.Payment-parts", 3);

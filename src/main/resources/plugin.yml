@@ -5,9 +5,86 @@ author: TAT
 website: http://forums.bukkit.org/threads/BankAccount.7095/
 softdepend: [SignUpdater]
 commands:
-    account:
-        description: Shared Bank Accounts
-        usage: /account help - Show help to BankAccount
-    bank:
-        description: Banks
-        usage: /bank help - Show help to BankAccount
+  account:
+    description: Shared Bank Accounts
+    usage: /account help - Show help to BankAccount
+  bank:
+    description: Banks
+    usage: /bank help - Show help to BankAccount
+permissions:
+  bankaccount.admin:
+    description: Access to all commands and accounts (if SuperAdmin is enabled)
+    children:
+      bankaccount.extended: true
+      bankaccount.area: true
+      bankaccount.bank.create: true
+      bankaccount.bank.remove: true
+      bankaccount.bank.manage: true
+  bankaccount.extended:
+    description: Access to all account commands except area and bank commands
+    children:
+      bankaccount.basic: true
+      bankaccount.close: true
+      bankaccount.password: true
+      bankaccount.transfer: true
+      bankaccount.loan: true
+      bankaccount.sign.balance: true
+      bankaccount.sign.atm: true
+  bankaccount.basic:
+    description: Access to open, user, deposit, withdraw, list
+    children:
+      bankaccount.access: true
+      bankaccount.open: true
+      bankaccount.user: true
+      bankaccount.deposit: true
+      bankaccount.withdraw: true
+      bankaccount.list: true
+  bankaccount.access:
+    description: Access to allow user to use BankAccount.
+      Overrides all other Bankaccount permissions
+    default: false
+  bankaccount.area:
+    description: Access to area commands
+    default: op
+  bankaccount.open:
+    description: Access to open own accounts + show balance
+    default: false
+  bankaccount.list:
+    description: Access to list own accounts
+    default: false
+  bankaccount.user:
+    description: Access to add/remove users/owners on own accounts
+    default: false
+  bankaccount.close:
+    description: Access to close own accounts
+    default: false
+  bankaccount.deposit:
+    description: Access to deposit to own accounts
+    default: false
+  bankaccount.withdraw:
+    description: Access to withdraw from own accounts
+    default: false
+  bankaccount.password:
+    description: Access to set password
+    default: false
+  bankaccount.transfer:
+    description: Access to transfer from own accounts
+    default: false
+  bankaccount.loan:
+    description: Access to loan money
+    default: false
+  bankaccount.sign.balance:
+    description: Access to create BankAccount balancesigns
+    default: false
+  bankaccount.sign.atm:
+    description: Access to create BankAccount ATMsigns
+    default: false
+  bankaccount.bank.create:
+    description: Access to create new banks
+    default: op
+  bankaccount.bank.remove:
+    description: Access to remove any bank
+    default: op
+  bankaccount.bank.manage:
+    description: Access to manage all banks (add and remove bankers, control interest)
+    default: op
