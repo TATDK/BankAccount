@@ -24,7 +24,6 @@ import dk.earthgame.TAT.BankAccount.Features.AccountFee;
 import dk.earthgame.TAT.BankAccount.Features.PlayerFee;
 import dk.earthgame.TAT.BankAccount.System.Upgrade;
 import java.util.Map.Entry;
-import java.util.Set;
 import org.bukkit.configuration.MemorySection;
 
 /**
@@ -106,7 +105,6 @@ public class Settings {
         return FeeModes.NONE;
     }
 
-    @SuppressWarnings("unchecked")
     boolean loadConfiguration() {
         try {
             config.load(plugin.getDataFolder() + File.separator + "config.yml");

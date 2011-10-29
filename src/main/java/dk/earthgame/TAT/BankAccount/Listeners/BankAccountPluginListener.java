@@ -22,7 +22,7 @@ public class BankAccountPluginListener extends ServerListener {
 
     public BankAccountPluginListener(BankAccount plugin) {
         this.plugin = plugin;
-        Methods.setPreferred("iConomy");
+        dk.earthgame.nijikokun.register.payment.Methods.setPreferred("iConomy");
     }
 
     Plugin checkPlugin(String pluginname) {
@@ -33,8 +33,8 @@ public class BankAccountPluginListener extends ServerListener {
     public void onPluginDisable(PluginDisableEvent event) {
         String pluginname = event.getPlugin().getDescription().getName();
         //Register (Economy API)
-        if (Methods != null && Methods.hasMethod()) {
-            boolean check = Methods.checkDisabled(event.getPlugin());
+        if (Methods != null && dk.earthgame.nijikokun.register.payment.Methods.hasMethod()) {
+            boolean check = dk.earthgame.nijikokun.register.payment.Methods.checkDisabled(event.getPlugin());
 
             if(check) {
                 plugin.console.info("Payment method was disabled.");
@@ -65,8 +65,8 @@ public class BankAccountPluginListener extends ServerListener {
     public void onPluginEnable(PluginEnableEvent event) {
         String pluginname = event.getPlugin().getDescription().getName();
         //Register (Economy API)
-        if (!Methods.hasMethod() && Methods.setMethod(plugin.getServer().getPluginManager())) {
-            plugin.Method = Methods.getMethod();
+        if (!dk.earthgame.nijikokun.register.payment.Methods.hasMethod() && dk.earthgame.nijikokun.register.payment.Methods.setMethod(plugin.getServer().getPluginManager())) {
+            plugin.Method = dk.earthgame.nijikokun.register.payment.Methods.getMethod();
             plugin.console.info("Payment method found (" + plugin.Method.getName() + " version: " + plugin.Method.getVersion() + ")");
             plugin.LoanSystem.startupRunner();
             plugin.Interest.startupInterest();
@@ -106,7 +106,7 @@ public class BankAccountPluginListener extends ServerListener {
             Plugin test = checkPlugin(pluginname);
             if (test != null) {
                 plugin.signupdater = (SignUpdater)test;
-                plugin.ATMSign.enabled = true;
+                //TODO: plugin.ATMSign.enabled = true;
                 plugin.BalanceSign.enabled = true;
                 plugin.console.info("Established connection with " + plugin + "!");
             }

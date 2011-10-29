@@ -39,10 +39,10 @@ Loan:
     Active: false
     Fixed-rate: 0.00
     Rate:
-        0.01: 0.05
-        50.01: 0.10
-        100.01: 0.30
-        200.01: 0.50
+        "0.01": 0.05
+        "50.01": 0.10
+        "100.01": 0.30
+        "200.01": 0.50
     Max-amount: 200
     Payment-time: 60
     Payment-parts: 3

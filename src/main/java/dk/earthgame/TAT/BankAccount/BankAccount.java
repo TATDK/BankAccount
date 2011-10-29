@@ -38,6 +38,7 @@ import dk.earthgame.TAT.BankAccount.System.UserSaves;
 import dk.earthgame.TAT.SignUpdater.SignUpdater;
 import dk.earthgame.nijikokun.register.payment.Method;
 import dk.earthgame.nijikokun.register.payment.Method.MethodAccount;
+import dk.earthgame.nijikokun.register.payment.Methods;
 
 /**
  * BankAccount for Bukkit
@@ -178,7 +179,7 @@ public class BankAccount extends JavaPlugin {
          */
         settings.checkJobId = getServer().getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
             public void run() {
-                if (!pluginListener.Methods.hasMethod()) {
+                if (!Methods.hasMethod()) {
                     //Shutdown if economy isn't found
                     console.warning("Stopping BankAccount - Reason: Missing economy plugin!");
                     getServer().getPluginManager().disablePlugin(thisPlugin);
@@ -220,7 +221,7 @@ public class BankAccount extends JavaPlugin {
             if (test != null) {
                 if (test.isEnabled()) {
                     signupdater = (SignUpdater)test;
-                    ATMSign.enabled = true;
+                    //TODO: ATMSign.enabled = true;
                     BalanceSign.enabled = true;
                     console.info("Established connection with SignUpdater!");
                 }

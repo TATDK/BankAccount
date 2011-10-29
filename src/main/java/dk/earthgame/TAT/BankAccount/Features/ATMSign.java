@@ -1,13 +1,10 @@
 package dk.earthgame.TAT.BankAccount.Features;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.bukkit.Location;
 import org.bukkit.block.Sign;
 
 import dk.earthgame.TAT.BankAccount.BankAccount;
@@ -28,8 +25,10 @@ public class ATMSign {
      * @since 0.6
      */
     public void load() {
-        File signFile = new File(plugin.getDataFolder(), filename);
-        if (signFile.exists()) {
+        /*
+         * TODO: enable ATMsigns
+		File signFile = new File(plugin.getDataFolder(), filename);
+		if (signFile.exists()) {
             try {
                 FileReader fr = new FileReader(signFile);
                 BufferedReader reader = new BufferedReader(fr);
@@ -50,6 +49,7 @@ public class ATMSign {
                 e.printStackTrace();
             }
         }
+*/
     }
     
     /**
