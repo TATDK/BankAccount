@@ -1,9 +1,11 @@
 package dk.earthgame.TAT.BankAccount.Listeners;
 
 import org.anjocaido.groupmanager.GroupManager;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
 import org.bukkit.event.server.PluginDisableEvent;
 import org.bukkit.event.server.PluginEnableEvent;
-import org.bukkit.event.server.ServerListener;
 import org.bukkit.plugin.Plugin;
 
 import com.nijikokun.bukkit.Permissions.Permissions;
@@ -16,7 +18,7 @@ import dk.earthgame.nijikokun.register.payment.Methods;
  * BankAccount hook with other plugins
  * @author TAT
  */
-public class BankAccountPluginListener extends ServerListener {
+public class BankAccountPluginListener implements Listener {
     private BankAccount plugin;
     public Methods Methods;
 
@@ -29,7 +31,7 @@ public class BankAccountPluginListener extends ServerListener {
         return plugin.getServer().getPluginManager().getPlugin(pluginname);
     }
 
-    @Override
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onPluginDisable(PluginDisableEvent event) {
         String pluginname = event.getPlugin().getDescription().getName();
         //Register (Economy API)
@@ -61,7 +63,7 @@ public class BankAccountPluginListener extends ServerListener {
         }
     }
 
-    @Override
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onPluginEnable(PluginEnableEvent event) {
         String pluginname = event.getPlugin().getDescription().getName();
         //Register (Economy API)

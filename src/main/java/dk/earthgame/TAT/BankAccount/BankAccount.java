@@ -7,8 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event.Priority;
-import org.bukkit.event.Event.Type;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -152,20 +150,10 @@ public class BankAccount extends JavaPlugin {
         getCommand("bank").setUsage("/bank help - Show help to BankAccount");
         
         PluginManager pm = getServer().getPluginManager();
-        //RightClick - Used for area selection and ATM scrolling
-        pm.registerEvent(Type.PLAYER_INTERACT, playerListener, Priority.Normal, this);
-        //Used for ATMMachine
-        pm.registerEvent(Type.PLAYER_CHAT, playerListener, Priority.Normal, this);
-        //Movement - Used for area entrance
-        pm.registerEvent(Type.PLAYER_MOVE, playerListener, Priority.Normal, this);
-        //Damage - Used for bounty
-        pm.registerEvent(Type.ENTITY_DAMAGE, entityListener, Priority.Normal, this);
-        //Enable/Disable - Used for hook up to other plugins
-        pm.registerEvent(Type.PLUGIN_ENABLE, pluginListener, Priority.Low, this);
-        pm.registerEvent(Type.PLUGIN_DISABLE, pluginListener, Priority.Low, this);
-        //Sign - Used for balance signs
-        pm.registerEvent(Type.SIGN_CHANGE, blockListener, Priority.Normal, this);
-        pm.registerEvent(Type.BLOCK_BREAK, blockListener, Priority.Normal, this);
+        pm.registerEvents(playerListener, this);
+        pm.registerEvents(entityListener, this);
+        pm.registerEvents(pluginListener, this);
+        pm.registerEvents(blockListener, this);
 
         myFolder = getDataFolder();
         if (!myFolder.exists()) {

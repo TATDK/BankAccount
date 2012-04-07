@@ -6,6 +6,10 @@ FUTURE RELEASES
 ATM signs
 Multiple banks
 
+0.7
+NPC code removed
+Updated to new Event system
+
 0.6
 Added balances signs
 Added main system for ATM signs (will be released later)

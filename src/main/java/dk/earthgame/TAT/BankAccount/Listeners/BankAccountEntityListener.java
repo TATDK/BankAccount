@@ -2,14 +2,14 @@ package dk.earthgame.TAT.BankAccount.Listeners;
 
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityListener;
-
 import dk.earthgame.TAT.BankAccount.BankAccount;
 import dk.earthgame.nijikokun.register.payment.Method.MethodAccount;
 
-public class BankAccountEntityListener extends EntityListener {
+public class BankAccountEntityListener implements Listener {
     private BankAccount plugin;
     public BankAccountEntityListener(BankAccount instantiate) {
         plugin = instantiate;
@@ -34,7 +34,7 @@ public class BankAccountEntityListener extends EntityListener {
         }
     }
     
-    @Override
+    @EventHandler
     public void onEntityDamage(EntityDamageEvent event) {
         if (event instanceof EntityDamageByEntityEvent) {
             check((EntityDamageByEntityEvent) event);

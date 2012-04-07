@@ -5,8 +5,9 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockListener;
 import org.bukkit.event.block.SignChangeEvent;
 
 import dk.earthgame.TAT.BankAccount.BankAccount;
@@ -15,14 +16,14 @@ import dk.earthgame.TAT.BankAccount.Enum.PermissionNodes;
 import dk.earthgame.TAT.BankAccount.System.BALocation;
 import dk.earthgame.nijikokun.register.payment.Method.MethodAccount;
 
-public class BankAccountBlockListener extends BlockListener {
+public class BankAccountBlockListener implements Listener {
     private BankAccount plugin;
     
     public BankAccountBlockListener(BankAccount instantiate) {
         plugin = instantiate;
     }
     
-    @Override
+    @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
         if (event.getBlock().getState() instanceof Sign) {
             BALocation l = new BALocation(event.getBlock().getLocation());
@@ -48,7 +49,7 @@ public class BankAccountBlockListener extends BlockListener {
         }
     }
 
-    @Override
+    @EventHandler
     public void onSignChange(SignChangeEvent event) {
         Player p = event.getPlayer();
         if (!(p instanceof Player))

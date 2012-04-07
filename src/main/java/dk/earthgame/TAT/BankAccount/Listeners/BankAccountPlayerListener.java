@@ -4,10 +4,11 @@ import java.util.List;
 
 import org.bukkit.Location;
 import org.bukkit.block.Sign;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerListener;
 import org.bukkit.event.player.PlayerMoveEvent;
 
 import dk.earthgame.TAT.BankAccount.BankAccount;
@@ -15,14 +16,14 @@ import dk.earthgame.TAT.BankAccount.Features.Area;
 import dk.earthgame.TAT.BankAccount.System.BALocation;
 import dk.earthgame.TAT.BankAccount.System.UserSave;
 
-public class BankAccountPlayerListener extends PlayerListener {
+public class BankAccountPlayerListener implements Listener {
     private BankAccount plugin;
     
     public BankAccountPlayerListener(BankAccount instantiate) {
         plugin = instantiate;
     }
     
-    @Override
+    @EventHandler
     public void onPlayerChat(PlayerChatEvent event) {
     	if (plugin.UserSaves.getSaved(event.getPlayer().getName()).usingATM != null) {
     		plugin.UserSaves.getSaved(event.getPlayer().getName()).usingATM.GetChatMsg(event.getMessage());
@@ -30,7 +31,7 @@ public class BankAccountPlayerListener extends PlayerListener {
     	}
     }
     
-    @Override
+    @EventHandler
     public void onPlayerMove(PlayerMoveEvent event) {
     	Location from = event.getFrom();
     	Location to = event.getTo();
@@ -60,7 +61,7 @@ public class BankAccountPlayerListener extends PlayerListener {
     	}
     }
     
-    @Override
+    @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
             UserSave mySave = plugin.UserSaves.getSaved(event.getPlayer().getName());
